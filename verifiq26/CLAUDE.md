@@ -58,18 +58,24 @@ The source of truth is `verifiq-prompts/` (and `docs/`). Key files:
 - Adapters: `src/llm/`, `src/storage/`. Shared types: `src/types/`.
 - Tests: `tests/`. Dev setup notes: `DEVELOPMENT.md`.
 
-## Phase 1 status & decisions
+## Phase status & decisions
 
-Phase 1 = **schema + LLM adapter + R2 storage adapter + smoke test** only. No
-agents, no orchestrator, no UI (those are Phase 2+).
+- **Phase 1 (done, merged):** schema + LLM adapter + R2 storage adapter + smoke
+  test. The earlier `src/convex/` POC scaffold (`sp_dr_*` schema + inconsistent
+  `actions/`/`lib/`) was deleted (recoverable from git) and replaced with the
+  Phase 1 platform schema per §05.4. See `docs/29-phase1-completion.md`.
+- **Phase 2 (done):** the six MVP agents in `src/agents/` — five discipline
+  agents (Architect, Fire, Access, M&E, QS) + Chair. Each loads prompts from
+  `verifiq-prompts/` (PromptLoader), applies the 7-check self-check validator
+  (file 13) as a pre-emit gate, returns §05.1 Findings, and logs every
+  self-check decision to an injected sink. Chair derives the file-06
+  rating↔decision invariant in code. See `docs/30-phase2-completion.md`.
+- **Phase 3 (next):** the resumable job-queue workflow orchestrator
+  (intake → classify → review → peer challenge → adjudicate → chair), per
+  `03_review_workflow.md` + file 20 §2. NOT started.
 
-Decisions taken this session:
-- The earlier `src/convex/` POC scaffold (a `sp_dr_*` design-review-sprint
-  schema + inconsistent `actions/`/`lib/`) was **deleted** (recoverable from git)
-  and replaced with the Phase 1 platform schema per §05.4. Founder-approved.
-- See `docs/29-phase1-completion.md` for the build summary, deviations, and the
-  live-credential checks that must be verified locally (real Anthropic/OpenAI
-  calls, R2 signed URL, `npx convex dev` deploy).
+Live-credential checks across phases remain "verify locally" (real
+Anthropic/OpenAI calls, R2 signed URL, `npx convex dev` deploy).
 
 ## Definition of Done gate (docs/28)
 
