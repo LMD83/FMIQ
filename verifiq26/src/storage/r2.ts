@@ -21,6 +21,7 @@ import {
   CreateMultipartUploadCommand,
   UploadPartCommand,
   CompleteMultipartUploadCommand,
+  AbortMultipartUploadCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import {
@@ -30,6 +31,7 @@ import {
   type StorageProvider,
   type UploadTarget,
   buildObjectKey,
+  computeSha256,
 } from "./types.js";
 
 const ONE_HOUR = 3600;
@@ -163,6 +165,32 @@ export class R2Provider implements StorageProvider {
         },
       }),
     );
+  }
+
+  /** Abort a multipart upload, releasing any parts already stored (cleanup on
+   * failure / per-file re-upload; file 20 § 1 failure modes). */
+  async abortMultipartUpload(key: string, uploadId: string): Promise<void> {
+    await this.client.send(
+      new AbortMultipartUploadCommand({
+        Bucket: this.bucket,
+        Key: key,
+        UploadId: uploadId,
+      }),
+    );
+  }
+
+  // ── Integrity verification (file 20 § 1: "verified server-side at completion") ──
+
+  /**
+   * Verify a stored object against the SHA-256 the client computed before
+   * upload. Downloads the object and re-hashes it; returns true on match. A
+   * mismatch should trigger a per-file re-upload (file 20 § 1). Note: this reads
+   * the whole object, so call it at completion, not on the hot path.
+   */
+  async verifyUpload(key: string, expectedSha256: string): Promise<boolean> {
+    const bytes = await this.getObject(key);
+    const actual = await computeSha256(bytes);
+    return actual === expectedSha256;
   }
 }
 
