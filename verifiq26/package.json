@@ -1,8 +1,8 @@
 {
   "name": "verifiq",
-  "version": "0.4.0-phase2",
+  "version": "0.5.0-phase3",
   "private": true,
-  "description": "VerifIQ — Irish pre-build compliance review platform. Phase 2: the six MVP Council agents + self-check protocol.",
+  "description": "VerifIQ — Irish pre-build compliance review platform. Phase 3: the resumable review-workflow orchestrator + job queue (review → peer challenge → adjudicate → chair).",
   "type": "module",
   "engines": {
     "node": ">=20.0.0"

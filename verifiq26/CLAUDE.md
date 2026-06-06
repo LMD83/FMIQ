@@ -70,9 +70,16 @@ The source of truth is `verifiq-prompts/` (and `docs/`). Key files:
   (file 13) as a pre-emit gate, returns §05.1 Findings, and logs every
   self-check decision to an injected sink. Chair derives the file-06
   rating↔decision invariant in code. See `docs/30-phase2-completion.md`.
-- **Phase 3 (next):** the resumable job-queue workflow orchestrator
-  (intake → classify → review → peer challenge → adjudicate → chair), per
-  `03_review_workflow.md` + file 20 §2. NOT started.
+- **Phase 3 (done):** the resumable review-workflow orchestrator + job queue in
+  `src/orchestrator/`, plus the Stage-5 Peer Challenge and Stage-6 Adjudicator
+  engines in `src/agents/`. Runs review (per discipline, isolated) → peer
+  challenge → adjudicate → chair as a job DAG; resumable + idempotent; all I/O
+  behind an injected `PersistencePort`. Minimal Convex job-queue functions in
+  `src/convex/jobs.ts`. See `docs/31-phase3-completion.md`.
+- **Phase 4 (next):** the Convex binding — scheduled `tick` that drives
+  `jobs.ts`, a Convex-backed `PersistencePort`, the title-block classifier +
+  classification-confirmation UX (file 20 §3–4), and `inference_cache` wiring.
+  NOT started.
 
 Live-credential checks across phases remain "verify locally" (real
 Anthropic/OpenAI calls, R2 signed URL, `npx convex dev` deploy).

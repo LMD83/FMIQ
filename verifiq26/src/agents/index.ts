@@ -21,6 +21,25 @@ export {
 } from "./agent.js";
 export { ChairAgent, createChairAgent, deriveDecision, type ChairInput, type ChairDeps } from "./chair.js";
 export {
+  PeerChallengeAgent,
+  createPeerChallengeAgent,
+  type ChallengeRecord,
+  type ChallengeInput,
+  type ChallengeDeps,
+  type ChallengeAuditEntry,
+  type ChallengeSink,
+} from "./challenge.js";
+export {
+  AdjudicatorAgent,
+  createAdjudicatorAgent,
+  type AdjudicateInput,
+  type AdjudicateResult,
+  type AdjudicationRecord,
+  type AdjudicationState,
+  type AdjudicatorDeps,
+  type AdjudicationSink,
+} from "./adjudicate.js";
+export {
   runSelfCheck,
   CHECK_LABELS,
   type SelfCheckAuditEntry,
