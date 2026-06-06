@@ -1,8 +1,8 @@
 {
   "name": "verifiq",
-  "version": "0.5.0-phase3",
+  "version": "0.6.0-phase4",
   "private": true,
-  "description": "VerifIQ — Irish pre-build compliance review platform. Phase 3: the resumable review-workflow orchestrator + job queue (review → peer challenge → adjudicate → chair).",
+  "description": "VerifIQ — Irish pre-build compliance review platform. Phase 4: title-block classifier + inference cache + classification-confirmation glue.",
   "type": "module",
   "engines": {
     "node": ">=20.0.0"
