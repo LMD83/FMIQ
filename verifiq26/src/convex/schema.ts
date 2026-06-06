@@ -543,4 +543,22 @@ export default defineSchema({
   })
     .index("by_cache_key", ["cache_key"])
     .index("by_expires_at", ["expires_at"]),
+
+  // --------------------------------------------------------------------------
+  // workflow_state — resumable orchestrator state per project (Phase 4 binding
+  // for src/orchestrator PersistencePort). Mirrors WorkflowState; lets a
+  // re-dispatched scan reload progress and skip finished stages.
+  // --------------------------------------------------------------------------
+  workflow_state: defineTable({
+    project_id: v.id("projects"),
+    scan_state: ScanState,
+    completed_stages: v.array(v.string()),
+    discipline_status: v.array(
+      v.object({
+        discipline: v.string(),
+        status: v.union(v.literal("succeeded"), v.literal("failed")),
+      }),
+    ),
+    updated_at: v.number(),
+  }).index("by_project", ["project_id"]),
 });
