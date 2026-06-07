@@ -76,10 +76,15 @@ The source of truth is `verifiq-prompts/` (and `docs/`). Key files:
   challenge → adjudicate → chair as a job DAG; resumable + idempotent; all I/O
   behind an injected `PersistencePort`. Minimal Convex job-queue functions in
   `src/convex/jobs.ts`. See `docs/31-phase3-completion.md`.
-- **Phase 4 (next):** the Convex binding — scheduled `tick` that drives
-  `jobs.ts`, a Convex-backed `PersistencePort`, the title-block classifier +
-  classification-confirmation UX (file 20 §3–4), and `inference_cache` wiring.
-  NOT started.
+- **Phase 4 (in progress):** the title-block 3-source classifier (`src/classifier/`,
+  file 20 §3) and the inference cache (`src/llm/cache.ts`, file 20 §2), both pure
+  + tested, plus Convex glue for classification (`src/convex/classify.ts` — save /
+  confirm / reclassify-with-audit / forced-confirm gate) and the inference cache
+  (`src/convex/cache.ts`). See `docs/32-phase4-completion.md`.
+- **Phase 4 remaining (deploy-only, next):** scheduled `tick` driving `jobs.ts`,
+  an orchestrator-in-Convex `"use node"` action with a Convex `PersistencePort`
+  (needs a small `workflow_state` schema addition — flagged), and caching wired
+  into the agents. Then Phase 5+: upload (tus.io), UI, observability, CI/CD.
 
 Live-credential checks across phases remain "verify locally" (real
 Anthropic/OpenAI calls, R2 signed URL, `npx convex dev` deploy).
