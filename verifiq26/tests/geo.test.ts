@@ -11,9 +11,13 @@
 import { describe, it, expect } from "vitest";
 import {
   EpaRadonProvider,
+  OpwFloodProvider,
+  GsiGeologyProvider,
   CustomerSuppliedGeocoder,
   geoFinding,
   isHighRadon,
+  floodZone,
+  adverseGround,
   type FetchJson,
   type ItmCoordinate,
 } from "../src/geo/index.js";
@@ -77,6 +81,70 @@ describe("EPA radon provider", () => {
     expect(isHighRadon({ PercentAboveReference: 15 })).toBe(true);
     expect(isHighRadon({ HighRadonArea: "No" })).toBe(false);
     expect(isHighRadon({ unrelated: "value" })).toBe(false);
+  });
+});
+
+describe("OPW flood provider", () => {
+  it("resolves a site in a flood extent → a High-risk FRA finding", async () => {
+    const provider = new OpwFloodProvider(fakeFetch({ features: [{ attributes: { Flood_Zone: "Zone A" } }] }));
+    const result = await provider.query(SITE);
+    expect(result.status).toBe("resolved");
+    expect(result.flagged).toBe(true);
+
+    const f = geoFinding(result)!;
+    expect(f.requirement).toMatch(/Flood Risk Management/);
+    expect(f.risk).toBe("High");
+    expect(f.required_evidence[0]).toMatch(/Flood Risk Assessment/);
+  });
+
+  it("resolves a site outside any mapped extent → no finding", async () => {
+    const provider = new OpwFloodProvider(fakeFetch({ features: [] }));
+    const result = await provider.query(SITE);
+    expect(result.flagged).toBeUndefined();
+    expect(geoFinding(result)).toBeNull();
+  });
+
+  it("degrades to a request-from-OPW finding when unreachable", async () => {
+    const provider = new OpwFloodProvider(async () => {
+      throw new Error("network");
+    });
+    const result = await provider.query(SITE);
+    expect(result.status).toBe("manual-request-required");
+    expect(result.requestFrom).toMatch(/OPW/);
+  });
+
+  it("floodZone reads varied attribute shapes", () => {
+    expect(floodZone({ Flood_Zone: "Zone A" })).toBe("A");
+    expect(floodZone({ Flood_Zone: "Zone B (moderate)" })).toBe("B");
+    expect(floodZone({ AEP: 0.01 })).toBe("A");
+    expect(floodZone({ AEP: 0.001 })).toBe("B");
+  });
+});
+
+describe("GSI geology provider", () => {
+  it("resolves adverse ground → a ground-investigation finding", async () => {
+    const provider = new GsiGeologyProvider(fakeFetch({ features: [{ attributes: { SUBSOIL: "Peat" } }] }));
+    const result = await provider.query(SITE);
+    expect(result.status).toBe("resolved");
+    expect(result.flagged).toBe(true);
+
+    const f = geoFinding(result)!;
+    expect(f.requirement).toMatch(/Eurocode 7/);
+    expect(f.required_evidence[0]).toMatch(/ground investigation/i);
+  });
+
+  it("resolves benign ground → no finding", async () => {
+    const provider = new GsiGeologyProvider(fakeFetch({ features: [{ attributes: { SUBSOIL: "Till" } }] }));
+    const result = await provider.query(SITE);
+    expect(result.flagged).toBe(false);
+    expect(geoFinding(result)).toBeNull();
+  });
+
+  it("adverseGround detects peat, landslide and karst", () => {
+    expect(adverseGround({ SUBSOIL: "Peat" })).toMatch(/Peat/);
+    expect(adverseGround({ HAZARD: "Landslide susceptibility — high" })).toMatch(/Landslide/);
+    expect(adverseGround({ FEATURE: "Karst" })).toMatch(/Karst/);
+    expect(adverseGround({ SUBSOIL: "Till" })).toBeNull();
   });
 });
 

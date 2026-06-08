@@ -19,6 +19,9 @@ export {
   type FetchJson,
   defaultFetchJson,
 } from "./types.js";
+export { buildPointQueryUrl, firstFeatureAttributes, ITM_WKID } from "./arcgis.js";
 export { EpaRadonProvider, isHighRadon } from "./radon.js";
+export { OpwFloodProvider, floodZone } from "./flood.js";
+export { GsiGeologyProvider, adverseGround } from "./geology.js";
 export { geoFinding } from "./findings.js";
 export { CustomerSuppliedGeocoder } from "./geocoder.js";

@@ -39,6 +39,30 @@ export function geoFinding(result: GeoLayerResult, seq = 1): Finding | null {
         required_evidence: ["Confirm a radon-resisting membrane in the floor build-up (TGD C)"],
       });
     }
+    if (result.layer === "flood") {
+      return build(result, seq, {
+        requirement:
+          "Planning System & Flood Risk Management Guidelines: a site in Flood Zone A/B needs a site-specific Flood Risk Assessment.",
+        finding: result.summary,
+        status: "Not demonstrated",
+        risk: "High",
+        required_evidence: [
+          "Provide a site-specific Flood Risk Assessment and the Justification Test outcome",
+        ],
+      });
+    }
+    if (result.layer === "geology") {
+      return build(result, seq, {
+        requirement:
+          "Adverse ground conditions require a ground investigation and geotechnical design to Eurocode 7 (IS EN 1997).",
+        finding: result.summary,
+        status: "Not demonstrated",
+        risk: "Medium",
+        required_evidence: [
+          "Provide a ground investigation / geotechnical report addressing the mapped ground condition",
+        ],
+      });
+    }
     return build(result, seq, {
       requirement: `A ${result.layer} constraint applies to the site.`,
       finding: result.summary,

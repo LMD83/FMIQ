@@ -20,10 +20,10 @@ import {
   type ItmCoordinate,
   defaultFetchJson,
 } from "./types.js";
+import { buildPointQueryUrl, firstFeatureAttributes } from "./arcgis.js";
 
 const ENDPOINT =
   "https://gis.epa.ie/arcgis/rest/services/EPAMapServices/RadiologicalProtection/MapServer/1/query";
-const ITM_WKID = 2157;
 
 export class EpaRadonProvider implements GeoLayerProvider {
   readonly layer = "radon";
@@ -31,19 +31,7 @@ export class EpaRadonProvider implements GeoLayerProvider {
 
   /** Build the ArcGIS point-intersect query URL for a coordinate. */
   buildUrl(coord: ItmCoordinate): string {
-    if (!Number.isFinite(coord.x) || !Number.isFinite(coord.y)) {
-      throw new Error(`Invalid ITM coordinate: ${coord.x},${coord.y}`);
-    }
-    const params = new URLSearchParams({
-      geometry: `${coord.x},${coord.y}`,
-      geometryType: "esriGeometryPoint",
-      inSR: String(ITM_WKID),
-      spatialRel: "esriSpatialRelIntersects",
-      outFields: "*",
-      returnGeometry: "false",
-      f: "json",
-    });
-    return `${ENDPOINT}?${params.toString()}`;
+    return buildPointQueryUrl(ENDPOINT, coord);
   }
 
   async query(coord: ItmCoordinate): Promise<GeoLayerResult> {
@@ -60,15 +48,14 @@ export class EpaRadonProvider implements GeoLayerProvider {
       };
     }
 
-    const feature = firstFeature(json);
-    if (!feature) {
+    const attributes = firstFeatureAttributes(json);
+    if (!attributes) {
       return {
         layer: this.layer,
         status: "resolved",
         summary: "Site is not within a mapped EPA High Radon Area.",
       };
     }
-    const attributes = (feature.attributes ?? {}) as Record<string, unknown>;
     const high = isHighRadon(attributes);
     return {
       layer: this.layer,
@@ -80,13 +67,6 @@ export class EpaRadonProvider implements GeoLayerProvider {
       attributes,
     };
   }
-}
-
-function firstFeature(json: unknown): { attributes?: unknown } | null {
-  if (typeof json !== "object" || json === null) return null;
-  const features = (json as { features?: unknown }).features;
-  if (!Array.isArray(features) || features.length === 0) return null;
-  return features[0] as { attributes?: unknown };
 }
 
 /** Detect a High Radon Area from the feature attributes (field names vary). */
