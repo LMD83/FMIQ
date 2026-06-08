@@ -1,0 +1,49 @@
+# VerifIQ — Continuous Integration
+#
+# The core merge gate: typecheck + lint + unit/integration tests on every PR and
+# push to main (file 20 §7). Runs offline against the committed _generated stub
+# (no Convex/provider secrets needed). A follow-up job will add `convex codegen`
+# + the 327-finding validation-pack integration test once deploy secrets exist.
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths: ["verifiq26/**", ".github/workflows/ci.yml"]
+  pull_request:
+    paths: ["verifiq26/**", ".github/workflows/ci.yml"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: typecheck · lint · test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: verifiq26
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: verifiq26/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck (tsc --noEmit, strict)
+        run: npm run typecheck
+
+      - name: Lint (eslint)
+        run: npm run lint
+
+      - name: Test (vitest)
+        run: npm test

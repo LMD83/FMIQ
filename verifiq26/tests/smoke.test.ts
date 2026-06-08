@@ -142,7 +142,7 @@ describe("VerifIQ Phase 1 smoke", () => {
     // 5. audit_log was written (the LLM call logged at least one entry)
     const audited = await t.query(api.mutations.listAudit, { project_id: projectId });
     expect(audited.length).toBeGreaterThanOrEqual(1);
-    expect(audited.some((a) => a.action === "llm_call")).toBe(true);
+    expect(audited.some((a: { action: string }) => a.action === "llm_call")).toBe(true);
   });
 
   it("fails over to the fallback provider on a forced-fail scenario", async () => {
