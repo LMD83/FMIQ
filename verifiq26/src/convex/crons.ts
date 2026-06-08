@@ -1,20 +1,27 @@
 /**
- * VerifIQ — scheduled functions (file 20 §2).
+ * VerifIQ — scheduled jobs (Phase 4).
  *
- * Phase 4 schedules the inference-cache TTL purge. The job-dispatch tick that
- * drives the `jobs` table through per-stage actions also belongs here; it is
- * gated on prompt bundling for the Convex runtime (see docs/32) and lands with
- * that, so it is intentionally not wired yet.
+ * Convex cron registry. Currently drives the inference-cache TTL cleanup
+ * (file 20 §2). The 60-second job-queue `tick` that claims runnable jobs
+ * (`jobs.claimNextRunnable`) and dispatches them to the orchestrator runner is
+ * added once the runner action lands (it needs prompt bundling + PDF text
+ * extraction — see docs/33).
  *
- * Version: 0.6.0-phase4
+ * Version: 0.7.0-phase4
  */
 
 import { cronJobs } from "convex/server";
-import { api } from "./_generated/api";
+import { internal } from "./_generated/api";
 
 const crons = cronJobs();
 
-// Drop expired inference-cache rows daily (30-day TTL; file 20 §2).
-crons.daily("purge inference cache", { hourUTC: 3, minuteUTC: 0 }, api.cache.purgeExpired, {});
+// Purge expired inference_cache rows nightly (30-day TTL; file 20 §2).
+// purgeExpired is an internalMutation — the cron is a trusted caller.
+crons.daily(
+  "purge expired inference cache",
+  { hourUTC: 3, minuteUTC: 0 },
+  internal.cache.purgeExpired,
+  {},
+);
 
 export default crons;

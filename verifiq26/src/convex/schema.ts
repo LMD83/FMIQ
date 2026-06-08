@@ -352,6 +352,10 @@ export default defineSchema({
     decision: v.string(),
     revised_risk: v.optional(Risk),
     rationale: v.string(),
+    // Cross-discipline interface the challenger flagged — the adjudicator folds
+    // this into the finding's interface_disciplines (file 07 §07.1).
+    interface_discipline: v.optional(v.string()),
+    required_action: v.optional(v.string()),
     model_used: v.optional(v.string()),
     created_at: v.number(),
   })
@@ -545,9 +549,29 @@ export default defineSchema({
     .index("by_expires_at", ["expires_at"]),
 
   // --------------------------------------------------------------------------
-  // workflow_state — resumable orchestrator state per project (Phase 4 binding
-  // for src/orchestrator PersistencePort). Mirrors WorkflowState; lets a
-  // re-dispatched scan reload progress and skip finished stages.
+  // classifier_feedback — every reclassification correction (file 20 §4). The
+  // single most valuable labelled signal for the lessons-learnt loop (file 15).
+  // --------------------------------------------------------------------------
+  classifier_feedback: defineTable({
+    project_id: v.id("projects"),
+    document_id: v.id("documents"),
+    sha256: v.optional(v.string()),
+    from_discipline: v.optional(v.string()),
+    to_discipline: v.string(),
+    from_doc_type: v.optional(v.string()),
+    to_doc_type: v.optional(v.string()),
+    prior_confidence: v.optional(v.number()),
+    classifier_source: v.optional(v.string()),
+    corrected_by: v.string(),
+    corrected_at: v.number(),
+  })
+    .index("by_project", ["project_id"])
+    .index("by_document", ["document_id"]),
+
+  // --------------------------------------------------------------------------
+  // workflow_state — resumable orchestrator state per project (file 20 §2/§5).
+  // Persists which stages completed + each discipline's outcome so a scan
+  // resumes across restarts without re-running finished stages.
   // --------------------------------------------------------------------------
   workflow_state: defineTable({
     project_id: v.id("projects"),

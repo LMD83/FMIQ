@@ -76,17 +76,20 @@ The source of truth is `verifiq-prompts/` (and `docs/`). Key files:
   challenge → adjudicate → chair as a job DAG; resumable + idempotent; all I/O
   behind an injected `PersistencePort`. Minimal Convex job-queue functions in
   `src/convex/jobs.ts`. See `docs/31-phase3-completion.md`.
-- **Phase 4 (done):** the Convex binding. `ConvexPersistence`
-  (`src/orchestrator/convex-port.ts`) runs the orchestrator against the real
-  schema via `src/convex/workflow.ts` + a new `workflow_state` table; the
-  `inference_cache` is wired (`src/llm/cache.ts` CachingLLMClient +
-  `src/convex/cache.ts`); the 3-source title-block classifier lives in
-  `src/classify/`; a daily cache-purge cron is in `src/convex/crons.ts`. See
-  `docs/32-phase4-completion.md`.
-- **Phase 5 (next):** the deploy-time glue — prompt bundling for the Convex
-  runtime, the `runReview` node action + scheduled job-dispatch `tick`, and the
-  classification-confirmation UX (file 20 §4, which is UI → Phase 7 in file 16).
-  NOT started.
+- **Phase 4 (in progress):** the title-block 3-source classifier (`src/classifier/`,
+  file 20 §3) and the inference cache (`src/llm/cache.ts`, file 20 §2), both pure
+  + tested, plus Convex glue for classification (`src/convex/classify.ts` — save /
+  confirm / reclassify-with-audit / forced-confirm gate) and the inference cache
+  (`src/convex/cache.ts`). See `docs/32-phase4-completion.md`.
+- **Phase 4 Convex binding (done):** dedicated `workflow_state` +
+  `classifier_feedback` tables; `ConvexPersistence` (tested — runs the real
+  orchestrator end-to-end) over `src/convex/persist.ts`; reclassification writes
+  `classifier_feedback`; nightly `inference_cache` purge cron. See
+  `docs/33-phase4-convex-binding.md`.
+- **Phase 5 (next):** the upload + extraction pipeline (tus.io resumable upload,
+  PDF text/title-block extraction, file 20 §1), prompt bundling for server-side
+  agents, then the thin `"use node"` orchestrator runner + 60s queue tick. Then
+  UI, observability, CI/CD.
 
 Live-credential checks across phases remain "verify locally" (real
 Anthropic/OpenAI calls, R2 signed URL, `npx convex dev` deploy).

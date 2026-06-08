@@ -75,6 +75,23 @@ export const reclassifyDocument = mutation({
       ...(args.doc_type !== undefined ? { doc_type: args.doc_type } : {}),
       status: "confirmed",
     });
+    const now = Date.now();
+    // Structured training signal (file 20 §4 / file 15).
+    await ctx.db.insert("classifier_feedback", {
+      project_id: doc.project_id,
+      document_id: args.document_id,
+      sha256: doc.sha256,
+      ...(before.discipline !== undefined ? { from_discipline: before.discipline } : {}),
+      to_discipline: args.discipline,
+      ...(before.doc_type !== undefined ? { from_doc_type: before.doc_type } : {}),
+      ...(args.doc_type !== undefined ? { to_doc_type: args.doc_type } : {}),
+      ...(doc.classifier_confidence !== undefined
+        ? { prior_confidence: doc.classifier_confidence }
+        : {}),
+      corrected_by: args.actor,
+      corrected_at: now,
+    });
+    // Audit log remains the non-negotiable trust artefact.
     await ctx.db.insert("audit_log", {
       project_id: doc.project_id,
       actor: args.actor,
@@ -86,7 +103,7 @@ export const reclassifyDocument = mutation({
         after: { discipline: args.discipline, doc_type: args.doc_type ?? doc.doc_type },
         prior_confidence: doc.classifier_confidence,
       }),
-      occurred_at: Date.now(),
+      occurred_at: now,
     });
   },
 });
