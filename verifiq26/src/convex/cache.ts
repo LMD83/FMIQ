@@ -20,8 +20,8 @@ import { v } from "convex/values";
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
-/** Look up a cached inference; returns null on miss or past TTL. */
-export const getCachedInference = internalQuery({
+/** Read a cached completion by key, or null if absent/expired. */
+export const getCached = internalQuery({
   args: { cache_key: v.string(), now: v.optional(v.number()) },
   handler: async (ctx, args) => {
     const now = args.now ?? Date.now();
@@ -34,8 +34,8 @@ export const getCachedInference = internalQuery({
   },
 });
 
-/** Store an inference result (idempotent on cache_key). */
-export const putCachedInference = internalMutation({
+/** Insert/refresh a cached completion (TTL 30 days). */
+export const putCached = internalMutation({
   args: {
     cache_key: v.string(),
     model: v.string(),
@@ -73,7 +73,7 @@ export const putCachedInference = internalMutation({
   },
 });
 
-/** Purge expired cache rows (called by the scheduled cron). */
+/** Delete expired cache rows (scheduled cron). Returns the number purged. */
 export const purgeExpired = internalMutation({
   args: { now: v.optional(v.number()) },
   handler: async (ctx, args) => {

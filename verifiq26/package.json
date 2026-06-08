@@ -1,8 +1,8 @@
 {
   "name": "verifiq",
-  "version": "0.7.0-phase4",
+  "version": "0.7.0-phase5",
   "private": true,
-  "description": "VerifIQ — Irish pre-build compliance review platform. Phase 4: Convex binding — workflow_state + classifier_feedback tables, durable PersistencePort, scheduled cache cleanup.",
+  "description": "VerifIQ — Irish pre-build compliance review platform. Phase 5: prompt bundling + the runReview node action + scheduled resume tick (council runs on Convex), plus the PR-7 security/correctness hardening.",
   "type": "module",
   "engines": {
     "node": ">=20.0.0"
@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "bundle:prompts": "node scripts/bundle-prompts.mjs",
     "convex:dev": "convex dev",
     "convex:deploy": "convex deploy",
     "lint": "eslint . --ext .ts",

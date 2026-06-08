@@ -14,7 +14,7 @@ import type { FunctionReference } from "convex/server";
 import type { BuildReadinessReport, Finding } from "../types/index.js";
 import type { ChallengeRecord } from "../agents/challenge.js";
 import type { AdjudicationRecord } from "../agents/adjudicate.js";
-import { api } from "../convex/_generated/api.js";
+import { api, internal } from "../convex/_generated/api.js";
 import type {
   OrchestratorAuditEntry,
   PersistencePort,
@@ -24,8 +24,14 @@ import type {
 
 /** Loosely-typed Convex caller (action ctx or convex-test handle). */
 export interface ConvexRunner {
-  runQuery(ref: FunctionReference<"query">, args: Record<string, unknown>): Promise<unknown>;
-  runMutation(ref: FunctionReference<"mutation">, args: Record<string, unknown>): Promise<unknown>;
+  runQuery(
+    ref: FunctionReference<"query", "public" | "internal">,
+    args: Record<string, unknown>,
+  ): Promise<unknown>;
+  runMutation(
+    ref: FunctionReference<"mutation", "public" | "internal">,
+    args: Record<string, unknown>,
+  ): Promise<unknown>;
 }
 
 type DisciplineStatusRow = { discipline: string; status: "succeeded" | "failed" };
@@ -34,7 +40,7 @@ export class ConvexPersistence implements PersistencePort {
   constructor(private readonly run: ConvexRunner) {}
 
   async loadState(projectId: string): Promise<WorkflowState | null> {
-    const row = (await this.run.runQuery(api.workflow.loadWorkflowState, {
+    const row = (await this.run.runQuery(internal.workflow.loadWorkflowState, {
       project_id: projectId,
     })) as
       | (Omit<WorkflowState, "discipline_status"> & { discipline_status: DisciplineStatusRow[] })
@@ -55,7 +61,7 @@ export class ConvexPersistence implements PersistencePort {
     const discipline_status: DisciplineStatusRow[] = Object.entries(state.discipline_status).map(
       ([discipline, status]) => ({ discipline, status }),
     );
-    await this.run.runMutation(api.workflow.saveWorkflowState, {
+    await this.run.runMutation(internal.workflow.saveWorkflowState, {
       project_id: state.project_id,
       scan_state: state.scan_state,
       completed_stages: state.completed_stages,
@@ -71,22 +77,22 @@ export class ConvexPersistence implements PersistencePort {
   }
 
   async saveFindings(projectId: string, findings: Finding[]): Promise<void> {
-    await this.run.runMutation(api.workflow.saveFindings, { project_id: projectId, findings });
+    await this.run.runMutation(internal.workflow.saveFindings, { project_id: projectId, findings });
   }
   async loadFindings(projectId: string): Promise<Finding[]> {
-    return (await this.run.runQuery(api.workflow.loadFindings, {
+    return (await this.run.runQuery(internal.workflow.loadFindings, {
       project_id: projectId,
     })) as Finding[];
   }
 
   async saveChallenges(projectId: string, challenges: ChallengeRecord[]): Promise<void> {
-    await this.run.runMutation(api.workflow.saveChallenges, {
+    await this.run.runMutation(internal.workflow.saveChallenges, {
       project_id: projectId,
       challenges,
     });
   }
   async loadChallenges(projectId: string): Promise<ChallengeRecord[]> {
-    return (await this.run.runQuery(api.workflow.loadChallenges, {
+    return (await this.run.runQuery(internal.workflow.loadChallenges, {
       project_id: projectId,
     })) as ChallengeRecord[];
   }
@@ -96,7 +102,7 @@ export class ConvexPersistence implements PersistencePort {
     adjudicated: Finding[],
     decisions: AdjudicationRecord[],
   ): Promise<void> {
-    await this.run.runMutation(api.workflow.saveAdjudications, {
+    await this.run.runMutation(internal.workflow.saveAdjudications, {
       project_id: projectId,
       adjudicated,
       decisions: decisions.map((d) => ({
@@ -108,7 +114,7 @@ export class ConvexPersistence implements PersistencePort {
     });
   }
   async loadAdjudicated(projectId: string): Promise<Finding[]> {
-    return (await this.run.runQuery(api.workflow.loadAdjudicated, {
+    return (await this.run.runQuery(internal.workflow.loadAdjudicated, {
       project_id: projectId,
     })) as Finding[];
   }
@@ -116,10 +122,10 @@ export class ConvexPersistence implements PersistencePort {
   async saveReport(projectId: string, report: BuildReadinessReport): Promise<void> {
     // The `disclaimer` is re-applied on load from the locked constant.
     const { disclaimer: _disclaimer, ...rest } = report;
-    await this.run.runMutation(api.workflow.saveReport, { project_id: projectId, report: rest });
+    await this.run.runMutation(internal.workflow.saveReport, { project_id: projectId, report: rest });
   }
   async loadReport(projectId: string): Promise<BuildReadinessReport | null> {
-    return (await this.run.runQuery(api.workflow.loadReport, {
+    return (await this.run.runQuery(internal.workflow.loadReport, {
       project_id: projectId,
     })) as BuildReadinessReport | null;
   }

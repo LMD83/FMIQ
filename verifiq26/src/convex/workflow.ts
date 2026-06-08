@@ -11,7 +11,7 @@
  * Version: 0.6.0-phase4
  */
 
-import { mutation, query } from "./_generated/server";
+import { internalMutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 import {
   Stage,
@@ -93,7 +93,7 @@ function toFindingWire(doc: Record<string, unknown>): FindingWire {
 
 // ── workflow_state ───────────────────────────────────────────────────────────
 
-export const loadWorkflowState = query({
+export const loadWorkflowState = internalQuery({
   args: { project_id: v.id("projects") },
   handler: async (ctx, args) => {
     const row = await ctx.db
@@ -111,7 +111,7 @@ export const loadWorkflowState = query({
   },
 });
 
-export const saveWorkflowState = mutation({
+export const saveWorkflowState = internalMutation({
   args: {
     project_id: v.id("projects"),
     scan_state: ScanState,
@@ -142,7 +142,7 @@ export const saveWorkflowState = mutation({
 
 // ── findings ─────────────────────────────────────────────────────────────────
 
-export const saveFindings = mutation({
+export const saveFindings = internalMutation({
   args: { project_id: v.id("projects"), findings: v.array(findingArg) },
   handler: async (ctx, args) => {
     const now = Date.now();
@@ -152,7 +152,7 @@ export const saveFindings = mutation({
   },
 });
 
-export const loadFindings = query({
+export const loadFindings = internalQuery({
   args: { project_id: v.id("projects") },
   handler: async (ctx, args) => {
     const rows = await ctx.db
@@ -165,7 +165,7 @@ export const loadFindings = query({
 
 // ── challenges ───────────────────────────────────────────────────────────────
 
-export const saveChallenges = mutation({
+export const saveChallenges = internalMutation({
   args: {
     project_id: v.id("projects"),
     challenges: v.array(
@@ -191,6 +191,8 @@ export const saveChallenges = mutation({
         decision: c.decision,
         revised_risk: c.revised_risk,
         rationale: c.reason,
+        interface_discipline: c.interface_discipline,
+        required_action: c.required_action,
         model_used: c.model_used,
         created_at: now,
       });
@@ -198,7 +200,7 @@ export const saveChallenges = mutation({
   },
 });
 
-export const loadChallenges = query({
+export const loadChallenges = internalQuery({
   args: { project_id: v.id("projects") },
   handler: async (ctx, args) => {
     const rows = await ctx.db
@@ -211,6 +213,8 @@ export const loadChallenges = query({
       decision: r.decision as ReturnType<typeof String> as never,
       reason: r.rationale,
       revised_risk: r.revised_risk,
+      interface_discipline: r.interface_discipline,
+      required_action: r.required_action,
       model_used: r.model_used ?? "",
     }));
   },
@@ -218,7 +222,7 @@ export const loadChallenges = query({
 
 // ── adjudications ────────────────────────────────────────────────────────────
 
-export const saveAdjudications = mutation({
+export const saveAdjudications = internalMutation({
   args: {
     project_id: v.id("projects"),
     adjudicated: v.array(findingArg),
@@ -270,6 +274,10 @@ export const saveAdjudications = mutation({
           risk: f.risk,
           status: f.status,
           build_readiness_impact: f.build_readiness_impact,
+          // Adjudication can extend interface_disciplines from peer challenges;
+          // persist it so loadAdjudicated → chair sees the accepted register's
+          // interface relationships (not the stale pre-adjudication list).
+          interface_disciplines: f.interface_disciplines,
           council_decision: f.council_decision ?? row.council_decision,
           updated_at: now,
         });
@@ -278,7 +286,7 @@ export const saveAdjudications = mutation({
   },
 });
 
-export const loadAdjudicated = query({
+export const loadAdjudicated = internalQuery({
   args: { project_id: v.id("projects") },
   handler: async (ctx, args) => {
     const rows = await ctx.db
@@ -293,7 +301,7 @@ export const loadAdjudicated = query({
 
 // ── reports ──────────────────────────────────────────────────────────────────
 
-export const saveReport = mutation({
+export const saveReport = internalMutation({
   args: {
     project_id: v.id("projects"),
     report: v.object({
@@ -349,7 +357,7 @@ export const saveReport = mutation({
   },
 });
 
-export const loadReport = query({
+export const loadReport = internalQuery({
   args: { project_id: v.id("projects") },
   handler: async (ctx, args) => {
     const reports = await ctx.db

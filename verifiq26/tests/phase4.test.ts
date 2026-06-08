@@ -189,7 +189,7 @@ describe("Phase 4 — inference cache", () => {
     await store.put(
       "k1",
       { text: "hello", model_used: "claude-haiku-4-5-20251001", provider_used: "anthropic", tokens_in: 1, tokens_out: 1 },
-      { model: "claude-haiku-4-5-20251001", prompt_version: "v1", document_sha256: "abc", agent_id: "classifier", corpus_version: "c1", tokens_in: 1, tokens_out: 1 },
+      { model: "claude-haiku-4-5-20251001", prompt_version: "v1", document_sha256: "abc", agent_id: "classifier", corpus_version: "c1", project_id: "p1", tokens_in: 1, tokens_out: 1 },
     );
     const hit = await store.get("k1");
     expect(hit?.text).toBe("hello");

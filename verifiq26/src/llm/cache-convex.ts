@@ -9,7 +9,7 @@
  * Version: 0.6.0-phase4
  */
 
-import { api } from "../convex/_generated/api.js";
+import { internal } from "../convex/_generated/api.js";
 import type { CacheStore, CachedInference, CachePutMeta, CacheRunner } from "./cache.js";
 import type { ProviderName } from "./types.js";
 
@@ -21,7 +21,7 @@ export class ConvexCacheStore implements CacheStore {
   constructor(private readonly run: CacheRunner) {}
 
   async get(key: string): Promise<CachedInference | null> {
-    const row = (await this.run.runQuery(api.cache.getCached, { cache_key: key })) as {
+    const row = (await this.run.runQuery(internal.cache.getCached, { cache_key: key })) as {
       result_text: string;
       model: string;
       tokens_in: number;
@@ -38,7 +38,7 @@ export class ConvexCacheStore implements CacheStore {
   }
 
   async put(key: string, value: CachedInference, meta: CachePutMeta): Promise<void> {
-    await this.run.runMutation(api.cache.putCached, {
+    await this.run.runMutation(internal.cache.putCached, {
       cache_key: key,
       model: meta.model,
       prompt_version: meta.prompt_version,
