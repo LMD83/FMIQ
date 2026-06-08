@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VerifIQ — Build Readiness</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=Lato:wght@300;400&family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com/3.4.1"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          'luxury-black': '#080808', 'luxury-charcoal': '#121212', 'luxury-white': '#FDFDFD',
+          'luxury-gold': '#C5A059', 'luxury-gold-light': '#E5C585', 'luxury-gray': '#2A2A2A',
+        },
+        fontFamily: {
+          header: ['Cinzel', 'serif'], sub: ['Playfair Display', 'serif'],
+          body: ['Lato', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'],
+        },
+      }
+    }
+  }
+</script>
+<style>
+  body { background:#080808; color:#FDFDFD; }
+  .grid-bg { background-image: linear-gradient(rgba(197,160,89,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(197,160,89,0.04) 1px, transparent 1px); background-size: 40px 40px; }
+  .decision-tab { border-bottom:2px solid transparent; transition: all .3s; }
+  .decision-tab.active { border-color:#C5A059; color:#FDFDFD; }
+  .rating-amber { color:#FDE68A; border-color:rgba(253,230,138,0.4); }
+</style>
+</head>
+<body class="bg-luxury-black text-luxury-white font-body">
+
+<nav class="border-b border-luxury-gold/15 sticky top-0 z-40 bg-luxury-black/90 backdrop-blur-md">
+  <div class="container mx-auto px-6 md:px-10 flex items-center justify-between py-5">
+    <a href="dashboard-live.html" class="font-header text-luxury-gold text-xl tracking-[0.3em] font-bold">V_IQ</a>
+    <span class="font-mono text-[10px] tracking-[0.3em] uppercase text-gray-400">— Build Readiness · Pack 04-26</span>
+    <a href="scan-result-free.html" class="text-[10px] tracking-[0.3em] uppercase text-gray-300 hover:text-luxury-gold">Register ↗</a>
+  </div>
+</nav>
+
+<main class="grid-bg">
+  <div class="container mx-auto px-6 md:px-10 py-10 max-w-5xl">
+
+    <header class="border border-luxury-gold/30 bg-luxury-charcoal/50 p-8 text-center mb-10">
+      <span class="font-mono text-[10px] tracking-[0.4em] uppercase text-luxury-gold">— Council decision</span>
+      <h1 class="font-header text-3xl md:text-4xl tracking-widest uppercase mt-4 rating-amber">Proceed with conditions</h1>
+      <p class="font-sub italic text-gray-400 mt-4 max-w-xl mx-auto">One of four decisions per pack. The detail is in the report — not a score, not a certification.</p>
+      <div class="flex flex-wrap justify-center gap-4 mt-8 font-mono text-[10px] tracking-widest uppercase">
+        <span class="border border-luxury-gold/40 px-4 py-2 text-luxury-gold">Rating · Amber</span>
+        <span class="border border-luxury-gold/20 px-4 py-2 text-gray-400">327 findings</span>
+        <span class="border border-luxury-gold/20 px-4 py-2 text-gray-400">3 critical</span>
+        <span class="border border-luxury-gold/20 px-4 py-2 text-gray-400">Signed · L. Doolan</span>
+      </div>
+    </header>
+
+    <div class="flex flex-wrap gap-6 border-b border-luxury-gold/15 mb-8">
+      <button class="decision-tab active font-mono text-[10px] tracking-[0.3em] uppercase py-3 text-gray-400" data-d="conditions">Conditions</button>
+      <button class="decision-tab font-mono text-[10px] tracking-[0.3em] uppercase py-3 text-gray-400" data-d="proceed">Proceed</button>
+      <button class="decision-tab font-mono text-[10px] tracking-[0.3em] uppercase py-3 text-gray-400" data-d="pause">Pause</button>
+      <button class="decision-tab font-mono text-[10px] tracking-[0.3em] uppercase py-3 text-gray-400" data-d="insufficient">Insufficient</button>
+    </div>
+
+    <section id="panelConditions">
+      <h2 class="font-header text-lg tracking-widest uppercase mb-4">Critical blockers (must close before issue)</h2>
+      <ul class="space-y-3 font-body text-sm text-gray-300">
+        <li class="border border-red-400/30 bg-red-950/20 px-4 py-3">LD date blank on Form of Tender — unenforceable as drawn</li>
+        <li class="border border-red-400/30 bg-red-950/20 px-4 py-3">BCAR Ancillary Cert allocation references wrong contract form</li>
+        <li class="border border-amber-400/20 bg-amber-950/10 px-4 py-3">Cause-and-effect matrix referenced but not appended</li>
+      </ul>
+      <h2 class="font-header text-lg tracking-widest uppercase mt-10 mb-4">Discipline action matrix (excerpt)</h2>
+      <div class="border border-luxury-gold/15 overflow-x-auto">
+        <table class="w-full font-mono text-[10px]">
+          <thead class="text-gray-500 uppercase border-b border-luxury-gold/15"><tr><th class="px-4 py-2 text-left">Discipline</th><th class="px-4 py-2">Open</th><th class="px-4 py-2">Critical</th><th class="px-4 py-2 text-left">Owner</th></tr></thead>
+          <tbody class="text-gray-300">
+            <tr class="border-b border-luxury-gold/10"><td class="px-4 py-2">Architecture</td><td class="px-4 py-2 text-center">71</td><td class="px-4 py-2 text-center text-luxury-gold-light">1</td><td class="px-4 py-2">Lead Designer</td></tr>
+            <tr class="border-b border-luxury-gold/10"><td class="px-4 py-2">Fire</td><td class="px-4 py-2 text-center">19</td><td class="px-4 py-2 text-center text-luxury-gold-light">1</td><td class="px-4 py-2">Fire consultant</td></tr>
+            <tr><td class="px-4 py-2">Mechanical</td><td class="px-4 py-2 text-center">38</td><td class="px-4 py-2 text-center text-luxury-gold-light">1</td><td class="px-4 py-2">M&E designer</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="panelProceed" class="hidden">
+      <p class="font-sub italic text-gray-400">Green rating. No critical blockers. High-risk conditions documented in report.</p>
+    </section>
+    <section id="panelPause" class="hidden">
+      <p class="font-sub italic text-gray-400">Red rating. Material gaps — pack should not issue until blockers closed.</p>
+    </section>
+    <section id="panelInsufficient" class="hidden">
+      <p class="font-sub italic text-gray-400">Grey rating. Missing discipline packs or statutory approvals prevent a meaningful read.</p>
+    </section>
+
+    <div class="mt-12 border-t border-luxury-gold/15 pt-8 flex flex-wrap gap-4">
+      <button class="font-mono text-[10px] tracking-[0.3em] uppercase border border-luxury-gold px-6 py-3 hover:bg-luxury-gold hover:text-black">Export PDF</button>
+      <button class="font-mono text-[10px] tracking-[0.3em] uppercase border border-luxury-gold/40 px-6 py-3 hover:border-luxury-gold">Export XLSX register</button>
+      <button class="font-mono text-[10px] tracking-[0.3em] uppercase border border-luxury-gold/40 px-6 py-3 hover:border-luxury-gold">Export audit log</button>
+      <a href="scan-result-free.html" class="font-mono text-[10px] tracking-[0.3em] uppercase border border-luxury-gold/40 px-6 py-3 hover:border-luxury-gold inline-block">View full register ↗</a>
+    </div>
+
+    <aside class="mt-12 border border-luxury-gold/20 p-6 text-center">
+      <p class="font-sub italic text-sm text-gray-400">VerifIQ is a software-based reading aid. Outputs are indicative. The registered professional verifies locally and signs. Professional indemnity remains theirs.</p>
+    </aside>
+
+  </div>
+</main>
+
+<script>
+  const panels = { conditions:'panelConditions', proceed:'panelProceed', pause:'panelPause', insufficient:'panelInsufficient' };
+  document.querySelectorAll('.decision-tab').forEach(tab => tab.onclick = () => {
+    document.querySelectorAll('.decision-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    Object.values(panels).forEach(id => document.getElementById(id).classList.add('hidden'));
+    document.getElementById(panels[tab.dataset.d]).classList.remove('hidden');
+  });
+</script>
+</body>
+</html>

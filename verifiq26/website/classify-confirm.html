@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VerifIQ — Confirm Classification</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=Lato:wght@300;400&family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com/3.4.1"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          'luxury-black': '#080808', 'luxury-charcoal': '#121212', 'luxury-white': '#FDFDFD',
+          'luxury-gold': '#C5A059', 'luxury-gold-light': '#E5C585', 'luxury-gray': '#2A2A2A',
+        },
+        fontFamily: {
+          header: ['Cinzel', 'serif'], sub: ['Playfair Display', 'serif'],
+          body: ['Lato', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'],
+        },
+      }
+    }
+  }
+</script>
+<style>
+  body { background:#080808; color:#FDFDFD; }
+  .grid-bg { background-image: linear-gradient(rgba(197,160,89,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(197,160,89,0.04) 1px, transparent 1px); background-size: 40px 40px; }
+  .row-warn { background: rgba(197,160,89,0.06); }
+  .row-ok { opacity: .85; }
+  select { background:#121212; border:1px solid rgba(197,160,89,0.3); color:#FDFDFD; font-family:'JetBrains Mono',monospace; font-size:10px; padding:4px 8px; }
+</style>
+</head>
+<body class="bg-luxury-black text-luxury-white font-body">
+
+<nav class="border-b border-luxury-gold/15 sticky top-0 z-40 bg-luxury-black/90 backdrop-blur-md">
+  <div class="container mx-auto px-6 md:px-10 flex items-center justify-between py-5">
+    <a href="upload-hub.html" class="font-header text-luxury-gold text-xl tracking-[0.3em] font-bold">V_IQ</a>
+    <span class="font-mono text-[10px] tracking-[0.3em] uppercase text-gray-400">— Classify · Confirm · Pack 04-26</span>
+    <a href="dashboard-live.html" class="text-[10px] tracking-[0.3em] uppercase text-gray-300 hover:text-luxury-gold">Atelier ↗</a>
+  </div>
+</nav>
+
+<main class="grid-bg">
+  <div class="container mx-auto px-6 md:px-10 py-10 max-w-5xl">
+
+    <header class="mb-8">
+      <span class="font-mono text-[10px] tracking-[0.3em] uppercase text-luxury-gold">— Trust gate</span>
+      <h1 class="font-header text-2xl md:text-3xl tracking-widest uppercase mt-2">Review classification before we scan.</h1>
+      <p class="font-sub italic text-gray-400 mt-2 max-w-2xl">187 files classified. Low-confidence rows (&lt;70%) must be confirmed or corrected. Every correction improves the classifier.</p>
+      <div class="flex gap-6 mt-4 font-mono text-[10px] tracking-widest uppercase">
+        <span class="text-luxury-gold-light" id="statOk">182 auto-accepted</span>
+        <span class="text-amber-300/90" id="statWarn">5 need confirmation</span>
+      </div>
+    </header>
+
+    <div class="border border-luxury-gold/20 overflow-x-auto">
+      <table class="w-full text-left font-mono text-[10px] tracking-wide">
+        <thead class="border-b border-luxury-gold/20 bg-luxury-charcoal/60 uppercase text-gray-500">
+          <tr>
+            <th class="px-4 py-3">File</th>
+            <th class="px-4 py-3">Discipline</th>
+            <th class="px-4 py-3">Type</th>
+            <th class="px-4 py-3">Conf</th>
+            <th class="px-4 py-3">Status</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <div class="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-t border-luxury-gold/15 pt-8">
+      <a href="upload-hub.html" class="font-mono text-[10px] tracking-[0.3em] uppercase text-gray-500 hover:text-luxury-gold">← Hold — add more files</a>
+      <button id="btnScan" disabled class="font-header text-xs tracking-[0.3em] uppercase border px-10 py-4 transition-all border-gray-700 text-gray-600 cursor-not-allowed">
+        Start scan →
+      </button>
+    </div>
+    <p id="scanHint" class="font-mono text-[9px] text-amber-300/80 text-right mt-2">Confirm all low-confidence rows to enable scan.</p>
+
+  </div>
+</main>
+
+<script>
+  const DISCIPLINES = ['Architecture','Structures','Mechanical','Electrical','Fire','QS','BCAR','Planning','Landscape'];
+  const DOCS = [
+    { file:'A-100 Rev B.pdf',           disc:'Architecture', type:'GA Plan',    conf:98, ok:true },
+    { file:'A-510 detail.pdf',          disc:'Architecture', type:'Detail',     conf:95, ok:true },
+    { file:'24-001-MEP-200-B.pdf',      disc:'Mechanical',   type:'Layout',     conf:91, ok:true },
+    { file:'Fire-Strategy-Rev-A.pdf',   disc:'Fire',         type:'Strategy',   conf:97, ok:true },
+    { file:'IMG_2438.pdf',              disc:'Architecture', type:'Photo?',     conf:32, ok:false, confirmed:false },
+    { file:'Final_Final_v3.pdf',        disc:'Architecture', type:'Unknown',    conf:21, ok:false, confirmed:false },
+    { file:'Drawing(1).pdf',            disc:'Electrical',   type:'Layout',     conf:58, ok:false, confirmed:false },
+    { file:'LH-01-rev-c.dwg',           disc:'Landscape',    type:'Drawing',    conf:44, ok:false, confirmed:false },
+    { file:'spec-section-11.docx',      disc:'Mechanical',   type:'Spec',       conf:88, ok:true },
+    { file:'BoQ-summary.xlsx',          disc:'QS',           type:'BoQ',        conf:94, ok:true },
+  ];
+
+  const tbody = document.getElementById('rows');
+  const btnScan = document.getElementById('btnScan');
+
+  function render() {
+    tbody.innerHTML = DOCS.map((d, i) => {
+      const rowCls = d.ok ? 'row-ok' : 'row-warn';
+      const status = d.ok ? '<span class="text-luxury-gold">✓ auto</span>'
+        : (d.confirmed ? '<span class="text-luxury-gold-light">✓ confirmed</span>'
+          : '<span class="text-amber-300">⚠ confirm</span>');
+      const discSelect = d.ok ? d.disc : `
+        <select data-i="${i}" class="disc-sel">
+          ${DISCIPLINES.map(x => `<option ${x===d.disc?'selected':''}>${x}</option>`).join('')}
+        </select>`;
+      return `<tr class="border-b border-luxury-gold/10 ${rowCls}">
+        <td class="px-4 py-3 text-luxury-white">${d.file}</td>
+        <td class="px-4 py-3">${discSelect}</td>
+        <td class="px-4 py-3 text-gray-400">${d.type}</td>
+        <td class="px-4 py-3 ${d.conf<70?'text-amber-300':'text-gray-500'}">${d.conf}%</td>
+        <td class="px-4 py-3">${status} ${!d.ok && !d.confirmed ? `<button data-i="${i}" class="confirm-btn ml-2 underline text-luxury-gold">Confirm</button>` : ''}</td>
+      </tr>`;
+    }).join('');
+
+    document.querySelectorAll('.confirm-btn').forEach(b => b.onclick = () => {
+      DOCS[+b.dataset.i].confirmed = true;
+      render(); updateScanBtn();
+    });
+    document.querySelectorAll('.disc-sel').forEach(s => s.onchange = () => {
+      DOCS[+s.dataset.i].disc = s.value;
+      DOCS[+s.dataset.i].confirmed = true;
+      render(); updateScanBtn();
+    });
+    updateScanBtn();
+  }
+
+  function updateScanBtn() {
+    const pending = DOCS.filter(d => !d.ok && !d.confirmed).length;
+    document.getElementById('statWarn').textContent = pending + ' need confirmation';
+    if (pending === 0) {
+      btnScan.disabled = false;
+      btnScan.className = 'font-header text-xs tracking-[0.3em] uppercase border border-luxury-gold px-10 py-4 hover:bg-luxury-gold hover:text-black transition-all';
+      btnScan.onclick = () => { window.location.href = 'dashboard-live.html'; };
+      document.getElementById('scanHint').textContent = 'Ready — scan will run 24–48 hours. You will receive email updates.';
+    }
+  }
+  render();
+</script>
+</body>
+</html>

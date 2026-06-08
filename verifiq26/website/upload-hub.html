@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VerifIQ — Upload Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=Lato:wght@300;400&family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com/3.4.1"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          'luxury-black': '#080808', 'luxury-charcoal': '#121212', 'luxury-white': '#FDFDFD',
+          'luxury-gold': '#C5A059', 'luxury-gold-light': '#E5C585', 'luxury-gray': '#2A2A2A',
+        },
+        fontFamily: {
+          header: ['Cinzel', 'serif'], sub: ['Playfair Display', 'serif'],
+          body: ['Lato', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'],
+        },
+      }
+    }
+  }
+</script>
+<style>
+  body { background:#080808; color:#FDFDFD; }
+  .grid-bg { background-image: linear-gradient(rgba(197,160,89,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(197,160,89,0.04) 1px, transparent 1px); background-size: 40px 40px; }
+  .gate-done { border-color: rgba(197,160,89,0.35); }
+  .gate-active { border-color: rgba(197,160,89,0.7); box-shadow: 0 0 24px rgba(197,160,89,0.1); }
+  .gate-pending { border-color: rgba(197,160,89,0.12); opacity: .7; }
+</style>
+</head>
+<body class="bg-luxury-black text-luxury-white font-body">
+
+<nav class="border-b border-luxury-gold/15 sticky top-0 z-40 bg-luxury-black/90 backdrop-blur-md">
+  <div class="container mx-auto px-6 md:px-10 flex items-center justify-between py-5">
+    <a href="workflow-index.html" class="font-header text-luxury-gold text-xl tracking-[0.3em] font-bold">V_IQ</a>
+    <span class="font-mono text-[10px] tracking-[0.3em] uppercase text-gray-400 hidden md:block">— Upload Hub · Pack 04-26</span>
+    <a href="dashboard-live.html" class="text-[10px] tracking-[0.3em] uppercase text-gray-300 hover:text-luxury-gold">Atelier ↗</a>
+  </div>
+</nav>
+
+<main class="grid-bg">
+  <div class="container mx-auto px-6 md:px-10 py-10 md:py-14 max-w-6xl">
+
+    <header class="border border-luxury-gold/20 bg-luxury-charcoal/40 p-6 md:p-8 mb-8 relative">
+      <div class="absolute -top-2 -left-2 w-4 h-4 border-t border-l border-luxury-gold"></div>
+      <div class="absolute -bottom-2 -right-2 w-4 h-4 border-b border-r border-luxury-gold"></div>
+      <span class="font-mono text-[10px] tracking-[0.3em] uppercase text-luxury-gold">— Pack · VIQ-PCK-0426-DUB</span>
+      <h1 class="font-header text-2xl md:text-3xl tracking-widest uppercase mt-2">Adult Day Service · Stage 2C</h1>
+      <p class="font-sub italic text-gray-400 mt-2">Each consultant uploads to their discipline gate via magic link. You track progress here.</p>
+      <div class="flex flex-wrap gap-6 mt-6 font-mono text-[10px] tracking-widest uppercase">
+        <div><span class="text-gray-500">State ·</span> <span class="text-luxury-gold-light" id="packState">uploading</span></div>
+        <div><span class="text-gray-500">Files ·</span> <span id="fileTotal">187</span> / 600</div>
+        <div><span class="text-gray-500">Gates closed ·</span> <span id="gatesClosed">4</span> / 7</div>
+      </div>
+    </header>
+
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="font-header text-lg tracking-widest uppercase">Discipline gates</h2>
+      <button class="font-mono text-[10px] tracking-[0.3em] uppercase border border-luxury-gold/40 px-4 py-2 hover:border-luxury-gold hover:text-luxury-gold transition-all">Resend all pending links</button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="gateGrid"></div>
+
+    <section class="mt-10 border border-luxury-gold/20 p-6 md:p-8">
+      <span class="font-mono text-[10px] tracking-[0.3em] uppercase text-luxury-gold">— Next step</span>
+      <p class="font-sub italic text-gray-300 mt-3 max-w-2xl">When all gates are closed, the atelier classifies every file. You will be emailed to <strong class="text-luxury-white">confirm classification</strong> before the scan starts.</p>
+      <a href="classify-confirm.html" id="nextLink" class="inline-block mt-6 font-mono text-[10px] tracking-[0.3em] uppercase border border-luxury-gold/30 px-6 py-3 text-gray-500 cursor-not-allowed">Confirm classification →</a>
+    </section>
+
+  </div>
+</main>
+
+<script>
+  const gates = [
+    { id:'arch', plate:'I',   name:'Architecture',         email:'a.nicheallaigh@practice.ie',  state:'done',     files:42, sent:'2026-06-02' },
+    { id:'cs',   plate:'II',  name:'Structures (C&S)',     email:'d.murphy@practice.ie',        state:'done',     files:18, sent:'2026-06-02' },
+    { id:'mech', plate:'III', name:'Mechanical',           email:'s.walsh@practice.ie',         state:'done',     files:28, sent:'2026-06-03' },
+    { id:'elec', plate:'IV',  name:'Electrical',           email:'p.obrien@practice.ie',        state:'done',     files:21, sent:'2026-06-03' },
+    { id:'fire', plate:'V',   name:'Fire Safety',          email:'m.doyle@fse.ie',              state:'uploading',files:11, sent:'2026-06-04', progress:72 },
+    { id:'qs',   plate:'VI',  name:'Quantity Surveyor',    email:'c.hennessy@practice.ie',      state:'link_sent',files:0,  sent:'2026-06-05' },
+    { id:'bcar', plate:'VII', name:'BCAR / Assigned Cert', email:'e.lynch@practice.ie',       state:'pending',  files:0,  sent:null },
+  ];
+  const stateLabel = {
+    pending:'Awaiting invite', link_sent:'Link sent', uploading:'Receiving ZIP',
+    done:'Pack received', classify:'Classifying'
+  };
+  const grid = document.getElementById('gateGrid');
+  function render() {
+    grid.innerHTML = gates.map(g => {
+      const cls = g.state === 'done' ? 'gate-done' : (g.state === 'uploading' ? 'gate-active' : 'gate-pending');
+      return `
+      <article class="border ${cls} p-5 bg-luxury-charcoal/30">
+        <div class="flex justify-between items-start mb-3">
+          <div>
+            <span class="font-mono text-[10px] tracking-[0.3em] uppercase text-luxury-gold">Plate · ${g.plate}</span>
+            <h3 class="font-header text-base tracking-widest uppercase mt-1">${g.name}</h3>
+          </div>
+          <span class="font-mono text-[9px] uppercase text-gray-400">${stateLabel[g.state]}</span>
+        </div>
+        <p class="font-mono text-[10px] text-gray-500 truncate">${g.email}</p>
+        ${g.sent ? `<p class="font-mono text-[9px] text-gray-600 mt-1">Sent · ${g.sent}</p>` : ''}
+        ${g.state === 'uploading' ? `
+          <div class="mt-4 h-px bg-luxury-gold/15 relative"><div class="absolute inset-y-0 left-0 bg-luxury-gold" style="width:${g.progress}%"></div></div>
+          <p class="font-mono text-[9px] text-luxury-gold-light mt-2">${g.progress}% · ${g.files} files so far</p>
+        ` : ''}
+        ${g.state === 'done' ? `<p class="font-mono text-[9px] text-luxury-gold mt-3">${g.files} files · SHA verified</p>` : ''}
+        <div class="mt-4 flex gap-2">
+          ${g.state !== 'done' ? `<button class="font-mono text-[9px] tracking-widest uppercase border border-luxury-gold/30 px-3 py-1.5 hover:border-luxury-gold">Resend link</button>` : ''}
+          ${g.state === 'link_sent' || g.state === 'uploading' ? `<a href="upload-magic-link.html?gate=${g.id}" class="font-mono text-[9px] tracking-widest uppercase border border-luxury-gold/50 px-3 py-1.5 text-luxury-gold">Preview upload page ↗</a>` : ''}
+        </div>
+      </article>`;
+    }).join('');
+  }
+  render();
+</script>
+</body>
+</html>

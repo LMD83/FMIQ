@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VerifIQ — Request the brief</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=Lato:wght@300;400&family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com/3.4.1"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          'luxury-black': '#080808',
+          'luxury-charcoal': '#121212',
+          'luxury-white': '#FDFDFD',
+          'luxury-gold': '#C5A059',
+          'luxury-gold-light': '#E5C585',
+          'luxury-gray': '#2A2A2A',
+        },
+        fontFamily: {
+          header: ['Cinzel', 'serif'],
+          sub: ['Playfair Display', 'serif'],
+          body: ['Lato', 'sans-serif'],
+          mono: ['JetBrains Mono', 'monospace'],
+        },
+        letterSpacing: { widest: '0.25em', extreme: '0.4em', mega: '0.6em' },
+      }
+    }
+  }
+</script>
+<style>
+  body { background:#080808; color:#FDFDFD; font-family: 'Lato', sans-serif; }
+  ::selection { background:#C5A059; color:#000; }
+  .noise { background-image:url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22 opacity=%220.06%22/%3E%3C/svg%3E'); }
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(197,160,89,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(197,160,89,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .reveal { opacity: 0; transform: translateY(20px); transition: all .8s cubic-bezier(0.16, 1, 0.3, 1); }
+  .reveal.show { opacity: 1; transform: none; }
+  .option {
+    border: 1px solid rgba(197,160,89,0.2);
+    transition: all .35s ease;
+    cursor: pointer;
+    background: transparent;
+  }
+  .option:hover { border-color: rgba(197,160,89,0.6); background: rgba(197,160,89,0.04); }
+  .option.selected {
+    border-color: rgba(197,160,89,0.9);
+    background: rgba(197,160,89,0.08);
+    box-shadow: 0 0 30px rgba(197,160,89,0.12);
+  }
+  .option .glyph { transition: all .3s ease; }
+  .option.selected .glyph { color:#E5C585; }
+  .step-dot.active { background:#C5A059; box-shadow: 0 0 0 4px rgba(197,160,89,0.18); }
+  .step-dot.done   { background:#C5A059; opacity:.6; }
+</style>
+</head>
+<body class="bg-luxury-black text-luxury-white relative">
+
+<div class="fixed inset-0 noise pointer-events-none z-50 opacity-60"></div>
+
+<nav class="border-b border-luxury-gold/15 sticky top-0 z-40 bg-luxury-black/85 backdrop-blur-md">
+  <div class="container mx-auto px-6 md:px-10 flex items-center justify-between py-5">
+    <a href="index.html" class="font-header text-luxury-gold text-xl tracking-[0.3em] font-bold">V_IQ</a>
+    <span class="font-mono text-[10px] tracking-[0.3em] uppercase text-gray-400 hidden md:block">— The Brief · By Appointment</span>
+    <a href="index.html" class="text-[10px] tracking-[0.3em] font-body uppercase text-gray-300 hover:text-luxury-gold transition-colors">Atelier ↗</a>
+  </div>
+</nav>
+
+<main class="grid-bg">
+  <div class="container mx-auto px-6 md:px-10 py-12 md:py-20 max-w-5xl">
+
+    <header class="text-center mb-14 reveal show">
+      <span class="font-mono text-[10px] md:text-xs tracking-[0.4em] uppercase text-luxury-gold block mb-4">— Brief · I</span>
+      <h1 class="font-header text-3xl md:text-5xl tracking-widest uppercase">Request the brief.</h1>
+      <p class="font-sub italic text-gray-400 mt-4 text-base md:text-lg max-w-2xl mx-auto">Eight questions, quietly answered. The atelier sets the corpus, the cohort, and the reviewer panel from your replies.</p>
+    </header>
+
+    <ol id="stepTrack" class="flex items-center justify-center gap-3 mb-10"></ol>
+
+    <section id="wizard" class="border border-luxury-gold/20 bg-luxury-charcoal/40 p-6 md:p-12 relative">
+      <div class="absolute -top-2 -left-2 w-4 h-4 border-t border-l border-luxury-gold"></div>
+      <div class="absolute -bottom-2 -right-2 w-4 h-4 border-b border-r border-luxury-gold"></div>
+
+      <div id="questionShell" class="reveal"></div>
+
+      <div class="mt-10 pt-6 border-t border-luxury-gold/15 flex items-center justify-between">
+        <button id="backBtn" class="text-[10px] tracking-[0.3em] font-body uppercase text-gray-500 hover:text-luxury-gold transition-colors disabled:opacity-30" disabled>← Step back</button>
+        <span id="counter" class="font-mono text-[10px] tracking-widest uppercase text-gray-500">Step I of VIII</span>
+        <button id="nextBtn" class="text-[10px] tracking-[0.3em] font-body uppercase border border-luxury-gold/40 px-6 py-3 hover:border-luxury-gold hover:text-luxury-gold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Continue →</button>
+      </div>
+    </section>
+
+    <section id="summary" class="hidden mt-10 border border-luxury-gold/30 bg-luxury-charcoal/60 p-6 md:p-12">
+      <div class="text-center mb-8">
+        <span class="font-mono text-[10px] md:text-xs tracking-[0.4em] uppercase text-luxury-gold block mb-3">— Brief · Compiled</span>
+        <h2 class="font-header text-2xl md:text-4xl tracking-widest uppercase">Your pack, profiled.</h2>
+        <p class="font-sub italic text-gray-400 mt-3 max-w-2xl mx-auto">The atelier has set your corpus, reviewer panel, and tier from your replies. Edit any answer to refine; the brief recompiles silently.</p>
+      </div>
+      <div id="summaryGrid" class="grid grid-cols-1 md:grid-cols-2 gap-px bg-luxury-gold/15"></div>
+      <div class="mt-10 border-t border-luxury-gold/15 pt-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="border border-luxury-gold/20 p-5">
+            <span class="font-mono text-[10px] tracking-[0.3em] uppercase text-luxury-gold">— Corpus</span>
+            <div id="sCorpus" class="font-sub italic text-luxury-white mt-3"></div>
+          </div>
+          <div class="border border-luxury-gold/20 p-5">
+            <span class="font-mono text-[10px] tracking-[0.3em] uppercase text-luxury-gold">— Reviewer Panel</span>
+            <div id="sPanel" class="font-sub italic text-luxury-white mt-3"></div>
+          </div>
+          <div class="border border-luxury-gold/20 p-5">
+            <span class="font-mono text-[10px] tracking-[0.3em] uppercase text-luxury-gold">— Tier</span>
+            <div id="sTier" class="font-sub italic text-luxury-gold-light mt-3"></div>
+          </div>
+        </div>
+        <div class="text-center mt-10">
+          <button id="submitBrief" class="inline-flex items-center gap-3 font-header text-xs md:text-sm tracking-[0.3em] uppercase border border-luxury-gold px-10 py-4 hover:bg-luxury-gold hover:text-black transition-all">Send the brief to the atelier →</button>
+          <p class="font-body text-[10px] tracking-[0.3em] uppercase text-gray-500 mt-5">Concierge replies in person within 48 hours · Dublin · Weekdays</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="border-t border-b border-luxury-gold/30 bg-luxury-charcoal/60 py-10 md:py-12 px-6 mt-14 max-w-3xl mx-auto">
+      <span class="font-mono text-[10px] tracking-[0.4em] uppercase text-luxury-gold block mb-4 text-center">— Notice · Locked Disclaimer</span>
+      <p class="font-sub italic text-luxury-white text-sm md:text-base leading-relaxed text-center">
+        VerifIQ is a software-based reading aid. It surfaces, in the documents' own words, what a registered professional may wish to read closely. It does not certify, sign, opine, or substitute for professional judgement. The registered designer reads our output, exercises their own judgement, verifies locally, and signs. The professional indemnity remains theirs. We carry product-quality risk only.
+      </p>
+    </div>
+
+  </div>
+</main>
+
+<footer class="border-t border-luxury-gold/15 py-8 px-6 md:px-10 mt-10">
+  <div class="container mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-[10px] tracking-widest uppercase text-gray-500">
+    <span>VerifIQ · The Brief</span>
+    <a href="legal-notice.html" class="font-sub italic text-luxury-gold normal-case tracking-normal hover:text-luxury-gold-light transition-colors">Legal · per jurisdiction ↗</a>
+    <span>MMXXVI · Dublin</span>
+  </div>
+</footer>
+
+<script>
+  const SECTORS = [
+    { key:'healthcare',  label:'Healthcare',          sub:'HSE · HBN/HTM · PCM',          glyph:'I'  },
+    { key:'education',   label:'Education',           sub:'DoE · TGD M · PWO',            glyph:'II' },
+    { key:'commercial',  label:'Office / Commercial', sub:'Cat A / B · LEED · NZEB',      glyph:'III'},
+    { key:'residential', label:'Residential',         sub:'Part L · DEAP · BCAR',         glyph:'IV' },
+    { key:'civic',       label:'Civic / Cultural',    sub:'OPW · CWMF',                   glyph:'V'  },
+    { key:'heritage',    label:'Heritage / Protected',sub:'Architectural Heritage Impact',glyph:'VI' },
+    { key:'datacentre',  label:'Data Centre',         sub:'EN 50600 · TIA-942',           glyph:'VII'},
+    { key:'infra',       label:'Major Infrastructure',sub:'TII · NTA · Eurocode +NA',     glyph:'VIII'},
+  ];
+  const SUB_TYPES = {
+    healthcare:  ['Day service','Acute hospital','Primary care centre','Mental health','Disability residential','Section 38/39 estate'],
+    education:   ['Primary school','Post-primary school','Higher ed / 3rd level','SEN / ASD unit'],
+    commercial:  ['Cat A fit-out','Cat B fit-out','HQ shell & core','Mixed-use podium'],
+    residential: ['Cost-rental','Social','PRS / Build-to-rent','Single dwelling'],
+    civic:       ['Library','Civic hall','Courts','Cultural / arts'],
+    heritage:    ['Protected Structure','Conservation Area','Restoration','Adaptive reuse'],
+    datacentre:  ['Hyperscale','Co-location','Enterprise edge','Plant uplift'],
+    infra:       ['Roads / TII','Rail / NTA','Water (Irish Water)','Power generation','Plant uplift'],
+  };
+  const ROLES = [
+    { key:'arch',  label:'Architect',                    body:'RIAI'      },
+    { key:'cs',    label:'C&S Engineer',                 body:'Engineers Ireland · CEng' },
+    { key:'mech',  label:'Mechanical Engineer',          body:'Engineers Ireland · CEng' },
+    { key:'elec',  label:'Electrical Engineer',          body:'Engineers Ireland · CEng' },
+    { key:'fire',  label:'Fire Safety Consultant',       body:'IFSE · FSE'},
+    { key:'qs',    label:'Quantity Surveyor',            body:'SCSI · FSCSI / FRICS' },
+    { key:'pm',    label:'Project Manager / ER',         body:'CIOB · SCSI'},
+    { key:'ac',    label:'Assigned Certifier',           body:'RIAI / EI / SCSI'},
+    { key:'eed',   label:'EED / Energy Consultant',      body:'SEAI · BER'},
+    { key:'land',  label:'Landscape Architect',          body:'ILI · CMLI'},
+    { key:'cons',  label:'Conservation Architect',       body:'RIAI Grade I/II/III'},
+    { key:'contractor', label:'Main Contractor',         body:'CIRI · BCAR Builder'},
+  ];
+  const STAGES = [
+    { key:'s2c', label:'Stage 2C — Pre-tender Pack', sub:'Final design before issue to contractors' },
+    { key:'s3',  label:'Stage 3 — Tender / Award',   sub:'During or post-tender · pre-LoA' },
+    { key:'s4',  label:'Stage 4 — Construction',     sub:'Live job · variation exposure / change control' },
+    { key:'audit',label:'Post-Completion Audit',     sub:'Lessons-learned / BCAR closeout' },
+  ];
+  const TIERS = [
+    { key:'small',     label:'Small',     range:'< 50 files',   discipline:'1 discipline'   },
+    { key:'mid',       label:'Mid',       range:'50–150 files', discipline:'1–3 disciplines'},
+    { key:'large',     label:'Large',     range:'150–600 files',discipline:'Full design team'},
+    { key:'programme', label:'Programme', range:'600–1,500',    discipline:'Multi-pack programme'},
+    { key:'mega',      label:'Mega',      range:'> 1,500',      discipline:'By arrangement'},
+  ];
+  const REVIEW_FOCUS = [
+    { key:'bcar',  label:'BCAR Compliance & Doc Hygiene' },
+    { key:'pwcf',  label:'PW-CF Contract Form Coherence' },
+    { key:'cwmf',  label:'CWMF / OGP Procurement Risk'   },
+    { key:'tgd',   label:'TGD A–M Building Regs'         },
+    { key:'cdm',   label:'Health & Safety / PSDP'        },
+    { key:'sect',  label:'Sector-specific (HBN / HTM / etc.)'},
+    { key:'coord', label:'Cross-discipline Coordination' },
+    { key:'cost',  label:'Cost / Variation Exposure'     },
+  ];
+
+  const state = { step: 0, sector: null, subType: null, role: null, stage: null, tier: null, focus: [], practiceSize: null, handoff: null, practice: null };
+
+  const steps = [
+    { n: 'I',    q: 'Which sector is the pack in?',                        sub: 'The corpus is set from the sector — HBN/HTM for healthcare, EN 50600 for data centres, conservation method standards for heritage, and so on.', kind: 'sector' },
+    { n: 'II',   q: 'And the sub-type?',                                   sub: 'Refines the room data, the typical hazards, and the audit profile applied during the read.', kind: 'subtype' },
+    { n: 'III',  q: 'Which role is this brief from?',                      sub: 'Sets the language of the findings, the standards quoted, and the reviewer assigned at the gate.', kind: 'role' },
+    { n: 'IV',   q: 'Which stage is the pack at?',                         sub: 'Determines the document set we expect, and the kind of findings that earn release.', kind: 'stage' },
+    { n: 'V',    q: 'Approximate pack size?',                              sub: 'Sets the tier, the budget, and the timeframe to the atelier.', kind: 'tier' },
+    { n: 'VI',   q: 'What should the atelier read for, especially?',       sub: 'Choose up to four. Findings on all corpora still surface — these are weighted highest.', kind: 'focus' },
+    { n: 'VII',  q: 'How large is the practice?',                          sub: 'Configures the seat package and the workspace defaults.', kind: 'practiceSize' },
+    { n: 'VIII', q: 'Where shall the brief and the report be sent?',       sub: 'A confidential hand-off. The concierge replies in person within 48 hours.', kind: 'handoff' },
+  ];
+
+  const shell = document.getElementById('questionShell');
+  const counter = document.getElementById('counter');
+  const nextBtn = document.getElementById('nextBtn');
+  const backBtn = document.getElementById('backBtn');
+  const track = document.getElementById('stepTrack');
+
+  function renderTrack(){
+    track.innerHTML = steps.map((s,i)=>{
+      const cls = i < state.step ? 'done' : (i === state.step ? 'active' : '');
+      return `<li class="flex items-center gap-3">
+        <span class="step-dot ${cls} w-2 h-2 rounded-full bg-luxury-gray transition-all"></span>
+        ${i < steps.length-1 ? '<span class="w-6 h-px bg-luxury-gold/20"></span>' : ''}
+      </li>`;
+    }).join('');
+  }
+
+  function tile(value, label, sub, glyph){
+    return `
+      <button data-val="${value}" class="option text-left p-5 flex items-start gap-4 group">
+        <span class="glyph font-header text-luxury-gold tabular-nums w-8 text-lg shrink-0">${glyph||'·'}</span>
+        <span class="flex-1">
+          <span class="block font-header text-luxury-white tracking-widest uppercase text-sm">${label}</span>
+          ${sub ? `<span class="block font-sub italic text-gray-400 text-xs mt-1">${sub}</span>` : ''}
+        </span>
+        <span class="glyph text-luxury-gold/40 text-lg">+</span>
+      </button>`;
+  }
+
+  function multiTile(value, label){
+    const active = state.focus.includes(value);
+    return `
+      <button data-val="${value}" class="option ${active?'selected':''} text-left p-5 flex items-center gap-4">
+        <span class="check-sq w-5 h-5 border border-luxury-gold/60 ${active?'bg-luxury-gold':''} transition-colors"></span>
+        <span class="flex-1 font-header text-luxury-white tracking-widest uppercase text-xs">${label}</span>
+      </button>`;
+  }
+
+  function romanize(n){ return ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'][n-1]||String(n); }
+
+  function render(){
+    const s = steps[state.step];
+    counter.textContent = `Step ${s.n} of VIII`;
+    backBtn.disabled = state.step === 0;
+    nextBtn.disabled = true;
+    nextBtn.textContent = state.step === steps.length-1 ? 'Compile the brief →' : 'Continue →';
+
+    let body = '';
+    if (s.kind === 'sector') {
+      body = `<div class="grid grid-cols-1 md:grid-cols-2 gap-3">${SECTORS.map(x=>tile(x.key, x.label, x.sub, x.glyph)).join('')}</div>`;
+      bindSingle('sector');
+    } else if (s.kind === 'subtype') {
+      const subs = SUB_TYPES[state.sector] || [];
+      body = `<div class="grid grid-cols-1 md:grid-cols-2 gap-3">${subs.map((x,i)=>tile(x, x, '', romanize(i+1))).join('')}</div>`;
+      bindSingle('subType');
+    } else if (s.kind === 'role') {
+      body = `<div class="grid grid-cols-1 md:grid-cols-2 gap-3">${ROLES.map((x,i)=>tile(x.key, x.label, x.body, romanize(i+1))).join('')}</div>`;
+      bindSingle('role');
+    } else if (s.kind === 'stage') {
+      body = `<div class="grid grid-cols-1 md:grid-cols-2 gap-3">${STAGES.map((x,i)=>tile(x.key, x.label, x.sub, romanize(i+1))).join('')}</div>`;
+      bindSingle('stage');
+    } else if (s.kind === 'tier') {
+      body = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">${TIERS.map((x,i)=>tile(x.key, x.label, `${x.range} · ${x.discipline}`, romanize(i+1))).join('')}</div>`;
+      bindSingle('tier');
+    } else if (s.kind === 'focus') {
+      body = `<div class="grid grid-cols-1 md:grid-cols-2 gap-3">${REVIEW_FOCUS.map(x=>multiTile(x.key, x.label)).join('')}</div>
+              <p class="font-body text-[10px] tracking-widest uppercase text-gray-500 mt-5">Up to four · all corpora still read; these are weighted</p>`;
+      bindMulti();
+    } else if (s.kind === 'practiceSize') {
+      const opts = [
+        ['sole','Sole practitioner','1 user'],
+        ['small','Small practice','2–10 users'],
+        ['mid','Mid practice','11–50 users'],
+        ['large','Large practice / multi-office','50+ users'],
+      ];
+      body = `<div class="grid grid-cols-1 md:grid-cols-2 gap-3">${opts.map((x,i)=>tile(x[0],x[1],x[2],romanize(i+1))).join('')}</div>`;
+      bindSingle('practiceSize');
+    } else if (s.kind === 'handoff') {
+      body = `
+        <div class="max-w-xl mx-auto">
+          <label class="font-mono text-[10px] tracking-[0.3em] uppercase text-luxury-gold block mb-3">— Practice email</label>
+          <input id="emailField" type="email" placeholder="brief@yourpractice.ie"
+            class="bg-transparent border border-luxury-gold/40 outline-none focus:border-luxury-gold text-luxury-white placeholder-gray-600 font-body w-full px-4 py-3 tracking-wider" />
+          <label class="font-mono text-[10px] tracking-[0.3em] uppercase text-luxury-gold block mt-6 mb-3">— Practice name (optional)</label>
+          <input id="practiceField" type="text" placeholder="The practice you sign work for"
+            class="bg-transparent border border-luxury-gold/40 outline-none focus:border-luxury-gold text-luxury-white placeholder-gray-600 font-body w-full px-4 py-3 tracking-wider" />
+        </div>`;
+      setTimeout(()=>{
+        const e = () => {
+          state.handoff = document.getElementById('emailField').value.trim();
+          state.practice = document.getElementById('practiceField').value.trim();
+          nextBtn.disabled = !(state.handoff && /.+@.+\..+/.test(state.handoff));
+        };
+        document.getElementById('emailField').addEventListener('input', e);
+        document.getElementById('practiceField').addEventListener('input', e);
+        if (state.handoff) document.getElementById('emailField').value = state.handoff;
+        if (state.practice) document.getElementById('practiceField').value = state.practice;
+        e();
+      }, 0);
+    }
+
+    shell.innerHTML = `
+      <span class="font-mono text-[10px] md:text-xs tracking-[0.4em] uppercase text-luxury-gold block mb-3">— Step ${s.n}</span>
+      <h2 class="font-header text-2xl md:text-4xl tracking-widest uppercase text-luxury-white leading-snug">${s.q}</h2>
+      <p class="font-sub italic text-gray-400 mt-3 mb-8 max-w-2xl text-base">${s.sub}</p>
+      ${body}
+    `;
+    shell.classList.remove('show'); void shell.offsetWidth; shell.classList.add('show');
+    renderTrack();
+    markSelected(s.kind);
+  }
+
+  function bindSingle(field){
+    setTimeout(()=>{
+      shell.querySelectorAll('.option').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          state[field] = btn.dataset.val;
+          shell.querySelectorAll('.option').forEach(b=>b.classList.remove('selected'));
+          btn.classList.add('selected');
+          nextBtn.disabled = false;
+        });
+      });
+    }, 0);
+  }
+  function bindMulti(){
+    setTimeout(()=>{
+      shell.querySelectorAll('.option').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const v = btn.dataset.val;
+          const idx = state.focus.indexOf(v);
+          if (idx >= 0) { state.focus.splice(idx,1); btn.classList.remove('selected'); }
+          else if (state.focus.length < 4) { state.focus.push(v); btn.classList.add('selected'); }
+          const sq = btn.querySelector('.check-sq');
+          if (sq) sq.classList.toggle('bg-luxury-gold', state.focus.includes(v));
+          nextBtn.disabled = state.focus.length === 0;
+        });
+      });
+    }, 0);
+  }
+
+  function markSelected(kind){
+    setTimeout(()=>{
+      let v;
+      if (kind==='sector') v = state.sector;
+      else if (kind==='subtype') v = state.subType;
+      else if (kind==='role') v = state.role;
+      else if (kind==='stage') v = state.stage;
+      else if (kind==='tier') v = state.tier;
+      else if (kind==='practiceSize') v = state.practiceSize;
+      if (v) {
+        const btn = shell.querySelector(`.option[data-val="${v}"]`);
+        if (btn) { btn.classList.add('selected'); nextBtn.disabled = false; }
+      }
+      if (kind === 'focus') nextBtn.disabled = state.focus.length === 0;
+    }, 10);
+  }
+
+  nextBtn.addEventListener('click', ()=>{
+    if (state.step < steps.length - 1) { state.step++; render(); }
+    else { compileBrief(); }
+  });
+  backBtn.addEventListener('click', ()=>{
+    if (state.step > 0) { state.step--; render(); }
+  });
+
+  function compileBrief(){
+    document.getElementById('wizard').classList.add('hidden');
+    document.getElementById('summary').classList.remove('hidden');
+
+    const sector = SECTORS.find(x=>x.key===state.sector);
+    const role = ROLES.find(x=>x.key===state.role);
+    const stage = STAGES.find(x=>x.key===state.stage);
+    const tier = TIERS.find(x=>x.key===state.tier);
+    const focusLabels = state.focus.map(k => REVIEW_FOCUS.find(x=>x.key===k)?.label).filter(Boolean);
+
+    const corpus = ['I.S. / I.S. EN', 'TGD A–M', 'BCAR SI 9/2014', 'CWMF', 'PW-CF'];
+    if (state.sector==='healthcare') corpus.push('HBN · HTM', 'HSE PCM');
+    if (state.sector==='education') corpus.push('DoE TGD-021');
+    if (state.sector==='heritage') corpus.push('Architectural Heritage Impact', 'BS 7913');
+    if (state.sector==='datacentre') corpus.push('I.S. EN 50600', 'TIA-942');
+    if (state.sector==='infra') corpus.push('TII Standards', 'NTA Guidance', 'Eurocode + Irish NAs');
+    if (state.sector==='commercial') corpus.push('NZEB · LEED · BREEAM');
+
+    const panel = ['RIAI Architect'];
+    if (['cs','arch'].includes(state.role) || state.stage==='s2c') panel.push('CEng C&S');
+    if (state.role==='mech' || state.sector==='healthcare' || state.sector==='datacentre') panel.push('CEng MEP');
+    if (state.role==='fire' || state.stage==='s2c') panel.push('Fire Safety Consultant');
+    if (state.role==='qs' || state.focus.includes('cost')) panel.push('FSCSI QS');
+    if (state.role==='ac' || state.stage==='s2c') panel.push('Assigned Certifier');
+    if (state.sector==='heritage') panel.push('Conservation Architect (RIAI Grade)');
+
+    const grid = document.getElementById('summaryGrid');
+    const rows = [
+      ['Sector', `${sector ? sector.label : '—'} · ${state.subType||''}`],
+      ['Role',   role ? `${role.label} · ${role.body}` : '—'],
+      ['Stage',  stage ? `${stage.label}` : '—'],
+      ['Tier',   tier  ? `${tier.label} · ${tier.range}` : '—'],
+      ['Focus',  focusLabels.join(' · ') || '—'],
+      ['Practice', state.practiceSize ? state.practiceSize : '—'],
+      ['Hand-off', state.handoff || '—'],
+      ['Practice name', state.practice || '—'],
+    ];
+    grid.innerHTML = rows.map(([k,v])=>`
+      <div class="bg-luxury-charcoal p-5 md:p-6">
+        <div class="font-mono text-[10px] tracking-[0.3em] uppercase text-luxury-gold">${k}</div>
+        <div class="font-sub italic text-luxury-white text-lg mt-2">${v}</div>
+        <button class="mt-3 font-body text-[10px] tracking-widest uppercase text-gray-500 hover:text-luxury-gold transition-colors" onclick="jumpTo(${stepIndexFromKey(k)})">Edit ↺</button>
+      </div>`).join('');
+
+    document.getElementById('sCorpus').innerHTML = [...new Set(corpus)].map(c=>`<div class="text-sm text-luxury-white tracking-wide">· ${c}</div>`).join('');
+    document.getElementById('sPanel').innerHTML  = [...new Set(panel)].map(c=>`<div class="text-sm text-luxury-white tracking-wide">· ${c}</div>`).join('');
+    document.getElementById('sTier').textContent = tier ? `${tier.label} — ${tier.range} · ${tier.discipline}` : '—';
+  }
+
+  function stepIndexFromKey(label){
+    const map = { 'Sector':0, 'Role':2, 'Stage':3, 'Tier':4, 'Focus':5, 'Practice':6, 'Hand-off':7, 'Practice name':7 };
+    return map[label] ?? 0;
+  }
+  window.jumpTo = function(i){
+    document.getElementById('summary').classList.add('hidden');
+    document.getElementById('wizard').classList.remove('hidden');
+    state.step = i;
+    render();
+    window.scrollTo({ top: 0, behavior:'smooth' });
+  };
+
+  document.getElementById('submitBrief').addEventListener('click', ()=>{
+    document.getElementById('summary').innerHTML = `
+      <div class="text-center py-10">
+        <span class="font-mono text-[10px] md:text-xs tracking-[0.4em] uppercase text-luxury-gold block mb-3">— Brief · Lodged</span>
+        <h2 class="font-header text-3xl md:text-5xl tracking-widest uppercase text-luxury-white">Quietly received.</h2>
+        <p class="font-sub italic text-gray-400 mt-4 max-w-xl mx-auto">The concierge will reply to <span class="text-luxury-gold-light">${state.handoff}</span> within 48 hours — Dublin office hours, weekdays.</p>
+        <a href="upload-hub.html" class="inline-block mt-6 font-header text-xs tracking-[0.3em] uppercase border border-luxury-gold px-10 py-4 hover:bg-luxury-gold hover:text-black transition-all">Preview upload hub ↗</a>
+        <a href="index.html" class="inline-block mt-4 font-mono text-[10px] tracking-[0.3em] uppercase text-gray-500 hover:text-luxury-gold">Return to Atelier</a>
+      </div>`;
+    window.scrollTo({ top: 0, behavior:'smooth' });
+  });
+
+  render();
+</script>
+</body>
+</html>

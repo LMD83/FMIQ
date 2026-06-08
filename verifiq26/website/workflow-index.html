@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VerifIQ — Full Workflow Wireframe Index</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=Lato:wght@300;400&family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com/3.4.1"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          'luxury-black': '#080808', 'luxury-charcoal': '#121212', 'luxury-white': '#FDFDFD',
+          'luxury-gold': '#C5A059', 'luxury-gold-light': '#E5C585', 'luxury-gray': '#2A2A2A',
+        },
+        fontFamily: {
+          header: ['Cinzel', 'serif'], sub: ['Playfair Display', 'serif'],
+          body: ['Lato', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'],
+        },
+      }
+    }
+  }
+</script>
+<style>
+  body { background:#080808; color:#FDFDFD; font-family: 'Lato', sans-serif; }
+  .grid-bg {
+    background-image: linear-gradient(rgba(197,160,89,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(197,160,89,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .step-card { border:1px solid rgba(197,160,89,0.2); transition: all .3s ease; }
+  .step-card:hover { border-color: rgba(197,160,89,0.6); background: rgba(197,160,89,0.04); }
+  .step-card.done { border-color: rgba(197,160,89,0.45); }
+  .step-card.missing { border-style: dashed; opacity: .85; }
+</style>
+</head>
+<body class="bg-luxury-black text-luxury-white">
+
+<nav class="border-b border-luxury-gold/15 sticky top-0 z-40 bg-luxury-black/90 backdrop-blur-md">
+  <div class="container mx-auto px-6 md:px-10 flex items-center justify-between py-5">
+    <a href="index.html" class="font-header text-luxury-gold text-xl tracking-[0.3em] font-bold">V_IQ</a>
+    <span class="font-mono text-[10px] tracking-[0.3em] uppercase text-gray-400">— Workflow · Wireframe Index</span>
+    <a href="index.html" class="text-[10px] tracking-[0.3em] uppercase text-gray-300 hover:text-luxury-gold">Atelier ↗</a>
+  </div>
+</nav>
+
+<main class="grid-bg">
+  <div class="container mx-auto px-6 md:px-10 py-12 md:py-16 max-w-5xl">
+
+    <header class="text-center mb-12">
+      <span class="font-mono text-[10px] tracking-[0.4em] uppercase text-luxury-gold block mb-4">— Launch Readiness · Wireframes</span>
+      <h1 class="font-header text-3xl md:text-4xl tracking-widest uppercase">Client upload → release</h1>
+      <p class="font-sub italic text-gray-400 mt-4 max-w-2xl mx-auto">Walk the full journey in order — from brief request through upload, classification, scan, and release.</p>
+    </header>
+
+    <ol class="space-y-4">
+      <li>
+        <a href="onboarding-wizard.html" class="step-card done block p-5 md:p-6">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <span class="font-mono text-[10px] tracking-[0.3em] uppercase text-luxury-gold">Step I · Intake</span>
+              <h2 class="font-header text-lg tracking-widest uppercase mt-1">Request the brief</h2>
+              <p class="font-sub italic text-gray-400 text-sm mt-2">8 questions → corpus, panel, tier compiled</p>
+            </div>
+            <span class="font-mono text-[10px] uppercase text-luxury-gold shrink-0">Built ↗</span>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a href="upload-hub.html" class="step-card done block p-5 md:p-6">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <span class="font-mono text-[10px] tracking-[0.3em] uppercase text-luxury-gold">Step II · Pack setup</span>
+              <h2 class="font-header text-lg tracking-widest uppercase mt-1">Upload hub — discipline gates</h2>
+              <p class="font-sub italic text-gray-400 text-sm mt-2">Customer sends magic links · tracks per-discipline ZIP status</p>
+            </div>
+            <span class="font-mono text-[10px] uppercase text-luxury-gold shrink-0">New ↗</span>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a href="upload-magic-link.html" class="step-card done block p-5 md:p-6">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <span class="font-mono text-[10px] tracking-[0.3em] uppercase text-luxury-gold">Step III · Consultant upload</span>
+              <h2 class="font-header text-lg tracking-widest uppercase mt-1">Magic-link ZIP upload</h2>
+              <p class="font-sub italic text-gray-400 text-sm mt-2">tus.io resumable · SHA-256 · 1 GB cap per discipline</p>
+            </div>
+            <span class="font-mono text-[10px] uppercase text-luxury-gold shrink-0">New ↗</span>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a href="classify-confirm.html" class="step-card done block p-5 md:p-6">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <span class="font-mono text-[10px] tracking-[0.3em] uppercase text-luxury-gold">Step IV · Trust gate</span>
+              <h2 class="font-header text-lg tracking-widest uppercase mt-1">Confirm classification</h2>
+              <p class="font-sub italic text-gray-400 text-sm mt-2">Low-confidence rows must be confirmed before scan</p>
+            </div>
+            <span class="font-mono text-[10px] uppercase text-luxury-gold shrink-0">New ↗</span>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a href="dashboard-live.html" class="step-card done block p-5 md:p-6">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <span class="font-mono text-[10px] tracking-[0.3em] uppercase text-luxury-gold">Step V · Live scan</span>
+              <h2 class="font-header text-lg tracking-widest uppercase mt-1">Atelier console</h2>
+              <p class="font-sub italic text-gray-400 text-sm mt-2">24–48h scan · discipline gates · live feed · emails at transitions</p>
+            </div>
+            <span class="font-mono text-[10px] uppercase text-luxury-gold shrink-0">Built ↗</span>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a href="build-readiness.html" class="step-card done block p-5 md:p-6">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <span class="font-mono text-[10px] tracking-[0.3em] uppercase text-luxury-gold">Step VI · Decision</span>
+              <h2 class="font-header text-lg tracking-widest uppercase mt-1">Build readiness</h2>
+              <p class="font-sub italic text-gray-400 text-sm mt-2">Proceed · Conditions · Pause · Insufficient — one decision per pack</p>
+            </div>
+            <span class="font-mono text-[10px] uppercase text-luxury-gold shrink-0">New ↗</span>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a href="scan-result-free.html" class="step-card done block p-5 md:p-6">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <span class="font-mono text-[10px] tracking-[0.3em] uppercase text-luxury-gold">Step VII · Release</span>
+              <h2 class="font-header text-lg tracking-widest uppercase mt-1">Findings register + export</h2>
+              <p class="font-sub italic text-gray-400 text-sm mt-2">Source-quoted register · PDF / XLSX / audit log</p>
+            </div>
+            <span class="font-mono text-[10px] uppercase text-luxury-gold shrink-0">Built ↗</span>
+          </div>
+        </a>
+      </li>
+    </ol>
+  </div>
+</main>
+
+<footer class="border-t border-luxury-gold/20 py-8 px-6 text-center text-[10px] tracking-widest uppercase text-gray-500">
+  VerifIQ · Workflow wireframes · MMXXVI
+</footer>
+</body>
+</html>
