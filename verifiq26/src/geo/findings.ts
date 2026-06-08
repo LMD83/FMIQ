@@ -1,0 +1,72 @@
+/**
+ * VerifIQ — geo result → §05.1 Finding mapper (Phase 5).
+ *
+ * Turns a GeoLayerResult into a council Finding so site-constraint checks flow
+ * into the same register/report. A gated/unreachable layer becomes a tracked
+ * "evidence required" finding (the product value); a present constraint (e.g.
+ * High Radon Area) becomes a discipline finding with its statutory anchor.
+ *
+ * Version: 0.8.0-phase5
+ */
+
+import type { Finding } from "../types/index.js";
+import type { GeoLayerResult } from "./types.js";
+
+const DISCIPLINE = "Geospatial / Site Constraints";
+const OWNER = "Lead Designer";
+
+/** A geo finding, or null when there's nothing to flag (constraint absent). */
+export function geoFinding(result: GeoLayerResult, seq = 1): Finding | null {
+  if (result.status === "manual-request-required") {
+    return build(result, seq, {
+      requirement: `The ${result.layer} constraint must be confirmed for the site.`,
+      finding: result.summary,
+      status: "Clarification required",
+      risk: "Medium",
+      required_evidence: [
+        `Confirm ${result.layer} status — request from ${result.requestFrom ?? "the relevant authority"}`,
+      ],
+    });
+  }
+
+  if (result.status === "resolved" && result.flagged) {
+    if (result.layer === "radon") {
+      return build(result, seq, {
+        requirement: "TGD C: radon-resisting measures are required in High Radon Areas.",
+        finding: result.summary,
+        status: "Not demonstrated",
+        risk: "Medium",
+        required_evidence: ["Confirm a radon-resisting membrane in the floor build-up (TGD C)"],
+      });
+    }
+    return build(result, seq, {
+      requirement: `A ${result.layer} constraint applies to the site.`,
+      finding: result.summary,
+      status: "Not demonstrated",
+      risk: "Medium",
+      required_evidence: [`Confirm how the ${result.layer} constraint is addressed`],
+    });
+  }
+
+  return null;
+}
+
+function build(
+  result: GeoLayerResult,
+  seq: number,
+  parts: Pick<Finding, "requirement" | "finding" | "status" | "risk" | "required_evidence">,
+): Finding {
+  return {
+    issue_id: `GEO-PRE-${String(seq).padStart(4, "0")}`,
+    discipline_origin: DISCIPLINE,
+    interface_disciplines: [],
+    stage: "design",
+    source_document: `${result.layer} constraint map`,
+    source_reference: result.requestFrom ?? `${result.layer} layer`,
+    related_documents: [],
+    build_readiness_impact: "Pre-construction close-out",
+    owner: OWNER,
+    close_out_stage: "pre-build",
+    ...parts,
+  };
+}
