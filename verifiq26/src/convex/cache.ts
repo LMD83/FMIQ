@@ -1,9 +1,9 @@
 /**
- * VerifIQ — inference cache Convex functions (file 20 §2).
+ * VerifIQ — inference_cache Convex functions (file 20 §2).
  *
- * The persistent side of `src/llm/cache.ts`: read/write the `inference_cache`
- * table keyed by the deterministic cache key. Entries have a 30-day TTL via
- * `expires_at` (matches inference-log retention); reads past expiry miss.
+ * Persistent backing for the LLM inference cache: idempotent put (keyed by the
+ * file-20 cache key), TTL-gated get (30-day retention), and an expiry purge for
+ * the scheduled cron. On a cache hit the agent skips the model call entirely.
  *
  * Version: 0.6.0-phase4
  */
@@ -11,10 +11,10 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
-const TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days.
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
-/** Look up a cached inference; returns null on miss or past TTL. */
-export const getCachedInference = query({
+/** Read a cached completion by key, or null if absent/expired. */
+export const getCached = query({
   args: { cache_key: v.string(), now: v.optional(v.number()) },
   handler: async (ctx, args) => {
     const now = args.now ?? Date.now();
@@ -23,12 +23,12 @@ export const getCachedInference = query({
       .withIndex("by_cache_key", (q) => q.eq("cache_key", args.cache_key))
       .unique();
     if (!row || row.expires_at <= now) return null;
-    return { text: row.result_text, tokens_in: row.tokens_in, tokens_out: row.tokens_out };
+    return row;
   },
 });
 
-/** Store an inference result (idempotent on cache_key). */
-export const putCachedInference = mutation({
+/** Insert/refresh a cached completion (TTL 30 days). */
+export const putCached = mutation({
   args: {
     cache_key: v.string(),
     model: v.string(),
@@ -39,15 +39,16 @@ export const putCachedInference = mutation({
     result_text: v.string(),
     tokens_in: v.number(),
     tokens_out: v.number(),
+    ttl_ms: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    const now = Date.now();
+    const expires_at = now + (args.ttl_ms ?? THIRTY_DAYS_MS);
     const existing = await ctx.db
       .query("inference_cache")
       .withIndex("by_cache_key", (q) => q.eq("cache_key", args.cache_key))
       .unique();
-    if (existing) return existing._id;
-    const now = Date.now();
-    return ctx.db.insert("inference_cache", {
+    const row = {
       cache_key: args.cache_key,
       model: args.model,
       prompt_version: args.prompt_version,
@@ -58,21 +59,23 @@ export const putCachedInference = mutation({
       tokens_in: args.tokens_in,
       tokens_out: args.tokens_out,
       created_at: now,
-      expires_at: now + TTL_MS,
-    });
+      expires_at,
+    };
+    if (existing) await ctx.db.patch(existing._id, row);
+    else await ctx.db.insert("inference_cache", row);
   },
 });
 
-/** Purge expired cache rows (called by a scheduled job). */
+/** Delete expired cache rows (scheduled cron). Returns the number purged. */
 export const purgeExpired = mutation({
   args: { now: v.optional(v.number()) },
   handler: async (ctx, args) => {
     const now = args.now ?? Date.now();
     const expired = await ctx.db
       .query("inference_cache")
-      .withIndex("by_expires_at", (q) => q.lte("expires_at", now))
+      .withIndex("by_expires_at", (q) => q.lt("expires_at", now))
       .collect();
     for (const row of expired) await ctx.db.delete(row._id);
-    return { purged: expired.length };
+    return expired.length;
   },
 });

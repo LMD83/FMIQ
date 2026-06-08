@@ -1,102 +1,108 @@
 # 32 · Phase 4 Completion Summary
 
 **Doc ID:** `verifiq-phase4-completion-v0.1`
-**Phase:** 4 — Title-block classifier + inference cache + classification glue
+**Phase:** 4 — Convex binding (persistence port + workflow functions) · inference cache · title-block classifier
 **Date:** 2026-06-06
-**Builds on:** Phases 1–3 (schema, adapters, agents, orchestrator)
+**Builds on:** Phase 1 (schema + adapters), Phase 2 (agents), Phase 3 (orchestrator + queue)
 
 ---
 
 ## What was built
 
-### Title-block classifier (`src/classifier/`) — file 20 §3
+Phase 4 lands the four open items from `docs/31`: the Convex-backed persistence
+port, the scheduled cache purge, the inference-cache wiring, and the 3-source
+title-block classifier.
 
-The 3-source weighted document classifier that produces the metadata the
-`documents` row records and the confidence the confirmation gate reads.
+### Convex persistence binding
 
-- `filename.ts` — Source 1 parser for Irish-practice conventions (`A-100`,
-  `A-101 Rev B`, `24-001-ARC-100-rev-B`); lowest weight, final fallback.
-- `classifier.ts` — `TitleBlockClassifier`: tries title-block **vision**
-  extraction (Source 2, ~0.9 confidence) → document **content** classification
-  (Source 3, ~0.6) → filename (≤0.55). The LLM is injected, so the filename path
-  needs no provider and the LLM paths are unit-testable. Extraction prompts are
-  code-level output wiring (like the agents' `OUTPUT_INSTRUCTION`), not domain
-  prompts.
-- `types.ts` — `ClassificationInput/Result`, discipline-code maps, doc-type
-  inference, and `CONFIRM_THRESHOLD` (0.7) for the gate.
+- **`src/convex/workflow.ts`** — the data operations behind the orchestrator's
+  `PersistencePort`: `saveFindings`/`loadFindings` (§05.1), `saveChallenges`/
+  `loadChallenges`, `saveAdjudications`/`loadAdjudicated` (writes the
+  `adjudications` audit rows **and** stamps `council_decision` on the finding
+  rows — §05.1), `saveReport`/`loadReport` (scalars in `reports`, section arrays
+  via `report_findings` per §05.4; disclaimer re-applied from the locked
+  constant on load), and `loadWorkflowState`/`saveWorkflowState`.
+- **`workflow_state` table** (schema addition) — resumable orchestrator state
+  per project (scan_state, completed_stages, per-discipline status).
+- **`src/orchestrator/convex-port.ts` — `ConvexPersistence`** — implements
+  `PersistencePort` by calling those functions through an injected
+  `ConvexRunner` (a Convex action ctx in production; a convex-test handle in
+  tests). The Phase 3 `Orchestrator` now runs unchanged against the real schema.
 
-### Inference cache (`src/llm/cache.ts`) — file 20 §2
+### Inference cache (file 20 §2)
 
-- Deterministic key = `hash(model + prompt_version + document_sha256 + agent_id
-  + corpus_version)`.
-- `InferenceCache.getOrCompute(parts, compute)` returns the cached result on a
-  hit (model **not** re-invoked) — making job retries cheap and scans
-  reproducible. Store is a port (`InferenceCacheStore`); `InMemory…` here, Convex
-  `inference_cache` in production.
+- **`src/llm/cache.ts`** — `cacheKey()` (the file-20 formula:
+  hash(model + prompt_version + document_sha256 + agent_id + corpus_version)),
+  `CachingLLMClient` (an `LLMClient` decorator: cache hit ⇒ ~0 cost, no model
+  call), `MemoryCacheStore`, and the `CacheStore` interface.
+- **`src/convex/cache.ts`** — `getCached` (TTL-gated), `putCached` (30-day TTL),
+  `purgeExpired`. **`src/llm/cache-convex.ts` — `ConvexCacheStore`** bridges the
+  decorator to those functions (provider recovered from the model id on read).
+- **`src/convex/crons.ts`** — daily `purgeExpired` cron.
 
-### Convex glue
+### Title-block classifier (file 20 §3)
 
-- `src/convex/classify.ts` — `saveClassification`, `confirmDocument`,
-  `reclassifyDocument` (logs the correction to `audit_log` as labelled training
-  data, file 20 §4 / file 15), `listForConfirmation`, and `canStartScan` (the
-  forced-confirm gate: a scan starts only when no low-confidence row is
-  unconfirmed).
-- `src/convex/cache.ts` — `getCachedInference` (TTL-aware), `putCachedInference`
-  (idempotent on cache key), `purgeExpired`. 30-day TTL via `expires_at`.
+- **`src/classify/`** — the 3-source weighted classifier: title-block vision
+  (0.9 with a discipline code, else 0.8) > first-2000-char content (0.6) >
+  filename (~0.2–0.55). PDF rendering and text extraction are injected
+  (`PdfRenderer` / `TextExtractor`) so the logic is testable without the pdf
+  toolchain. `filename.ts` parses discipline code, drawing number and revision.
 
 ---
 
-## Verification (build environment)
+## Verification (in the build environment)
 
-- `npx vitest run` — **23/23 pass** (6 new: classifier across all three sources,
-  filename parsing, low-confidence fallback, cache key determinism,
-  get-or-compute hit/miss).
-- `npx eslint` — **0 errors** on all Phase 4 files.
-- `npx tsc --noEmit` — Phase 4 files compile clean in isolation. The single
-  repo-wide error remains the **pre-existing** `tests/smoke.test.ts:145`
-  (Phase 1, offline `_generated/api.ts` `any`-stub) — not introduced here;
-  resolved by `npx convex codegen`.
+- `npm test` — **23/23 pass** (6 new Phase 4 + 17 prior). New tests: the
+  `ConvexPersistence` port round-trips findings / state / adjudications (council
+  decision stamped) / report (sections + disclaimer) against the real schema via
+  convex-test; the cache returns a hit without re-calling the model and persists
+  to `inference_cache`; the classifier picks title-block > content > filename.
+- `npm run typecheck` — clean. `npm run lint` — 0 errors.
+- `npx convex codegen` — clean (new tables + functions).
+
+Live-credential checks (real Anthropic/OpenAI, R2, `npx convex dev`) remain
+"verify locally", as in earlier phases.
 
 ---
 
 ## Deviations / decisions
 
-1. **Classifier takes pre-extracted inputs.** Rendering page 1 to an image and
-   extracting the first ~500 tokens of text is an upload-pipeline concern
-   (file 20 §1, Phase 7). The classifier accepts `titleBlockImage` / `contentText`
-   so it is pure and testable; the render/extract step plugs in later.
-2. **Reclassification feedback → `audit_log`, no new table.** File 20 §4 names a
-   `classifier_feedback` table; rather than alter the (merged) schema, corrections
-   are logged to `audit_log` with `action: "reclassify"` and before/after +
-   prior confidence. If a dedicated table is wanted for the lessons-learnt
-   aggregation, that's a one-line schema addition — **flagging for your call**.
+1. **`runReview` node action + scheduled job-dispatch `tick` deferred.** Running
+   the agents inside a Convex action needs the prompt files at runtime, but
+   `PromptLoader` reads them via `node:fs` and Convex can't read arbitrary repo
+   files in a deployment. The honest unblock is **prompt bundling** (a generated
+   module embedding the `verifiq-prompts/` content), which lands with `runReview`
+   in Phase 5. The cache-purge cron ships now because it has no prompt
+   dependency. The persistence port + queue functions are fully in place, so
+   wiring the action on top is small once prompts are bundled.
+2. **Classification-confirmation UX not built.** That screen is UI, which is
+   Phase 7 in file 16 (and an early-UI anti-pattern). Phase 4 builds the
+   classifier *logic* + the `documents.classifier_confidence` field that the
+   screen will read; the reclassification-feedback capture lands with the UI.
+3. **Adjudicated state on the finding row.** `loadAdjudicated` returns finding
+   rows whose `council_decision` is set and ≠ "Deleted" — the accepted register
+   lives on the §05.1 rows, with the `adjudications` table holding the decision
+   audit trail (file 06).
+4. **Cache key uses the role as the model proxy** at write time and records the
+   resolved model id; provider is recovered from the model id on read (the
+   `inference_cache` row stores model, not provider). No schema change needed.
 
 ---
 
-## Remaining Phase 4 integration (deploy-only — next)
+## Open questions for Phase 5
 
-These need a Convex deployment to exercise and are the natural next step:
-
-1. **Scheduled `tick`.** A `convex/crons.ts` interval (~60s) → an internal
-   function that `claimNextRunnable` (already in `jobs.ts`) → dispatches to a
-   `"use node"` action → `completeJob`/`failJob`.
-2. **Orchestrator-in-Convex.** A `"use node"` internal action that builds the
-   Phase 3 `Orchestrator` with the real agents (`createLLM` from env) and a
-   **Convex `PersistencePort`**, and runs a project review. This needs a small
-   **schema addition — a `workflow_state` table** (or a `scan_state` + derived
-   reconstruction) to persist `completed_stages` / `discipline_status` for
-   cross-restart resume. Flagged because it touches the schema.
-3. **Cache wiring into agents.** Route discipline-review / classification calls
-   through `InferenceCache` backed by `convex/cache.ts`.
-
-These were deliberately scoped out of this PR because they cannot be verified in
-the build sandbox and the `workflow_state` addition wants your nod first.
+1. **Prompt bundling + `runReview` action + scheduled dispatch tick** (dev. 1).
+2. **PDF toolchain** — concrete `PdfRenderer` (pdf2pic) + `TextExtractor`
+   (pdf-parse) implementations behind the injected interfaces.
+3. **Classification-confirmation UX** + `classifier_feedback` capture (file 20
+   §4 / file 15).
+4. **tus.io resumable upload** (platform mandatory #1, file 20 §1).
 
 ---
 
-## Estimated readiness
+## Estimated Phase 5 readiness
 
-**Classifier + cache are production-ready behind clean ports and fully tested.**
-The deploy-only wiring above is well-defined; the only open design choice is the
-`workflow_state` persistence (new table vs. derived), which I've flagged rather
-than decided.
+**Ready.** The orchestrator now persists to Convex through a tested port, the
+inference cache is wired, and the classifier logic is in place behind clean
+ports. Phase 5 is the deploy-time glue (prompt bundling + the node action +
+scheduled dispatch) and the concrete PDF adapters.

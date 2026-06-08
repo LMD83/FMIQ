@@ -2,7 +2,7 @@
   "name": "verifiq",
   "version": "0.6.0-phase4",
   "private": true,
-  "description": "VerifIQ — Irish pre-build compliance review platform. Phase 4: title-block classifier + inference cache + classification-confirmation glue.",
+  "description": "VerifIQ — Irish pre-build compliance review platform. Phase 4: Convex binding (persistence port + workflow funcs), inference cache, and the 3-source title-block classifier.",
   "type": "module",
   "engines": {
     "node": ">=20.0.0"
