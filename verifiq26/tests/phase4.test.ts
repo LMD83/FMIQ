@@ -1,146 +1,230 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- convex-test runner bridge casts */
 /**
- * VerifIQ — Phase 4 tests: title-block classifier + inference cache.
+ * VerifIQ — Phase 4 tests (Convex binding + inference cache + classifier).
  *
- * The classifier is exercised across all three sources (title-block vision,
- * content, filename) with an injected fake LLM; the cache proves get-or-compute
- * keying (a hit skips the compute). No network / keys / deployment.
+ * Covers the three test-able Phase 4 cores:
+ *  - ConvexPersistence round-trips the orchestrator's PersistencePort against
+ *    the real schema (findings / challenges / adjudications / reports / state),
+ *    via convex-test.
+ *  - The inference cache (CachingLLMClient + MemoryCacheStore, and the Convex
+ *    cache functions) returns a cached completion without re-calling the model.
+ *  - The 3-source classifier picks title-block > content > filename.
  *
- * Version: 0.6.0-phase4
+ * The scheduled tick / runReview action are deploy-time glue (docs/32).
  */
 
 import { describe, it, expect } from "vitest";
-import { createClassifier, parseFilename, CONFIRM_THRESHOLD } from "../src/classifier/index.js";
-import {
-  InferenceCache,
-  InMemoryInferenceCacheStore,
-  buildCacheKey,
-} from "../src/llm/cache.js";
-import type { LLMClient, LLMResult, LLMRole, CompleteOptions } from "../src/llm/index.js";
+import { convexTest } from "convex-test";
+import schema from "../src/convex/schema";
+import { api } from "../src/convex/_generated/api";
+import { ConvexPersistence, type ConvexRunner } from "../src/orchestrator/convex-port";
+import { CachingLLMClient, MemoryCacheStore } from "../src/llm/cache";
+import { ConvexCacheStore } from "../src/llm/cache-convex";
+import type { LLMClient } from "../src/llm";
+import type { LLMResult, LLMRole } from "../src/llm/types";
+import { classifyDocument } from "../src/classify";
+import type { PdfRenderer, TextExtractor } from "../src/classify";
+import { LOCKED_DISCLAIMER } from "../src/constants";
+import type { BuildReadinessReport, Finding } from "../src/types";
 
-// ── fake LLM ─────────────────────────────────────────────────────────────────
+const modules = import.meta.glob([
+  "../src/convex/**/*.ts",
+  "../src/convex/**/*.js",
+  "!../src/convex/**/*.d.ts",
+]);
 
-class FakeClassifierLLM implements LLMClient {
-  async complete(role: LLMRole, _prompt: string, _options?: CompleteOptions): Promise<LLMResult> {
-    void role;
-    void _prompt;
-    void _options;
-    return result(JSON.stringify({ discipline: "Mechanical", doc_type: "Layout", drawing_number: "M-200" }));
-  }
-  async completeVision(
-    _role: LLMRole,
-    _image: Uint8Array,
-    _prompt: string,
-    _options?: CompleteOptions,
-  ): Promise<LLMResult> {
-    void _image;
-    void _prompt;
-    void _options;
-    return result(
-      JSON.stringify({
-        drawing_title: "Ground Floor Plan",
-        drawing_number: "A-510",
-        revision: "C",
-        discipline_code: "A",
-        author: "RIAI Practice",
-        date: "2026-05-01",
-        scale: "1:100",
-      }),
-    );
-  }
-}
-
-function result(text: string): LLMResult {
+function finding(overrides: Partial<Finding> = {}): Finding {
   return {
-    text,
-    tokens_in: 1,
-    tokens_out: 1,
-    model_used: "fake",
-    provider_used: "anthropic",
-    cost_eur: 0,
-    latency_ms: 1,
+    issue_id: "ARCH-PRE-0001",
+    discipline_origin: "Architect",
+    interface_disciplines: ["Fire"],
+    stage: "pre-tender",
+    source_document: "A-100.pdf",
+    source_reference: "Ground Floor Plan A-100",
+    related_documents: [],
+    requirement: "Register must reflect current revision.",
+    finding: "Register lists Rev A but the latest is Rev B.",
+    status: "Coordination issue",
+    risk: "High",
+    build_readiness_impact: "Pre-tender close-out",
+    required_evidence: ["Reissued register"],
+    owner: "Lead Designer",
+    ...overrides,
   };
 }
 
-// ── classifier ───────────────────────────────────────────────────────────────
-
-describe("Title-block classifier", () => {
-  it("parses a sensible filename (Source 1)", () => {
-    const p = parseFilename("A-100 Rev B.pdf");
-    expect(p.discipline).toBe("Architectural");
-    expect(p.drawing_number).toBe("A-100");
-    expect(p.revision).toBe("B");
-    expect(p.confidence).toBeGreaterThanOrEqual(0.5);
+/** A counting stub LLM. */
+function stubLLM(text: string): { client: LLMClient; calls: () => number } {
+  let n = 0;
+  const result = (): LLMResult => ({
+    text,
+    tokens_in: 4,
+    tokens_out: 2,
+    model_used: "claude-sonnet-4-6",
+    provider_used: "anthropic",
+    cost_eur: 0.01,
+    latency_ms: 3,
   });
+  return {
+    calls: () => n,
+    client: {
+      async complete(_r: LLMRole, _p: string) {
+        n++;
+        return result();
+      },
+      async completeVision() {
+        n++;
+        return result();
+      },
+    },
+  };
+}
 
-  it("classifies from the title block (Source 2) at high confidence", async () => {
-    const classifier = createClassifier({ llm: new FakeClassifierLLM() });
-    const res = await classifier.classify({
-      filename: "IMG_2438.pdf",
-      titleBlockImage: new Uint8Array([1, 2, 3]),
+describe("Phase 4 — Convex persistence port", () => {
+  it("round-trips findings, adjudications, report, and workflow state", async () => {
+    const t = convexTest(schema, modules);
+    const runner: ConvexRunner = {
+      runQuery: (ref, args) => t.query(ref as any, args as any),
+      runMutation: (ref, args) => t.mutation(ref as any, args as any),
+    };
+    const port = new ConvexPersistence(runner);
+
+    const userId = await t.mutation(api.mutations.createUser, { email: "liam@goviq.ie" });
+    const projectId = await t.mutation(api.mutations.createProject, {
+      owner_user_id: userId,
+      name: "Port Test",
     });
-    expect(res.source).toBe("title-block");
-    expect(res.discipline).toBe("Architectural");
-    expect(res.drawing_number).toBe("A-510");
-    expect(res.revision).toBe("C");
-    expect(res.doc_type).toBe("Plan");
-    expect(res.classifier_confidence).toBeGreaterThanOrEqual(CONFIRM_THRESHOLD);
-  });
 
-  it("falls back to content classification (Source 3)", async () => {
-    const classifier = createClassifier({ llm: new FakeClassifierLLM() });
-    const res = await classifier.classify({
-      filename: "Drawing(1).pdf",
-      contentText: "HVAC ductwork layout and plant schedule.",
+    // findings
+    await port.saveFindings(projectId, [finding(), finding({ issue_id: "FIRE-PRE-0001", discipline_origin: "Fire Safety", risk: "Critical", status: "Non-compliant" })]);
+    expect(await port.loadFindings(projectId)).toHaveLength(2);
+
+    // workflow state
+    await port.saveState({
+      project_id: projectId,
+      scan_state: "scanning",
+      completed_stages: ["review"],
+      discipline_status: { architect: "succeeded", fire: "failed" },
+      updated_at: Date.now(),
     });
-    expect(res.source).toBe("content");
-    expect(res.discipline).toBe("Mechanical");
-    expect(res.classifier_confidence).toBeCloseTo(0.6);
-  });
+    const state = await port.loadState(projectId);
+    expect(state?.completed_stages).toContain("review");
+    expect(state?.discipline_status.architect).toBe("succeeded");
 
-  it("falls back to the filename with low confidence (needs confirmation)", async () => {
-    const classifier = createClassifier(); // no LLM
-    const res = await classifier.classify({ filename: "IMG_2438.pdf" });
-    expect(res.source).toBe("filename");
-    expect(res.discipline).toBe("Unclassified");
-    expect(res.classifier_confidence).toBeLessThan(CONFIRM_THRESHOLD);
+    // adjudications → council_decision on the finding row
+    await port.saveAdjudications(
+      projectId,
+      [finding({ council_decision: "Retained" })],
+      [
+        {
+          issue_id: "ARCH-PRE-0001",
+          council_decision: "Retained",
+          rationale: "evidence-supported",
+          pre: { risk: "High", status: "Coordination issue", owner: "Lead Designer" },
+          post: { risk: "High", status: "Coordination issue", owner: "Lead Designer" },
+          adjudicator_model: "claude-opus-4-8",
+        },
+      ],
+    );
+    const adjudicated = await port.loadAdjudicated(projectId);
+    expect(adjudicated.map((f) => f.issue_id)).toContain("ARCH-PRE-0001");
+
+    // report round-trip (disclaimer re-applied on load)
+    const report: BuildReadinessReport = {
+      project_name: "Port Test",
+      project_stage: "pre-tender",
+      building_type: "office",
+      review_date: "2026-06-06",
+      regulatory_modules_activated: ["BR"],
+      disciplines_reviewed: ["Architect"],
+      build_readiness_rating: "Amber",
+      executive_decision: "Proceed with conditions",
+      council_summary: "summary",
+      critical_blockers: [],
+      high_risk_conditions: ["ARCH-PRE-0001"],
+      discipline_action_matrix: ["ARCH-PRE-0001"],
+      interface_risk_matrix: ["ARCH-PRE-0001"],
+      statutory_approval_risks: [],
+      planning_condition_risks: [],
+      tender_cost_risks: ["ARCH-PRE-0001"],
+      construction_hold_points: [],
+      handover_evidence_requirements: [],
+      final_recommendation: "Proceed with conditions.",
+      disclaimer: "PLACEHOLDER",
+    };
+    await port.saveReport(projectId, report);
+    const loaded = await port.loadReport(projectId);
+    expect(loaded?.executive_decision).toBe("Proceed with conditions");
+    expect(loaded?.high_risk_conditions).toContain("ARCH-PRE-0001");
+    expect(loaded?.disclaimer).toBe(LOCKED_DISCLAIMER);
+
+    // audit
+    await port.appendAudit(projectId, { action: "report_released", timestamp: new Date().toISOString() });
+    const audit = await t.query(api.mutations.listAudit, { project_id: projectId });
+    expect(audit.some((a) => a.action === "report_released")).toBe(true);
   });
 });
 
-// ── inference cache ──────────────────────────────────────────────────────────
+describe("Phase 4 — inference cache", () => {
+  it("returns a cached completion without re-calling the model", async () => {
+    const { client, calls } = stubLLM("CACHED-OK");
+    const caching = new CachingLLMClient(client, new MemoryCacheStore());
 
-describe("InferenceCache", () => {
-  const parts = {
-    model: "claude-sonnet-4-6",
-    prompt_version: "arch-agent-v1.0.0",
-    document_sha256: "a".repeat(64),
-    agent_id: "architect",
-    corpus_version: "irish-corpus-2026-06",
-  };
+    const first = await caching.complete("classification", "same prompt", { agentId: "x", promptVersion: "v1" });
+    const second = await caching.complete("classification", "same prompt", { agentId: "x", promptVersion: "v1" });
 
-  it("builds a deterministic key that changes with any part", () => {
-    const k1 = buildCacheKey(parts);
-    expect(buildCacheKey(parts)).toBe(k1);
-    expect(buildCacheKey({ ...parts, agent_id: "fire" })).not.toBe(k1);
+    expect(first.text).toBe("CACHED-OK");
+    expect(second.text).toBe("CACHED-OK");
+    expect(calls()).toBe(1); // second served from cache
+    expect(second.cost_eur).toBe(0);
   });
 
-  it("computes on miss and serves cached on hit", async () => {
-    const store = new InMemoryInferenceCacheStore();
-    const cache = new InferenceCache(store);
-    let computeCalls = 0;
-    const compute = async () => {
-      computeCalls++;
-      return { text: "OK", tokens_in: 10, tokens_out: 2 };
+  it("persists to the Convex inference_cache table", async () => {
+    const t = convexTest(schema, modules);
+    const runner: ConvexRunner = {
+      runQuery: (ref, args) => t.query(ref as any, args as any),
+      runMutation: (ref, args) => t.mutation(ref as any, args as any),
     };
+    const store = new ConvexCacheStore(runner);
+    await store.put(
+      "k1",
+      { text: "hello", model_used: "claude-haiku-4-5-20251001", provider_used: "anthropic", tokens_in: 1, tokens_out: 1 },
+      { model: "claude-haiku-4-5-20251001", prompt_version: "v1", document_sha256: "abc", agent_id: "classifier", corpus_version: "c1", tokens_in: 1, tokens_out: 1 },
+    );
+    const hit = await store.get("k1");
+    expect(hit?.text).toBe("hello");
+    expect(hit?.provider_used).toBe("anthropic");
+    expect(await store.get("missing")).toBeNull();
+  });
+});
 
-    const first = await cache.getOrCompute(parts, compute);
-    expect(first.cached).toBe(false);
-    expect(first.text).toBe("OK");
+describe("Phase 4 — 3-source classifier", () => {
+  const renderer: PdfRenderer = { async renderFirstPagePng() { return new Uint8Array([1, 2, 3]); } };
+  const textExtractor: TextExtractor = { async firstText() { return "Mechanical services specification for the plantroom."; } };
 
-    const second = await cache.getOrCompute(parts, compute);
-    expect(second.cached).toBe(true);
-    expect(second.text).toBe("OK");
+  it("uses the title block when it yields a drawing number", async () => {
+    const { client } = stubLLM(JSON.stringify({ drawing_number: "M-200", revision: "B", discipline_code: "M", drawing_title: "Plantroom Layout" }));
+    const res = await classifyDocument({ filename: "weird-scan.pdf", bytes: new Uint8Array([0]) }, { llm: client, renderer });
+    expect(res.source).toBe("title-block");
+    expect(res.discipline).toBe("mechanical");
+    expect(res.drawing_number).toBe("M-200");
+    expect(res.classifier_confidence).toBeGreaterThanOrEqual(0.9);
+  });
 
-    expect(computeCalls).toBe(1); // model not re-invoked on hit
-    expect(store.size).toBe(1);
+  it("falls back to content when there is no title block", async () => {
+    const { client } = stubLLM(JSON.stringify({ discipline: "mechanical", doc_type: "specification" }));
+    const res = await classifyDocument({ filename: "IMG_2438.pdf", bytes: new Uint8Array([0]) }, { llm: client, textExtractor });
+    expect(res.source).toBe("content");
+    expect(res.discipline).toBe("mechanical");
+  });
+
+  it("falls back to the filename with no bytes", async () => {
+    const { client, calls } = stubLLM("{}");
+    const res = await classifyDocument({ filename: "A-100 Rev C.pdf" }, { llm: client });
+    expect(res.source).toBe("filename");
+    expect(res.discipline).toBe("architectural");
+    expect(res.drawing_number).toBe("A-100");
+    expect(res.revision).toBe("C");
+    expect(calls()).toBe(0); // no model call needed
   });
 });
