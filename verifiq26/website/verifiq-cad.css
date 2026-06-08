@@ -1,0 +1,97 @@
+/* ============================================================================
+   VerifIQ — Document & Findings Components (verifiq-cad.css)
+   The "register" layer: severity pills, source quotations pulled from the
+   document in its own words, and the small scale/metadata chips.
+
+   Loaded by: index, about, case-study-01, cad-library, 404
+   Requires:  verifiq-system.css (tokens + type)
+   ========================================================================== */
+
+/* ── Severity pill ───────────────────────────────────────────────────────────
+   <span class="sev sev-critical">Critical</span> */
+.sev {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1;
+  background: var(--bone);
+}
+.sev-critical { color: var(--sanguine); }
+.sev-high     { color: var(--amber); }
+.sev-medium   { color: var(--olive); }
+.sev-low      { color: var(--moss); }
+
+/* Solid variant, when a severity needs to read across the room. */
+.sev.solid { color: var(--bone); }
+.sev-critical.solid { background: var(--sanguine); border-color: var(--sanguine); }
+.sev-high.solid     { background: var(--amber);    border-color: var(--amber); }
+.sev-medium.solid   { background: var(--olive);    border-color: var(--olive); }
+.sev-low.solid      { background: var(--moss);     border-color: var(--moss); }
+
+/* ── Source quote ────────────────────────────────────────────────────────────
+   The document, in its own words.
+   <div class="source-quote">"…quoted text…"<span class="src-ref">M&E Spec · §11.4 · Page 47</span></div> */
+.source-quote {
+  position: relative;
+  margin: 16px 0 0;
+  padding: 18px 20px 16px 24px;
+  background: var(--paper);
+  border-left: 3px solid var(--brass);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--ink);
+}
+.source-quote .src-ref {
+  display: block;
+  margin-top: 12px;
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: 0.625rem;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--graphite);
+}
+
+/* Redacted quotation — anonymised validation material. */
+.source-quote.redacted {
+  border-left-color: var(--draft);
+  color: var(--ink-soft);
+}
+.source-quote.redacted::after {
+  content: "Redacted · anonymised";
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: 0.5625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--draft);
+}
+
+/* ── Scale / metadata chip ───────────────────────────────────────────────────
+   <span class="scale-chip">Tier III · Large pack</span> */
+.scale-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border: 1px solid var(--ink);
+  background: var(--bone);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}

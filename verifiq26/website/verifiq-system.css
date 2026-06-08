@@ -1,0 +1,170 @@
+/* ============================================================================
+   VerifIQ — Design System (verifiq-system.css)
+   The shared foundation: design tokens, base typography, the "atelier paper"
+   surface, the reusable label/heading utilities and the two CTA buttons.
+
+   Loaded by: index, about, case-study-01, cad-library, 404
+   Companion:  verifiq-cad.css (finding / document-quote / severity components)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ── Design tokens ───────────────────────────────────────────────────────── */
+:root {
+  /* Surfaces — warm archival paper */
+  --bone:      #F5F1EB;   /* page background */
+  --paper:     #FBF8F3;   /* raised panels */
+  --vellum:    #EBE4D8;   /* tinted sections */
+
+  /* Ink */
+  --ink:       #1A1A1F;   /* primary text / rules */
+  --ink-soft:  #45454E;   /* body text */
+  --graphite:  #6E6E77;   /* secondary labels */
+  --draft:     #92929B;   /* muted / pending */
+
+  /* Accents — six pigments, mixed sparingly */
+  --brass:     #A07C35;   /* the house accent */
+  --sanguine:  #8C2B27;   /* critical */
+  --amber:     #B26A22;   /* high */
+  --olive:     #7C6B2C;   /* medium */
+  --moss:      #4E6B38;   /* low / positive */
+
+  /* Type */
+  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-sans:  'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono:  'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+/* ── Base ────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bone);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a { color: inherit; text-decoration: none; }
+
+img { max-width: 100%; display: block; }
+
+h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 500; }
+
+/* Subtle drawn-paper grain laid over the bone background. */
+.paper-texture {
+  background-color: var(--bone);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+}
+
+/* ── Typographic utilities ───────────────────────────────────────────────── */
+
+/* Small monospaced eyebrow, e.g. "— Drawing 12 · About" */
+.t-eyebrow {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--brass);
+}
+
+/* Quiet monospaced metadata caption */
+.t-meta {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--graphite);
+}
+
+/* Serif sub-heading */
+.t-h2 {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: clamp(1.5rem, 2.6vw, 2.1rem);
+  line-height: 1.15;
+  color: var(--ink);
+  margin: 0;
+}
+
+/* Reading body */
+.t-body {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+/* Tabular figures for register codes / counts */
+.tab-num { font-variant-numeric: tabular-nums; }
+
+/* ── CTA · sheet tag ─────────────────────────────────────────────────────────
+   <a class="btn-sheet-tag"><span class="sheet-code">A-001</span>
+     <span class="sheet-label">Return to atelier <span class="sheet-arrow"></span></span></a> */
+.btn-sheet-tag {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  transition: background 0.18s ease, color 0.18s ease;
+}
+.btn-sheet-tag .sheet-code {
+  display: flex;
+  align-items: center;
+  padding: 11px 13px;
+  background: var(--ink);
+  color: var(--bone);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+}
+.btn-sheet-tag .sheet-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 16px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.btn-sheet-tag .sheet-arrow::before { content: "→"; }
+.btn-sheet-tag:hover { background: var(--ink); }
+.btn-sheet-tag:hover .sheet-label { color: var(--bone); }
+
+/* ── CTA · leader line ───────────────────────────────────────────────────────
+   <a class="btn-leader"><span class="leader-num">01</span>
+     <span class="leader-line"></span><span class="leader-label">Request the brief</span></a> */
+.btn-leader {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.btn-leader .leader-num { color: var(--brass); }
+.btn-leader .leader-line {
+  width: 36px;
+  height: 1px;
+  background: var(--ink);
+  transition: width 0.22s ease;
+}
+.btn-leader:hover .leader-line { width: 56px; }
+.btn-leader .leader-label { border-bottom: 1px solid var(--ink); padding-bottom: 2px; }

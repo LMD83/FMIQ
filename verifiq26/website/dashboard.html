@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VerifIQ — Dashboard (post-login product UI)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'ui-monospace', 'monospace'] },
+        colors: {
+          background: '#030303', surface: '#0A0A0A', surface2: '#121212',
+          border: '#222222', primary: '#FFFFFF', secondary: '#A1A1AA',
+          accent: '#818CF8', accent2: '#C084FC',
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body { -webkit-font-smoothing: antialiased; font-family: 'Inter', sans-serif; }
+  ::selection { background-color: rgba(129, 140, 248, 0.4); color: #ffffff; }
+  .noise-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 50; opacity: 0.025; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: #0a0a0a; }
+  ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+  .glass { background: rgba(15,15,15,0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.06); }
+  .progress-fill { animation: fillUp 2.4s ease-out forwards; }
+  @keyframes fillUp { from { width: 0%; } }
+  .badge-crit { background: rgba(239,68,68,0.12); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); }
+  .badge-high { background: rgba(249,115,22,0.12); color: #fdba74; border: 1px solid rgba(249,115,22,0.25); }
+  .badge-med { background: rgba(234,179,8,0.12); color: #fde047; border: 1px solid rgba(234,179,8,0.25); }
+  .badge-low { background: rgba(16,185,129,0.12); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.25); }
+  .pulse-dot { position: relative; }
+  .pulse-dot::before { content: ""; position: absolute; inset: -3px; border-radius: 50%; background: inherit; opacity: 0.6; animation: pulseRing 2s ease-out infinite; }
+  @keyframes pulseRing { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(2.2); opacity: 0; } }
+</style>
+</head>
+<body class="bg-[#030303] text-white">
+
+<div class="noise-bg" style="background-image: url(&quot;data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E&quot;)"></div>
+<div class="fixed top-0 left-[-10%] w-[40vw] h-[40vw] rounded-full bg-indigo-900/15 blur-[120px] pointer-events-none mix-blend-screen"></div>
+<div class="fixed top-[30%] right-[-10%] w-[30vw] h-[30vw] rounded-full bg-fuchsia-900/10 blur-[100px] pointer-events-none mix-blend-screen"></div>
+
+<div class="relative flex min-h-screen">
+
+  <!-- SIDEBAR -->
+  <aside class="hidden lg:flex flex-col w-64 border-r border-white/[0.04] bg-[#080808]/80 backdrop-blur-xl">
+    <!-- Logo -->
+    <div class="h-16 px-6 flex items-center gap-2.5 border-b border-white/[0.04]">
+      <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-fuchsia-500 flex items-center justify-center shadow-[0_0_15px_rgba(129,140,248,0.4)]">
+        <svg class="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"/></svg>
+      </div>
+      <span class="text-base font-semibold tracking-tight text-white">VerifIQ</span>
+    </div>
+
+    <!-- Org switcher -->
+    <div class="px-3 pt-4 pb-3">
+      <button class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] transition-colors">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-6 h-6 rounded bg-gradient-to-br from-indigo-500/40 to-fuchsia-500/40 flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0">MH</div>
+          <div class="text-left min-w-0">
+            <div class="text-[12px] font-medium text-white truncate">Murphy Hennessy</div>
+            <div class="text-[10px] text-gray-500 font-mono">Practice · 8 seats</div>
+          </div>
+        </div>
+        <svg class="w-3.5 h-3.5 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/></svg>
+      </button>
+    </div>
+
+    <!-- Nav -->
+    <nav class="flex-1 px-3 py-3 space-y-0.5">
+      <div class="px-3 py-1.5 text-[10px] font-mono uppercase tracking-[0.2em] text-gray-600">Workspace</div>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-indigo-500/10 text-white border border-indigo-500/20" href="#">
+        <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/></svg>
+        <span class="text-[13px] font-medium">Projects</span>
+        <span class="ml-auto text-[10px] font-mono text-indigo-400 bg-indigo-500/20 px-1.5 py-0.5 rounded">8</span>
+      </a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:bg-white/[0.04] hover:text-white transition-colors" href="#">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <span class="text-[13px] font-medium">Checks</span>
+        <span class="ml-auto text-[10px] font-mono text-gray-500">142</span>
+      </a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:bg-white/[0.04] hover:text-white transition-colors" href="#">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="M20 20l-3.5-3.5"/></svg>
+        <span class="text-[13px] font-medium">Findings</span>
+        <span class="ml-auto text-[10px] font-mono text-red-400">12 new</span>
+      </a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:bg-white/[0.04] hover:text-white transition-colors" href="#">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+        <span class="text-[13px] font-medium">Standards Corpus</span>
+      </a>
+
+      <div class="px-3 pt-5 pb-1.5 text-[10px] font-mono uppercase tracking-[0.2em] text-gray-600">Account</div>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:bg-white/[0.04] hover:text-white transition-colors" href="#">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4.5h14.25M3 9h9.75M3 13.5h9.75m4.5-4.5v12m0 0l-3.75-3.75M17.25 21L21 17.25"/></svg>
+        <span class="text-[13px] font-medium">Usage &amp; Billing</span>
+      </a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:bg-white/[0.04] hover:text-white transition-colors" href="#">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+        <span class="text-[13px] font-medium">Team</span>
+      </a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:bg-white/[0.04] hover:text-white transition-colors" href="#">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <span class="text-[13px] font-medium">Settings</span>
+      </a>
+    </nav>
+
+    <!-- Quota -->
+    <div class="px-3 pb-3">
+      <div class="rounded-lg border border-white/10 bg-white/[0.02] p-3">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[10px] font-mono uppercase tracking-widest text-gray-500">This month</span>
+          <span class="text-[10px] font-mono text-indigo-400">11 / 18</span>
+        </div>
+        <div class="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+          <div class="h-full bg-gradient-to-r from-indigo-500 to-fuchsia-500" style="width: 61%"></div>
+        </div>
+        <div class="mt-2 text-[10px] text-gray-500">Practice subscription · resets 1 Jun</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="flex-1 flex flex-col min-w-0">
+
+    <!-- TOP BAR -->
+    <header class="h-16 border-b border-white/[0.04] bg-[#030303]/80 backdrop-blur-xl flex items-center justify-between px-6 gap-4">
+      <div class="flex items-center gap-3 min-w-0">
+        <button class="lg:hidden p-1.5 rounded text-gray-400 hover:bg-white/5">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+        </button>
+        <nav class="flex items-center gap-2 text-sm">
+          <span class="text-gray-500">Projects</span>
+          <span class="text-gray-700">/</span>
+          <span class="text-gray-300 font-medium truncate">Day Centre · Stage 2C</span>
+          <span class="text-gray-700">/</span>
+          <span class="text-white font-medium">Check #042</span>
+        </nav>
+      </div>
+      <div class="flex items-center gap-3 flex-shrink-0">
+        <div class="relative hidden md:block">
+          <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="M20 20l-3.5-3.5"/></svg>
+          <input class="w-64 pl-8 pr-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-sm placeholder-gray-500 text-white focus:outline-none focus:border-indigo-500/40" placeholder="Search findings · ⌘K">
+        </div>
+        <button class="p-2 rounded-lg hover:bg-white/[0.04] text-gray-400 relative">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+          <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 pulse-dot"></span>
+        </button>
+        <div class="h-6 w-px bg-white/10"></div>
+        <button class="flex items-center gap-2 hover:opacity-80">
+          <div class="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500 flex items-center justify-center text-[10px] font-bold text-white">MO</div>
+          <span class="hidden sm:inline text-sm text-gray-300">Mary O'Sullivan</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- BODY -->
+    <main class="flex-1 overflow-y-auto">
+
+      <!-- Live check header -->
+      <div class="border-b border-white/[0.04] bg-gradient-to-br from-indigo-900/15 via-transparent to-fuchsia-900/10 px-6 py-6">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-widest font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 pulse-dot"></span>
+                Live · Scanning
+              </span>
+              <span class="text-[10px] font-mono uppercase tracking-widest text-gray-500">Check #042 · Started 14:32</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white">Stage 2C tender pack — multi-discipline scan</h1>
+            <p class="mt-1 text-sm text-gray-400">161 files · 560 pages of specs · Corpus v.2026.05 · Tier 2 (Mid) · est. €400 · 4-hour turnaround</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="inline-flex items-center gap-2 h-9 px-4 rounded-lg bg-white/[0.04] border border-white/[0.08] text-sm text-gray-300 hover:bg-white/[0.08]">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z"/></svg>
+              Pause
+            </button>
+            <button class="inline-flex items-center gap-2 h-9 px-4 rounded-lg bg-white text-black text-sm font-semibold hover:bg-gray-200">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+              Export
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI cards -->
+      <div class="px-6 py-6 grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="rounded-xl border border-white/[0.06] bg-[#0E0E0E] p-4">
+          <div class="text-[10px] font-mono uppercase tracking-widest text-gray-500">Total findings</div>
+          <div class="mt-2 text-3xl font-bold text-white">327</div>
+          <div class="mt-1 text-[11px] text-emerald-400">+12 in last hour</div>
+        </div>
+        <div class="rounded-xl border border-red-500/20 bg-red-500/[0.04] p-4">
+          <div class="text-[10px] font-mono uppercase tracking-widest text-red-400">CRITICAL</div>
+          <div class="mt-2 text-3xl font-bold text-red-300">30</div>
+          <div class="mt-1 text-[11px] text-gray-500">Verify before issue</div>
+        </div>
+        <div class="rounded-xl border border-orange-500/20 bg-orange-500/[0.04] p-4">
+          <div class="text-[10px] font-mono uppercase tracking-widest text-orange-400">HIGH</div>
+          <div class="mt-2 text-3xl font-bold text-orange-300">144</div>
+          <div class="mt-1 text-[11px] text-gray-500">Worth reviewing</div>
+        </div>
+        <div class="rounded-xl border border-yellow-500/20 bg-yellow-500/[0.04] p-4">
+          <div class="text-[10px] font-mono uppercase tracking-widest text-yellow-400">MEDIUM</div>
+          <div class="mt-2 text-3xl font-bold text-yellow-300">116</div>
+          <div class="mt-1 text-[11px] text-gray-500">Hygiene fixes</div>
+        </div>
+        <div class="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.04] p-4">
+          <div class="text-[10px] font-mono uppercase tracking-widest text-emerald-400">LOW</div>
+          <div class="mt-2 text-3xl font-bold text-emerald-300">37</div>
+          <div class="mt-1 text-[11px] text-gray-500">Notes for record</div>
+        </div>
+      </div>
+
+      <!-- Discipline progress + Findings table -->
+      <div class="px-6 pb-6 grid grid-cols-1 xl:grid-cols-12 gap-6">
+
+        <!-- LEFT: Discipline progress -->
+        <div class="xl:col-span-4 space-y-4">
+          <div class="rounded-xl border border-white/[0.06] bg-[#0E0E0E] p-5">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-semibold text-white">5 disciplines · parallel</h3>
+              <span class="text-[10px] font-mono uppercase tracking-widest text-gray-500">Live</span>
+            </div>
+            <div class="space-y-4">
+              <div>
+                <div class="flex justify-between text-xs mb-1.5">
+                  <span class="text-indigo-400 font-medium">Architectural</span>
+                  <span class="text-gray-500 font-mono">142 findings · 100%</span>
+                </div>
+                <div class="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-indigo-500 to-indigo-400 progress-fill" style="width: 100%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs mb-1.5">
+                  <span class="text-fuchsia-400 font-medium">Civil &amp; Structural</span>
+                  <span class="text-gray-500 font-mono">53 findings · 100%</span>
+                </div>
+                <div class="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-fuchsia-500 to-fuchsia-400 progress-fill" style="width: 100%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs mb-1.5">
+                  <span class="text-emerald-400 font-medium">Mechanical</span>
+                  <span class="text-gray-500 font-mono">72 findings · 100%</span>
+                </div>
+                <div class="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 progress-fill" style="width: 100%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs mb-1.5">
+                  <span class="text-amber-400 font-medium flex items-center gap-1.5">
+                    Electrical
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 pulse-dot"></span>
+                  </span>
+                  <span class="text-gray-500 font-mono">47 / ~62 · 76%</span>
+                </div>
+                <div class="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-amber-500 to-amber-400" style="width: 76%; transition: width 0.6s ease;"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs mb-1.5">
+                  <span class="text-red-400 font-medium flex items-center gap-1.5">
+                    Fire
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 pulse-dot"></span>
+                  </span>
+                  <span class="text-gray-500 font-mono">13 / ~18 · 42%</span>
+                </div>
+                <div class="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-red-500 to-red-400" style="width: 42%; transition: width 0.6s ease;"></div>
+                </div>
+              </div>
+            </div>
+            <div class="mt-5 pt-4 border-t border-white/[0.06] grid grid-cols-3 gap-3 text-center">
+              <div>
+                <div class="text-[10px] font-mono uppercase tracking-widest text-gray-500">Elapsed</div>
+                <div class="text-sm font-mono font-bold text-white mt-0.5">2:48:12</div>
+              </div>
+              <div>
+                <div class="text-[10px] font-mono uppercase tracking-widest text-gray-500">Remaining</div>
+                <div class="text-sm font-mono font-bold text-indigo-400 mt-0.5">~52m</div>
+              </div>
+              <div>
+                <div class="text-[10px] font-mono uppercase tracking-widest text-gray-500">Conf</div>
+                <div class="text-sm font-mono font-bold text-emerald-400 mt-0.5">96.2%</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cost telemetry -->
+          <div class="rounded-xl border border-white/[0.06] bg-[#0E0E0E] p-5">
+            <h3 class="text-sm font-semibold text-white mb-4">Inference cost</h3>
+            <div class="space-y-3 text-xs">
+              <div class="flex justify-between text-gray-300">
+                <span>Input tokens</span>
+                <span class="font-mono tabular-nums">1,432,810</span>
+              </div>
+              <div class="flex justify-between text-gray-300">
+                <span>Output tokens</span>
+                <span class="font-mono tabular-nums">487,224</span>
+              </div>
+              <div class="flex justify-between text-gray-300">
+                <span>Cheap routing</span>
+                <span class="font-mono text-emerald-400">42% saved</span>
+              </div>
+              <div class="pt-3 border-t border-white/[0.06] flex justify-between text-sm">
+                <span class="text-gray-400">Running cost</span>
+                <span class="font-mono font-bold text-white">€17.42</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Billed (Tier 2)</span>
+                <span class="font-mono font-bold text-indigo-400">€400.00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Findings table -->
+        <div class="xl:col-span-8">
+          <div class="rounded-xl border border-white/[0.06] bg-[#0E0E0E] overflow-hidden">
+            <!-- Filter bar -->
+            <div class="px-5 py-3 border-b border-white/[0.06] flex flex-wrap items-center gap-2 bg-[#080808]/50">
+              <button class="px-2.5 py-1 rounded-md bg-white/[0.06] border border-white/[0.08] text-[11px] text-white font-medium flex items-center gap-1.5">
+                All <span class="text-gray-500 font-mono">327</span>
+              </button>
+              <button class="px-2.5 py-1 rounded-md badge-crit text-[11px] font-medium">CRITICAL <span class="opacity-70 font-mono">30</span></button>
+              <button class="px-2.5 py-1 rounded-md badge-high text-[11px] font-medium">HIGH <span class="opacity-70 font-mono">144</span></button>
+              <button class="px-2.5 py-1 rounded-md badge-med text-[11px] font-medium">MEDIUM <span class="opacity-70 font-mono">116</span></button>
+              <button class="px-2.5 py-1 rounded-md badge-low text-[11px] font-medium">LOW <span class="opacity-70 font-mono">37</span></button>
+              <div class="ml-auto flex items-center gap-2">
+                <button class="px-2.5 py-1 rounded-md bg-white/[0.04] border border-white/[0.08] text-[11px] text-gray-300 flex items-center gap-1.5">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4.5h17M3 9h17m-17 4.5h17m-17 4.5h17"/></svg>
+                  Sort
+                </button>
+                <button class="px-2.5 py-1 rounded-md bg-white/[0.04] border border-white/[0.08] text-[11px] text-gray-300 flex items-center gap-1.5">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636"/></svg>
+                  Group
+                </button>
+              </div>
+            </div>
+
+            <!-- Column headers -->
+            <div class="grid grid-cols-12 gap-3 px-5 py-2.5 border-b border-white/[0.06] text-[10px] font-mono uppercase tracking-widest text-gray-500 bg-[#080808]/30">
+              <div class="col-span-1">ID</div>
+              <div class="col-span-1">Sev</div>
+              <div class="col-span-5">Issue · 1-sentence</div>
+              <div class="col-span-3">Element · Standard</div>
+              <div class="col-span-2 text-right">Source</div>
+            </div>
+
+            <!-- Rows -->
+            <div class="divide-y divide-white/[0.04] text-sm">
+              <div class="grid grid-cols-12 gap-3 px-5 py-3.5 items-start hover:bg-white/[0.02] cursor-pointer">
+                <div class="col-span-1 font-mono text-xs font-bold text-indigo-400">A-303</div>
+                <div class="col-span-1"><span class="px-2 py-0.5 rounded text-[10px] font-bold badge-crit">CRIT</span></div>
+                <div class="col-span-5 text-gray-300 text-[13px] leading-snug">K10 metal-stud partitions specified REI 30 only — no REI 60 compartment-wall type in spec body.</div>
+                <div class="col-span-3"><span class="px-2 py-1 rounded bg-white/[0.04] border border-white/[0.06] text-[11px] font-mono text-indigo-300">Wall · TGD-B 2024 §3.5.5</span></div>
+                <div class="col-span-2 text-right text-[11px] text-gray-500 font-mono">Arch Spec p.58</div>
+              </div>
+              <div class="grid grid-cols-12 gap-3 px-5 py-3.5 items-start hover:bg-white/[0.02] cursor-pointer">
+                <div class="col-span-1 font-mono text-xs font-bold text-indigo-400">SD-001</div>
+                <div class="col-span-1"><span class="px-2 py-0.5 rounded text-[10px] font-bold badge-crit">CRIT</span></div>
+                <div class="col-span-5 text-gray-300 text-[13px] leading-snug">Windows &amp; External Doors Schedule AR-40002 contains stair-section drawings, not window schedule.</div>
+                <div class="col-span-3"><span class="px-2 py-1 rounded bg-white/[0.04] border border-white/[0.06] text-[11px] font-mono text-indigo-300">Schedule · I.S. EN 14351-1</span></div>
+                <div class="col-span-2 text-right text-[11px] text-gray-500 font-mono">AR-40002</div>
+              </div>
+              <div class="grid grid-cols-12 gap-3 px-5 py-3.5 items-start hover:bg-white/[0.02] cursor-pointer">
+                <div class="col-span-1 font-mono text-xs font-bold text-fuchsia-400">S-008</div>
+                <div class="col-span-1"><span class="px-2 py-0.5 rounded text-[10px] font-bold badge-crit">CRIT</span></div>
+                <div class="col-span-5 text-gray-300 text-[13px] leading-snug">Foundation design on blank "undisturbed and firm soil" — no GI report, no bearing pressure stated.</div>
+                <div class="col-span-3"><span class="px-2 py-1 rounded bg-white/[0.04] border border-white/[0.06] text-[11px] font-mono text-fuchsia-300">Foundation · EN 1997</span></div>
+                <div class="col-span-2 text-right text-[11px] text-gray-500 font-mono">11001 p.1</div>
+              </div>
+              <div class="grid grid-cols-12 gap-3 px-5 py-3.5 items-start hover:bg-white/[0.02] cursor-pointer">
+                <div class="col-span-1 font-mono text-xs font-bold text-amber-400">E-103</div>
+                <div class="col-span-1"><span class="px-2 py-0.5 rounded text-[10px] font-bold badge-crit">CRIT</span></div>
+                <div class="col-span-5 text-gray-300 text-[13px] leading-snug">Lightning Protection §12.20 describes a 2-storey school in Ballina — wrong project, wrong building type.</div>
+                <div class="col-span-3"><span class="px-2 py-1 rounded bg-white/[0.04] border border-white/[0.06] text-[11px] font-mono text-amber-300">Lightning · IEC 62305</span></div>
+                <div class="col-span-2 text-right text-[11px] text-gray-500 font-mono">Elec Spec p.78</div>
+              </div>
+              <div class="grid grid-cols-12 gap-3 px-5 py-3.5 items-start hover:bg-white/[0.02] cursor-pointer">
+                <div class="col-span-1 font-mono text-xs font-bold text-emerald-400">M-200</div>
+                <div class="col-span-1"><span class="px-2 py-0.5 rounded text-[10px] font-bold badge-crit">CRIT</span></div>
+                <div class="col-span-5 text-gray-300 text-[13px] leading-snug">Fire and smoke dampers specified to BS 476 Part 8:1972 (withdrawn) — CE-marking requires IS EN 15650.</div>
+                <div class="col-span-3"><span class="px-2 py-1 rounded bg-white/[0.04] border border-white/[0.06] text-[11px] font-mono text-emerald-300">Fire damper · IS EN 15650</span></div>
+                <div class="col-span-2 text-right text-[11px] text-gray-500 font-mono">Mech Spec §5.02</div>
+              </div>
+              <div class="grid grid-cols-12 gap-3 px-5 py-3.5 items-start hover:bg-white/[0.02] cursor-pointer">
+                <div class="col-span-1 font-mono text-xs font-bold text-fuchsia-400">S-207</div>
+                <div class="col-span-1"><span class="px-2 py-0.5 rounded text-[10px] font-bold badge-high">HIGH</span></div>
+                <div class="col-span-5 text-gray-300 text-[13px] leading-snug">SW attenuation calc methodologically flawed; 75mm orifice passes more than declared 2 l/s.</div>
+                <div class="col-span-3"><span class="px-2 py-1 rounded bg-white/[0.04] border border-white/[0.06] text-[11px] font-mono text-fuchsia-300">Drainage · GDSDS</span></div>
+                <div class="col-span-2 text-right text-[11px] text-gray-500 font-mono">SW Att xlsx</div>
+              </div>
+              <div class="grid grid-cols-12 gap-3 px-5 py-3.5 items-start hover:bg-white/[0.02] cursor-pointer">
+                <div class="col-span-1 font-mono text-xs font-bold text-amber-400">E-212</div>
+                <div class="col-span-1"><span class="px-2 py-0.5 rounded text-[10px] font-bold badge-high">HIGH</span></div>
+                <div class="col-span-5 text-gray-300 text-[13px] leading-snug">Form of Tender VAT lines include 13.5% and 21% — correct Irish standard rate is 23% since 2024.</div>
+                <div class="col-span-3"><span class="px-2 py-1 rounded bg-white/[0.04] border border-white/[0.06] text-[11px] font-mono text-amber-300">Pricing · Revenue VAT</span></div>
+                <div class="col-span-2 text-right text-[11px] text-gray-500 font-mono">FoT Sch.1</div>
+              </div>
+              <div class="grid grid-cols-12 gap-3 px-5 py-3.5 items-start hover:bg-white/[0.02] cursor-pointer">
+                <div class="col-span-1 font-mono text-xs font-bold text-emerald-400">M-203</div>
+                <div class="col-span-1"><span class="px-2 py-0.5 rounded text-[10px] font-bold badge-high">HIGH</span></div>
+                <div class="col-span-5 text-gray-300 text-[13px] leading-snug">No HSE L8 / HTM 04-01 Legionella regime — only one-off chlorination at handover specified.</div>
+                <div class="col-span-3"><span class="px-2 py-1 rounded bg-white/[0.04] border border-white/[0.06] text-[11px] font-mono text-emerald-300">Plumbing · HTM 04-01</span></div>
+                <div class="col-span-2 text-right text-[11px] text-gray-500 font-mono">Mech Spec §9</div>
+              </div>
+              <div class="grid grid-cols-12 gap-3 px-5 py-3.5 items-start hover:bg-white/[0.02] cursor-pointer">
+                <div class="col-span-1 font-mono text-xs font-bold text-indigo-400">A-302</div>
+                <div class="col-span-1"><span class="px-2 py-0.5 rounded text-[10px] font-bold badge-high">HIGH</span></div>
+                <div class="col-span-5 text-gray-300 text-[13px] leading-snug">Arch spec cites UK Approved Documents K and M, NJUG, UK supplier addresses — UK NBS-Chorus export.</div>
+                <div class="col-span-3"><span class="px-2 py-1 rounded bg-white/[0.04] border border-white/[0.06] text-[11px] font-mono text-indigo-300">Spec · BCAR SI 9/2014</span></div>
+                <div class="col-span-2 text-right text-[11px] text-gray-500 font-mono">Arch Spec p.12</div>
+              </div>
+              <div class="grid grid-cols-12 gap-3 px-5 py-3.5 items-start hover:bg-white/[0.02] cursor-pointer">
+                <div class="col-span-1 font-mono text-xs font-bold text-red-400">F-001</div>
+                <div class="col-span-1"><span class="px-2 py-0.5 rounded text-[10px] font-bold badge-high">HIGH</span></div>
+                <div class="col-span-5 text-gray-300 text-[13px] leading-snug">FSC Condition 2 requires IS 3218:2024 — spec body cites IS 3218:2013 (superseded). Update required.</div>
+                <div class="col-span-3"><span class="px-2 py-1 rounded bg-white/[0.04] border border-white/[0.06] text-[11px] font-mono text-red-300">Fire alarm · IS 3218:2024</span></div>
+                <div class="col-span-2 text-right text-[11px] text-gray-500 font-mono">FSC + Elec §12</div>
+              </div>
+              <div class="grid grid-cols-12 gap-3 px-5 py-3.5 items-start hover:bg-white/[0.02] cursor-pointer">
+                <div class="col-span-1 font-mono text-xs font-bold text-emerald-400">M-201</div>
+                <div class="col-span-1"><span class="px-2 py-0.5 rounded text-[10px] font-bold badge-med">MED</span></div>
+                <div class="col-span-5 text-gray-300 text-[13px] leading-snug">Mech spec contains "Twin Wall Pressurised Flue" and "for each dwelling" references — residential gas legacy in heat-pump project.</div>
+                <div class="col-span-3"><span class="px-2 py-1 rounded bg-white/[0.04] border border-white/[0.06] text-[11px] font-mono text-emerald-300">Spec · NBS Chorus</span></div>
+                <div class="col-span-2 text-right text-[11px] text-gray-500 font-mono">Mech Spec §3</div>
+              </div>
+              <div class="grid grid-cols-12 gap-3 px-5 py-3.5 items-start hover:bg-white/[0.02] cursor-pointer">
+                <div class="col-span-1 font-mono text-xs font-bold text-fuchsia-400">S-200</div>
+                <div class="col-span-1"><span class="px-2 py-0.5 rounded text-[10px] font-bold badge-med">MED</span></div>
+                <div class="col-span-5 text-gray-300 text-[13px] leading-snug">C&amp;S spec references basements, lift pits, swimming pools, underpinning — none exist in this single-storey project.</div>
+                <div class="col-span-3"><span class="px-2 py-1 rounded bg-white/[0.04] border border-white/[0.06] text-[11px] font-mono text-fuchsia-300">Spec · NBS Chorus</span></div>
+                <div class="col-span-2 text-right text-[11px] text-gray-500 font-mono">CS Spec §H</div>
+              </div>
+              <div class="grid grid-cols-12 gap-3 px-5 py-3.5 items-start hover:bg-white/[0.02] cursor-pointer text-gray-500 italic">
+                <div class="col-span-12 text-center text-[11px] font-mono uppercase tracking-widest">315 more findings · use filters above to narrow</div>
+              </div>
+            </div>
+
+            <!-- Bottom toolbar -->
+            <div class="px-5 py-3 border-t border-white/[0.06] flex items-center justify-between bg-[#080808]/30">
+              <div class="text-[11px] text-gray-500 font-mono">Showing 12 of 327 · Auto-refresh on</div>
+              <div class="flex items-center gap-1">
+                <button class="px-2 py-1 rounded text-[11px] text-gray-400 hover:bg-white/[0.04]">‹</button>
+                <span class="px-2 py-1 text-[11px] font-mono text-white bg-white/[0.04] rounded">1</span>
+                <button class="px-2 py-1 rounded text-[11px] text-gray-400 hover:bg-white/[0.04]">2</button>
+                <button class="px-2 py-1 rounded text-[11px] text-gray-400 hover:bg-white/[0.04]">3</button>
+                <span class="px-1 text-gray-600">…</span>
+                <button class="px-2 py-1 rounded text-[11px] text-gray-400 hover:bg-white/[0.04]">28</button>
+                <button class="px-2 py-1 rounded text-[11px] text-gray-400 hover:bg-white/[0.04]">›</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- Footer disclaimer strip -->
+    <footer class="border-t border-white/[0.04] py-3 px-6 bg-[#030303] flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-gray-500">
+      <div>
+        <strong class="text-gray-400">Indicative output.</strong> You verify locally. Not a substitute for chartered review or BCAR sign-off.
+      </div>
+      <div class="flex items-center gap-3 font-mono uppercase tracking-widest text-[10px]">
+        <span>Corpus v.2026.05</span>
+        <span class="w-1 h-1 rounded-full bg-gray-700"></span>
+        <span>EU-hosted</span>
+        <span class="w-1 h-1 rounded-full bg-gray-700"></span>
+        <span class="text-emerald-400">All systems normal</span>
+      </div>
+    </footer>
+
+  </div>
+</div>
+
+</body>
+</html>
