@@ -1,94 +1,143 @@
 /**
  * VerifIQ — inference cache (file 20 §2 idempotency).
  *
- * Every LLM call is keyed by a deterministic hash of
- *   model + prompt_version + document_sha256 + agent_id + corpus_version.
- * On a cache hit the model is not re-invoked — making job retries cheap and
- * scans reproducible. The store is a port (in-memory here, Convex
- * `inference_cache` table in production), so this is unit-testable.
+ * Wraps an LLMClient so identical calls return a cached completion instead of
+ * re-invoking the model. The cache key is the file-20 formula
+ *   hash(model + prompt_version + document_sha256 + agent_id + corpus_version)
+ * where document_sha256 is derived from the prompt. On a hit the call costs ~0
+ * and returns in milliseconds (file 20).
  *
- * (Restored after a merge wiped this file to 0 bytes.)
- * Version: 0.7.0-phase4
+ * The store is injected (CacheStore) — `ConvexCacheStore` persists to the
+ * `inference_cache` table; tests use an in-memory map.
+ *
+ * Version: 0.6.0-phase4
  */
 
-import { createHash } from "node:crypto";
+import type { FunctionReference } from "convex/server";
+import type {
+  CompleteOptions,
+  LLMResult,
+  LLMRole,
+  ProviderName,
+} from "./types.js";
+import type { LLMClient } from "./index.js";
+import { sha256Hex } from "./util.js";
 
-export interface InferenceCacheKeyParts {
+export interface CacheKeyParts {
   model: string;
   prompt_version: string;
   document_sha256: string;
   agent_id: string;
   corpus_version: string;
+  /** Tenant/project scope — isolates the cache per project to stop
+   * cross-tenant cache poisoning/sharing (PR #7 security review). */
+  project_id: string;
 }
 
-/** Deterministic cache key (file 20 §2). */
-export function buildCacheKey(parts: InferenceCacheKeyParts): string {
-  return createHash("sha256")
-    .update(
-      [
-        parts.model,
-        parts.prompt_version,
-        parts.document_sha256,
-        parts.agent_id,
-        parts.corpus_version,
-      ].join(" "),
-    )
-    .digest("hex");
+/** The file-20 cache key, scoped by project_id. */
+export function cacheKey(p: CacheKeyParts): string {
+  return [
+    p.project_id,
+    p.model,
+    p.prompt_version,
+    p.document_sha256,
+    p.agent_id,
+    p.corpus_version,
+  ].join("|");
 }
 
-export interface CacheEntry {
-  cache_key: string;
+export interface CachedInference {
   text: string;
+  model_used: string;
+  provider_used: ProviderName;
   tokens_in: number;
   tokens_out: number;
 }
 
-/** Persistence port for cached inferences. */
-export interface InferenceCacheStore {
-  get(cacheKey: string): Promise<CacheEntry | null>;
-  put(entry: CacheEntry): Promise<void>;
-}
-
-export interface ComputedInference {
-  text: string;
+export interface CachePutMeta extends CacheKeyParts {
   tokens_in: number;
   tokens_out: number;
 }
 
-export interface CachedInference extends ComputedInference {
-  cached: boolean;
+export interface CacheStore {
+  get(key: string): Promise<CachedInference | null>;
+  put(key: string, value: CachedInference, meta: CachePutMeta): Promise<void>;
 }
 
-/** Wraps a store with get-or-compute semantics keyed by the file-20 parts. */
-export class InferenceCache {
-  constructor(private readonly store: InferenceCacheStore) {}
+/** Simple in-memory CacheStore (tests / single-process). */
+export class MemoryCacheStore implements CacheStore {
+  private map = new Map<string, CachedInference>();
+  async get(key: string): Promise<CachedInference | null> {
+    return this.map.get(key) ?? null;
+  }
+  async put(key: string, value: CachedInference): Promise<void> {
+    this.map.set(key, value);
+  }
+}
 
-  async getOrCompute(
-    parts: InferenceCacheKeyParts,
-    compute: () => Promise<ComputedInference>,
-  ): Promise<CachedInference> {
-    const cacheKey = buildCacheKey(parts);
-    const hit = await this.store.get(cacheKey);
+/** LLMClient decorator that consults the cache before calling the inner client. */
+export class CachingLLMClient implements LLMClient {
+  /**
+   * @param scope per-scan scope; `projectId` keys the cache to one project so
+   *   entries can't be shared/poisoned across tenants.
+   */
+  constructor(
+    private readonly inner: LLMClient,
+    private readonly store: CacheStore,
+    private readonly scope: { projectId?: string } = {},
+  ) {}
+
+  async complete(role: LLMRole, prompt: string, options: CompleteOptions = {}): Promise<LLMResult> {
+    const documentSha = await sha256Hex(prompt);
+    const parts: CacheKeyParts = {
+      model: role,
+      prompt_version: options.promptVersion ?? "",
+      document_sha256: documentSha,
+      agent_id: options.agentId ?? "",
+      corpus_version: options.corpusVersion ?? "",
+      project_id: this.scope.projectId ?? "",
+    };
+    const key = cacheKey(parts);
+
+    const hit = await this.store.get(key);
     if (hit) {
-      return { text: hit.text, tokens_in: hit.tokens_in, tokens_out: hit.tokens_out, cached: true };
+      return { ...hit, cost_eur: 0, latency_ms: 0 };
     }
-    const result = await compute();
-    await this.store.put({ cache_key: cacheKey, ...result });
-    return { ...result, cached: false };
+
+    const result = await this.inner.complete(role, prompt, options);
+    await this.store.put(
+      key,
+      {
+        text: result.text,
+        model_used: result.model_used,
+        provider_used: result.provider_used,
+        tokens_in: result.tokens_in,
+        tokens_out: result.tokens_out,
+      },
+      { ...parts, model: result.model_used, tokens_in: result.tokens_in, tokens_out: result.tokens_out },
+    );
+    return result;
+  }
+
+  // Vision calls are not cached in Phase 4.
+  completeVision(
+    role: LLMRole,
+    imageBuffer: Uint8Array,
+    prompt: string,
+    options?: CompleteOptions,
+  ): Promise<LLMResult> {
+    return this.inner.completeVision(role, imageBuffer, prompt, options);
   }
 }
 
-/** In-memory store (tests + reference implementation). */
-export class InMemoryInferenceCacheStore implements InferenceCacheStore {
-  private map = new Map<string, CacheEntry>();
-
-  async get(cacheKey: string): Promise<CacheEntry | null> {
-    return this.map.get(cacheKey) ?? null;
-  }
-  async put(entry: CacheEntry): Promise<void> {
-    this.map.set(entry.cache_key, entry);
-  }
-  get size(): number {
-    return this.map.size;
-  }
+/** Loosely-typed Convex caller (action ctx or convex-test handle). */
+export interface CacheRunner {
+  runQuery(
+    ref: FunctionReference<"query", "public" | "internal">,
+    args: Record<string, unknown>,
+  ): Promise<unknown>;
+  runMutation(
+    ref: FunctionReference<"mutation", "public" | "internal">,
+    args: Record<string, unknown>,
+  ): Promise<unknown>;
 }
