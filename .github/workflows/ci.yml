@@ -1,9 +1,13 @@
 # VerifIQ — Continuous Integration
 #
-# The core merge gate: typecheck + lint + unit/integration tests on every PR and
-# push to main (file 20 §7). Runs offline against the committed _generated stub
-# (no Convex/provider secrets needed). A follow-up job will add `convex codegen`
-# + the 327-finding validation-pack integration test once deploy secrets exist.
+# The core merge gate: a hygiene guard + typecheck + lint + unit/integration
+# tests on every PR and push to main (file 20 §7; ADR-001). Runs from a CLEAN
+# checkout — every generated artifact (Convex `_generated/`, the prompt bundle)
+# is produced here, never relied on from a dirty working tree — so a missing or
+# mis-named generated file (the class of bug that kept slipping through) fails
+# CI even when it passes on a contributor's machine. Offline against the
+# committed `_generated` stub (no Convex/provider secrets needed); a follow-up
+# job adds `convex codegen` + the validation-pack test once deploy secrets exist.
 name: CI
 
 on:
@@ -38,6 +42,12 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      # Repo hygiene (ADR-001): no duplicate package.json keys, no tracked file
+      # that is gitignored, no committed generated artifact. Catches the two-track
+      # merge debris that has broken main before the build even runs.
+      - name: Repo hygiene guard
+        run: npm run check:hygiene
 
       # Generate src/convex/_generated/ (gitignored). Offline stub for now;
       # replace with `npx convex codegen` once a CONVEX_DEPLOY_KEY secret exists.

@@ -76,32 +76,39 @@ The source of truth is `verifiq-prompts/` (and `docs/`). Key files:
   challenge → adjudicate → chair as a job DAG; resumable + idempotent; all I/O
   behind an injected `PersistencePort`. Minimal Convex job-queue functions in
   `src/convex/jobs.ts`. See `docs/31-phase3-completion.md`.
+  > **Canonical stack — see `docs/ADR-001-canonical-review-stack.md`.** Two
+  > parallel sessions built divergent stacks; the queue runner won. Do NOT
+  > re-add the retired track: `src/convex/review.ts`/`reviewData.ts`,
+  > `requestReview`/`runReview`/`resumeStalled`, `src/orchestrator/convex-port.ts`,
+  > `src/llm/cache-convex.ts`, `bundledPromptLoader()`, `src/classify/`, or a
+  > second prompt bundle. Canonical names: `src/classifier/`,
+  > `src/orchestrator/convex-persistence.ts`, `src/agents/prompts.bundle.ts`
+  > (export `PROMPT_BUNDLE`, gitignored + regenerated).
+
 - **Phase 4 (done):** the Convex binding. `ConvexPersistence`
-  (`src/orchestrator/convex-port.ts`) runs the orchestrator against the real
-  schema via `src/convex/workflow.ts` + a new `workflow_state` table; the
-  `inference_cache` is wired (`src/llm/cache.ts` CachingLLMClient +
-  `src/convex/cache.ts`); the 3-source title-block classifier lives in
-  `src/classify/`; a daily cache-purge cron is in `src/convex/crons.ts`. See
-  `docs/32-phase4-completion.md`.
-- **Phase 5 (done):** the council now runs on Convex. Prompt bundling
-  (`scripts/bundle-prompts.mjs` → `src/agents/prompts.generated.ts`,
-  `bundledPromptLoader()`) unblocks agents in the Convex runtime; the
-  `runReview` node action (`src/convex/review.ts`) assembles caching-LLM +
-  bundled prompts + the six agents + `ConvexPersistence` and runs the
-  Orchestrator; `requestReview` (public, ownership-checked) + a 15-min
-  `resumeStalled` cron re-dispatch interrupted scans (idempotent). Also folded
-  in the PR-7 hardening: `workflow.ts`/`cache.ts` are now `internalMutation`/
-  `internalQuery`, the cache key is `project_id`-scoped, and challenge
-  `interface_discipline`/`required_action` persist + flow into adjudication.
-  Removed the duplicate `src/classifier/` (kept `src/classify/`). See
-  `docs/33-phase5-completion.md`.
-- **Phase 6 (next):** concrete PDF adapters (`PdfRenderer`/`TextExtractor`),
-  tus.io resumable upload (mandatory #1), exports (PDF/DOCX/XLSX/CSV/JSON,
+  (`src/orchestrator/convex-persistence.ts`) runs the orchestrator against the
+  real schema via internal `src/convex/persist.ts` + `workflow_state` table; the
+  `inference_cache` is wired (`src/llm/cache.ts` + internal `src/convex/cache.ts`);
+  the 3-source title-block classifier lives in `src/classifier/`; a daily
+  cache-purge cron is in `src/convex/crons.ts`. See `docs/32-phase4-completion.md`.
+- **Phase 5 (done):** the council runs on Convex via the **queue runner**. Prompt
+  bundling (`scripts/bundle-prompts.mjs` → gitignored `src/agents/prompts.bundle.ts`,
+  loaded via `PromptLoader` + `RecordPromptSource(PROMPT_BUNDLE)`) unblocks agents
+  in the Convex runtime; the `"use node"` `tick` action (`src/convex/runner.ts`,
+  driven by a 1-min cron) claims runnable jobs from internal `src/convex/jobs.ts`
+  and runs the resumable pipeline (`createCouncil` + `ConvexPersistence` over the
+  pure `drainQueue`). All queue/persist/cache functions are `internal*` (the IDOR
+  fix). Plus the free-API GIS layer (`src/geo/`), PDF extraction (`src/extraction/`)
+  and the procurement module (`src/procurement/`). See `docs/38-phase5-completion.md`.
+- **Phase 6 (next):** concrete PDF render adapter (title-block image, Source 2),
+  tus.io resumable upload (mandatory #1), the authed public "start review" entry
+  (wrap `enqueueJob` behind Clerk membership), exports (PDF/DOCX/XLSX/CSV/JSON,
   §05.5), and the classification-confirmation UX. NOT started.
 
-Note: `requestReview` enforces project ownership only when a Clerk identity is
-present (auth is still stubbed); the workflow/cache mutations are internal-only,
-so that is the single public entry. Wire real Clerk auth before production.
+Note: the queue is internal-only, driven by the cron `tick`; there is no public
+review entry yet. The Phase-6 authed entry wraps `enqueueJob` behind Clerk
+project membership (assert `job.project_id` matches the payload). Wire real Clerk
+auth before production.
 
 Live-credential checks across phases remain "verify locally" (real
 Anthropic/OpenAI calls, R2 signed URL, `npx convex dev` deploy).
