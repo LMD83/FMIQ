@@ -352,8 +352,8 @@ export default defineSchema({
     decision: v.string(),
     revised_risk: v.optional(Risk),
     rationale: v.string(),
-    // Cross-discipline interface the challenge raises (adjudicator folds this
-    // into the finding's interface_disciplines) + the action it asks for.
+    // Cross-discipline interface the challenger flagged — the adjudicator folds
+    // this into the finding's interface_disciplines (file 07 §07.1).
     interface_discipline: v.optional(v.string()),
     required_action: v.optional(v.string()),
     model_used: v.optional(v.string()),
@@ -584,16 +584,5 @@ export default defineSchema({
       }),
     ),
     updated_at: v.number(),
-  }).index("by_project", ["project_id"]),
-
-  // --------------------------------------------------------------------------
-  // review_inputs — the serialized RunInput for a scan, persisted so the
-  // scheduled resume tick can re-dispatch runReview for an interrupted scan
-  // (the orchestrator is idempotent and skips finished stages). (Phase 5)
-  // --------------------------------------------------------------------------
-  review_inputs: defineTable({
-    project_id: v.id("projects"),
-    payload_json: v.string(),
-    created_at: v.number(),
   }).index("by_project", ["project_id"]),
 });

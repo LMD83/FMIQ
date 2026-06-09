@@ -14,7 +14,6 @@
 
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { BUNDLED_PROMPTS } from "./prompts.generated.js";
 
 const MASTER_FILE = "01_master_system_prompt.md";
 const DISCIPLINE_FILE = "04_agent_prompts.md";
@@ -46,38 +45,23 @@ export function extractSection(markdown: string, sectionId: string): string {
   return body;
 }
 
-/**
- * Loads and caches prompt fragments. The source is either a filesystem
- * directory (default — reads `verifiq-prompts/` via node:fs) or an in-memory
- * map of filename→content (used by `bundledPromptLoader()` so prompts work in
- * the Convex runtime, where arbitrary repo files can't be read).
- */
+/** Loads and caches prompt fragments from a PromptSource. */
 export class PromptLoader {
   private cache = new Map<string, string>();
-  private dir: string | null;
-  private memory: Record<string, string> | null;
+  private source: PromptSource;
 
-  constructor(source: string | Record<string, string> = defaultPromptsDir()) {
-    if (typeof source === "string") {
-      this.dir = source;
-      this.memory = null;
-    } else {
-      this.dir = null;
-      this.memory = source;
-    }
+  /** Accepts a PromptSource, a prompts directory string, or nothing (fs default). */
+  constructor(source?: PromptSource | string) {
+    this.source =
+      typeof source === "string"
+        ? new FsPromptSource(source)
+        : (source ?? new FsPromptSource());
   }
 
   private async readCached(file: string): Promise<string> {
     const hit = this.cache.get(file);
     if (hit !== undefined) return hit;
-    let text: string;
-    if (this.memory) {
-      const found = this.memory[file];
-      if (found === undefined) throw new Error(`Bundled prompt "${file}" not found`);
-      text = found;
-    } else {
-      text = await readFile(join(this.dir!, file), "utf8");
-    }
+    const text = await this.source.read(file);
     this.cache.set(file, text);
     return text;
   }
@@ -101,13 +85,4 @@ export class PromptLoader {
   async councilSection(sectionId: string): Promise<string> {
     return extractSection(await this.readCached(COUNCIL_FILE), sectionId);
   }
-}
-
-/**
- * A PromptLoader backed by the build-time bundle (src/agents/prompts.generated.ts),
- * for runtimes that cannot read repo files (Convex). Regenerate the bundle with
- * `npm run bundle:prompts`.
- */
-export function bundledPromptLoader(): PromptLoader {
-  return new PromptLoader(BUNDLED_PROMPTS);
 }
