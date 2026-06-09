@@ -15,12 +15,10 @@ import { internal } from "./_generated/api";
 
 const crons = cronJobs();
 
-// Purge expired inference_cache rows nightly (30-day TTL; file 20 §2).
-crons.daily(
-  "purge expired inference cache",
-  { hourUTC: 3, minuteUTC: 0 },
-  internal.cache.purgeExpired,
-  {},
-);
+// Drop expired inference-cache rows daily (30-day TTL; file 20 §2).
+crons.daily("purge inference cache", { hourUTC: 3, minuteUTC: 0 }, internal.cache.purgeExpired, {});
+
+// Re-dispatch interrupted scans (the Orchestrator is idempotent; file 20 §2 tick).
+crons.interval("resume stalled scans", { minutes: 15 }, internal.reviewData.resumeStalled, {});
 
 export default crons;

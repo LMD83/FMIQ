@@ -13,7 +13,7 @@
  * Version: 0.5.0-phase3
  */
 
-import { mutation, query } from "./_generated/server";
+import { internalMutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 import { JobType, ScanState } from "./schema";
 
@@ -23,7 +23,7 @@ function backoffMs(attempt: number): number {
 }
 
 /** Enqueue a job. Idempotent on `idempotency_key` (file 20 §2). */
-export const enqueueJob = mutation({
+export const enqueueJob = internalMutation({
   args: {
     project_id: v.id("projects"),
     job_type: JobType,
@@ -57,7 +57,7 @@ export const enqueueJob = mutation({
  * passed and whose every dependency has succeeded. Marks it running and returns
  * it, or null when nothing is runnable.
  */
-export const claimNextRunnable = mutation({
+export const claimNextRunnable = internalMutation({
   args: { project_id: v.id("projects"), now: v.optional(v.number()) },
   handler: async (ctx, args) => {
     const now = args.now ?? Date.now();
@@ -89,7 +89,7 @@ export const claimNextRunnable = mutation({
 });
 
 /** Mark a running job succeeded. */
-export const completeJob = mutation({
+export const completeJob = internalMutation({
   args: { job_id: v.id("jobs"), result_ref: v.optional(v.string()) },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.job_id, {
@@ -101,7 +101,7 @@ export const completeJob = mutation({
 });
 
 /** Fail a job: reschedule with backoff while attempts remain, else mark failed. */
-export const failJob = mutation({
+export const failJob = internalMutation({
   args: { job_id: v.id("jobs"), error: v.string(), max_attempts: v.optional(v.number()) },
   handler: async (ctx, args) => {
     const job = await ctx.db.get(args.job_id);
@@ -124,7 +124,7 @@ export const failJob = mutation({
 });
 
 /** Advance a project's scan state (file 20 §5 state machine). */
-export const advanceScanState = mutation({
+export const advanceScanState = internalMutation({
   args: { project_id: v.id("projects"), scan_state: ScanState },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.project_id, {
@@ -135,7 +135,7 @@ export const advanceScanState = mutation({
 });
 
 /** List jobs for a project (queue inspection / dashboard). */
-export const listJobs = query({
+export const listJobs = internalQuery({
   args: { project_id: v.id("projects") },
   handler: async (ctx, args) => {
     return ctx.db
