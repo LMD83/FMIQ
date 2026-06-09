@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VerifIQ — Read the pack before it goes out.</title>
+<meta name="description" content="VerifIQ checks Irish tender packs and design documents before issue — outdated standards, cut-paste from prior projects, missing schedules, jurisdictional mis-references. Output is indicative. You verify locally." />
+<meta property="og:title" content="VerifIQ — Read the pack before it goes out." />
+<meta property="og:description" content="Pre-build document checking for the Irish construction market. Three products, one engine." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://www.verifiq.ie/" />
+<link rel="stylesheet" href="verifiq-system.css" />
+<link rel="stylesheet" href="verifiq-cad.css" />
+<style>
+  body { background: var(--bone); }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 32px; }
+  .wrap-narrow { max-width: 780px; margin: 0 auto; padding: 0 32px; }
+
+  .top-nav { position: sticky; top: 0; z-index: 50; background: rgba(245,241,235,0.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--ink); }
+  .top-nav .inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 0; }
+  .wordmark { font-family: var(--font-serif); font-weight: 600; font-size: 1.4rem; letter-spacing: 0.06em; color: var(--ink); }
+  .nav-links { display: none; gap: 28px; }
+  .nav-links a { font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--graphite); }
+  .nav-links a:hover { color: var(--ink); }
+  @media (min-width: 860px) { .nav-links { display: flex; } }
+
+  .hero { padding: 88px 0 72px; border-bottom: 1px solid var(--ink); background: var(--paper); }
+  .hero h1 { font-family: var(--font-serif); font-weight: 600; font-size: clamp(2.6rem,6vw,5rem); line-height: 1.02; margin: 18px 0 18px; max-width: 16ch; }
+  .hero .lede { font-family: var(--font-serif); font-style: italic; font-size: clamp(1.15rem,2vw,1.45rem); color: var(--ink-soft); max-width: 56ch; margin: 0 0 36px; }
+  .hero .ctas { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; }
+
+  .stat-band { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--ink); border-bottom: 1px solid var(--ink); }
+  .stat-band .cell { background: var(--bone); padding: 26px 20px; }
+  .stat-band .num { font-family: var(--font-serif); font-weight: 500; font-size: 2.5rem; line-height: 1; color: var(--brass); }
+  .stat-band .lab { margin-top: 8px; }
+
+  .section { padding: 72px 0; border-bottom: 1px solid var(--ink); }
+  .section.tint { background: var(--vellum); }
+  .section-head { margin-bottom: 44px; max-width: 64ch; }
+  .section-head h2 { font-family: var(--font-serif); font-weight: 500; font-size: clamp(1.8rem,3vw,2.6rem); line-height: 1.1; margin: 12px 0 14px; }
+  .section-head p { font-family: var(--font-serif); font-style: italic; font-size: 1.15rem; color: var(--ink-soft); margin: 0; }
+
+  .product-grid { display: grid; grid-template-columns: 1fr; gap: 1px; background: var(--ink); border: 1px solid var(--ink); }
+  @media (min-width: 820px) { .product-grid { grid-template-columns: repeat(3, 1fr); } }
+  .product { background: var(--bone); padding: 34px 30px; display: flex; flex-direction: column; }
+  .product .tag { font-family: var(--font-mono); font-size: 0.625rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--brass); }
+  .product h3 { font-family: var(--font-serif); font-weight: 500; font-size: 1.65rem; margin: 14px 0 6px; }
+  .product .who { font-family: var(--font-mono); font-size: 0.625rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite); margin-bottom: 16px; }
+  .product .desc { font-family: var(--font-sans); font-size: 0.9375rem; line-height: 1.6; color: var(--ink-soft); margin: 0 0 20px; flex: 1; }
+  .product .price { font-family: var(--font-serif); font-size: 1.2rem; color: var(--ink); margin-bottom: 18px; }
+  .product .price span { font-family: var(--font-mono); font-size: 0.625rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite); }
+
+  .programme { margin-top: 28px; border: 1px solid var(--ink); background: var(--paper); padding: 28px 30px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px; }
+  .programme .pt { font-family: var(--font-serif); font-size: 1.25rem; color: var(--ink); }
+  .programme .pd { font-family: var(--font-sans); font-size: 0.9375rem; color: var(--ink-soft); max-width: 52ch; margin-top: 4px; }
+
+  .explore-grid { display: grid; grid-template-columns: 1fr; gap: 1px; background: var(--ink); border: 1px solid var(--ink); }
+  @media (min-width: 720px) { .explore-grid { grid-template-columns: repeat(2, 1fr); } }
+  .explore { background: var(--bone); padding: 28px 26px; display: flex; flex-direction: column; gap: 8px; transition: background 0.18s ease; }
+  .explore:hover { background: var(--paper); }
+  .explore h3 { font-family: var(--font-serif); font-weight: 500; font-size: 1.3rem; margin: 6px 0 0; }
+  .explore p { font-family: var(--font-sans); font-size: 0.875rem; line-height: 1.55; color: var(--ink-soft); margin: 0 0 6px; }
+  .explore .go { font-family: var(--font-mono); font-size: 0.625rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--brass); }
+
+  .locked-block { padding: 56px 0; background: var(--paper); border-bottom: 1px solid var(--ink); text-align: center; }
+  .locked-block .lb-text { font-family: var(--font-serif); font-style: italic; font-size: 1.05rem; line-height: 1.7; color: var(--ink); max-width: 60ch; margin: 14px auto 0; }
+
+  footer { padding: 44px 0 48px; background: var(--ink); color: var(--bone); }
+  footer .foot-grid { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 24px; }
+  footer .fcol { font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--vellum); line-height: 2; }
+  footer .fcol a { color: var(--vellum); }
+  footer .fcol a:hover { color: var(--bone); border-bottom: 1px solid var(--graphite); }
+  footer .brand { font-family: var(--font-serif); font-size: 1.5rem; letter-spacing: 0.06em; color: var(--bone); text-transform: none; }
+</style>
+</head>
+<body class="paper-texture">
+
+<nav class="top-nav"><div class="wrap inner">
+  <a href="index.html" class="wordmark">VerifIQ</a>
+  <div class="nav-links">
+    <a href="#products">Products</a>
+    <a href="case-study-01.html">Case study</a>
+    <a href="about.html">About</a>
+    <a href="three-products.html">The engine</a>
+  </div>
+  <a href="mailto:liam@goviq.ie?subject=VerifIQ%20pilot%20—%20request%20the%20brief" class="t-meta" style="color:var(--ink);border-bottom:1px solid var(--ink);">Request the brief ↗</a>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <span class="t-eyebrow">— Pre-build document checking · Irish standards</span>
+  <h1>Read the pack before it goes out.</h1>
+  <p class="lede">VerifIQ helps design teams, contractors and Employer-side capital programmes find document-quality issues in tender packs before issue — outdated standards, cut-paste from prior projects, missing schedules, FSC condition gaps, jurisdictional mis-references.</p>
+  <div class="ctas">
+    <a href="case-study-01.html" class="btn-sheet-tag"><span class="sheet-code">CS-01</span><span class="sheet-label">See 327 findings <span class="sheet-arrow"></span></span></a>
+    <a href="mailto:liam@goviq.ie?subject=VerifIQ%20pilot%20—%20request%20the%20brief" class="btn-leader"><span class="leader-num">01</span><span class="leader-line"></span><span class="leader-label">Request the brief</span></a>
+  </div>
+</div></header>
+
+<div class="stat-band">
+  <div class="cell"><div class="num tab-num">327</div><div class="lab t-meta">Findings · validation pack</div></div>
+  <div class="cell"><div class="num tab-num">161</div><div class="lab t-meta">Files reviewed · Stage 2C</div></div>
+  <div class="cell"><div class="num tab-num">5</div><div class="lab t-meta">Disciplines surfaced</div></div>
+  <div class="cell"><div class="num">EU</div><div class="lab t-meta">Data residency · GDPR</div></div>
+</div>
+
+<section class="section" id="products"><div class="wrap">
+  <div class="section-head">
+    <span class="t-eyebrow">— Three products, one engine</span>
+    <h2>Same checking engine. Three ways to read it.</h2>
+    <p>Branded for the people who need it — design teams, main contractors, sole practitioners.</p>
+  </div>
+
+  <div class="product-grid">
+    <div class="product">
+      <span class="tag">Verify</span>
+      <h3>VerifIQ Verify</h3>
+      <div class="who">Architects · Engineers · Design teams</div>
+      <p class="desc">Reads the whole multi-discipline pack against the live Irish corpus and surfaces, in the document's own words, what a registered professional may wish to read closely. Framed as "possible issues, please verify".</p>
+      <div class="price">€150–€800 <span>/ check</span></div>
+      <a href="case-study-01.html" class="btn-leader"><span class="leader-num">→</span><span class="leader-line"></span><span class="leader-label">See the output</span></a>
+    </div>
+    <div class="product">
+      <span class="tag">Hunt</span>
+      <h3>VerifIQ Hunt</h3>
+      <div class="who">Main contractors · Pre-con · QS</div>
+      <p class="desc">Scans the tender pack for variation exposure with PW-CF clause mapping — the gaps, ambiguities and missing entries a contractor can price before award instead of fighting after it.</p>
+      <div class="price">€300–€2,000 <span>/ scan</span></div>
+      <a href="hunt.html" class="btn-leader"><span class="leader-num">→</span><span class="leader-line"></span><span class="leader-label">Hunt landing</span></a>
+    </div>
+    <div class="product">
+      <span class="tag">Studio</span>
+      <h3>VerifIQ Studio</h3>
+      <div class="who">Sole practitioners · Small firms</div>
+      <p class="desc">Single-discipline, faster, cheaper. The same engine narrowed to one consultant's scope — for the practice that needs a second read on its own drawings before they go out.</p>
+      <div class="price">€60–€300 <span>/ check</span></div>
+      <a href="three-products.html" class="btn-leader"><span class="leader-num">→</span><span class="leader-line"></span><span class="leader-label">How it fits</span></a>
+    </div>
+  </div>
+
+  <div class="programme">
+    <div>
+      <div class="pt">+ Programme tier</div>
+      <div class="pd">Employer-side capital programmes — HSE Estates, OGP framework holders, Section 38/39 bodies. SSO, audit trail, single-tenant deployment. Custom pricing.</div>
+    </div>
+    <a href="mailto:liam@goviq.ie?subject=VerifIQ%20Programme%20enquiry" class="btn-leader"><span class="leader-num">02</span><span class="leader-line"></span><span class="leader-label">Talk to us</span></a>
+  </div>
+</div></section>
+
+<section class="section tint"><div class="wrap">
+  <div class="section-head">
+    <span class="t-eyebrow">— Validation · May 2026</span>
+    <h2>One real pack. 327 findings, source-quoted.</h2>
+    <p>An anonymised Stage 2C tender pack for an Adult Day Service — 161 files, read across five disciplines, every finding tied to the line in the document that raised it.</p>
+  </div>
+  <div class="source-quote">"Date for Substantial Completion: ____________"<span class="src-ref">Form of Tender · Schedule Part 1 · §4.2 · Page 12 — a required entry, left blank. Liquidated damages unenforceable as drawn.</span></div>
+  <div style="margin-top:28px;">
+    <a href="case-study-01.html" class="btn-sheet-tag"><span class="sheet-code">CS-01</span><span class="sheet-label">Read the case study <span class="sheet-arrow"></span></span></a>
+  </div>
+</div></section>
+
+<section class="section"><div class="wrap">
+  <div class="section-head">
+    <span class="t-eyebrow">— Explore</span>
+    <h2>Look around the atelier.</h2>
+  </div>
+  <div class="explore-grid">
+    <a class="explore" href="three-products.html"><span class="t-meta">Portfolio</span><h3>The three products, in plain English</h3><p>How Verify, Hunt and Studio sit on one engine — and who each is for.</p><span class="go">Read ↗</span></a>
+    <a class="explore" href="about.html"><span class="t-meta">About</span><h3>Who reads your pack</h3><p>The pilot reviewer, the published discipline scope, and what we will and will not sign.</p><span class="go">Meet the reviewer ↗</span></a>
+    <a class="explore" href="dashboard.html"><span class="t-meta">Product UI</span><h3>The post-login dashboard</h3><p>How a review reads once it lands — findings, severity, source quotes, recommended actions.</p><span class="go">See the mockup ↗</span></a>
+    <a class="explore" href="cad-library.html"><span class="t-meta">Design system</span><h3>The component library</h3><p>The atelier's drawing kit — severity pills, source quotations, the register in its own words.</p><span class="go">Open the library ↗</span></a>
+  </div>
+</div></section>
+
+<section class="locked-block"><div class="wrap-narrow">
+  <span class="t-eyebrow">— Notice · Locked disclaimer</span>
+  <p class="lb-text">VerifIQ is a software-based reading aid. It surfaces, in the documents' own words, what a registered professional may wish to read closely. It does not certify, sign, opine, or substitute for professional judgement. The registered designer reads our output, exercises their own judgement, verifies locally, and signs. The professional indemnity remains theirs. We carry product-quality risk only.</p>
+</div></section>
+
+<footer><div class="wrap">
+  <div class="foot-grid">
+    <div class="fcol">
+      <div class="brand">VerifIQ</div>
+      <div style="margin-top:10px;">Part of the GovIQ family<br>An Irish company · EU data residency</div>
+    </div>
+    <div class="fcol">
+      <a href="#products">Products</a><br>
+      <a href="case-study-01.html">Case study</a><br>
+      <a href="three-products.html">The engine</a><br>
+      <a href="about.html">About</a>
+    </div>
+    <div class="fcol">
+      <a href="hunt.html">Hunt</a><br>
+      <a href="dashboard.html">Dashboard</a><br>
+      <a href="cad-library.html">Design system</a><br>
+      <a href="legal.html">Legal notice</a>
+    </div>
+    <div class="fcol">
+      <a href="mailto:liam@goviq.ie">liam@goviq.ie</a><br>
+      <a href="mailto:liam@goviq.ie?subject=VerifIQ%20pilot%20—%20request%20the%20brief">Request the brief ↗</a><br>
+      <span style="color:var(--graphite);">© MMXXVI · Dublin</span>
+    </div>
+  </div>
+</div></footer>
+
+</body>
+</html>

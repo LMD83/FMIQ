@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VerifIQ — Three products, one engine</title>
+<style>
+  :root {
+    --brand: #0E3A6E;
+    --brand-dark: #082451;
+    --accent: #1E88E5;
+    --ink: #1A1A1A;
+    --muted: #5A5A5A;
+    --bg: #FAFBFC;
+    --card: #FFFFFF;
+    --rule: #E5E8EB;
+    --ok: #1F6B3A;
+    --warn: #C75300;
+    --crit: #B00020;
+    --hilite: #FFF4D6;
+    --verify: #1E88E5;
+    --hunt: #C75300;
+    --studio: #1F6B3A;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Calibri, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
+    color: white; padding: 100px 0 80px; text-align: center;
+  }
+  .hero .tag {
+    display: inline-block; background: rgba(255,255,255,0.15);
+    padding: 8px 20px; border-radius: 100px; font-size: 14px;
+    margin-bottom: 24px; letter-spacing: 1px; text-transform: uppercase;
+  }
+  .hero h1 {
+    font-size: 72px; font-weight: 900; letter-spacing: -2px;
+    line-height: 1.05; margin-bottom: 24px;
+  }
+  .hero p {
+    font-size: 24px; opacity: 0.92; max-width: 700px;
+    margin: 0 auto;
+  }
+
+  /* SECTION */
+  section { padding: 80px 0; }
+  section.alt { background: white; }
+
+  /* THE PROBLEM */
+  .problem-hero {
+    text-align: center; margin-bottom: 60px;
+  }
+  .problem-hero .small {
+    font-size: 14px; color: var(--muted); letter-spacing: 2px;
+    text-transform: uppercase; font-weight: 700; margin-bottom: 16px;
+  }
+  .problem-hero h2 {
+    font-size: 52px; color: var(--brand); font-weight: 800;
+    letter-spacing: -1.5px; margin-bottom: 24px;
+  }
+  .problem-hero p {
+    font-size: 22px; color: var(--muted); max-width: 720px;
+    margin: 0 auto;
+  }
+  .big-number {
+    text-align: center; padding: 60px 0;
+  }
+  .big-number .num {
+    font-size: 180px; font-weight: 900;
+    color: var(--brand); line-height: 1; letter-spacing: -6px;
+  }
+  .big-number .lab {
+    font-size: 24px; color: var(--ink); margin-top: 16px;
+  }
+  .big-number .sub {
+    font-size: 16px; color: var(--muted); margin-top: 12px;
+    font-style: italic;
+  }
+
+  /* CALLOUTS / EXAMPLES */
+  .example-card {
+    background: var(--card); border-radius: 16px;
+    padding: 32px; margin: 24px 0;
+    border-left: 6px solid var(--brand);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+  }
+  .example-card .label {
+    font-size: 13px; color: var(--brand); font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 12px;
+  }
+  .example-card h4 {
+    font-size: 24px; margin-bottom: 12px; color: var(--ink);
+  }
+  .example-card p {
+    font-size: 17px; color: var(--ink); line-height: 1.6;
+  }
+  .example-card .quote {
+    font-style: italic; color: var(--muted);
+    border-left: 3px solid var(--rule); padding-left: 16px;
+    margin-top: 16px;
+  }
+
+  /* THREE PRODUCTS */
+  .three-up {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px;
+    margin: 40px 0;
+  }
+  .product {
+    background: var(--card); border-radius: 16px; padding: 36px 28px;
+    border-top: 8px solid var(--brand);
+    box-shadow: 0 4px 24px rgba(14, 58, 110, 0.08);
+    display: flex; flex-direction: column;
+  }
+  .product.verify { border-top-color: var(--verify); }
+  .product.hunt { border-top-color: var(--hunt); }
+  .product.studio { border-top-color: var(--studio); }
+  .product .icon {
+    font-size: 48px; margin-bottom: 12px;
+  }
+  .product .pname {
+    font-size: 14px; color: var(--muted); font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1.5px;
+  }
+  .product h3 {
+    font-size: 32px; color: var(--ink); font-weight: 800;
+    margin: 8px 0 16px; letter-spacing: -1px;
+  }
+  .product .tagline {
+    font-size: 18px; color: var(--muted); margin-bottom: 24px;
+    line-height: 1.5;
+  }
+  .product .for-who {
+    background: #F4F6F8; padding: 16px 20px; border-radius: 8px;
+    margin-bottom: 20px;
+  }
+  .product .for-who .lab {
+    font-size: 11px; color: var(--muted); font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .product .for-who .val {
+    font-size: 16px; color: var(--ink); font-weight: 600;
+    margin-top: 4px;
+  }
+  .product .price {
+    font-size: 36px; font-weight: 800; color: var(--brand);
+    margin: 16px 0 4px;
+  }
+  .product .price small {
+    font-size: 16px; color: var(--muted); font-weight: 400;
+  }
+  .product .sample {
+    background: #FAFBFC; border-radius: 8px; padding: 16px;
+    font-size: 14px; line-height: 1.5; margin-top: auto;
+    border: 1px dashed var(--rule);
+  }
+  .product .sample .sl {
+    font-size: 11px; color: var(--muted); font-weight: 700;
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .product .sample em { color: var(--ink); font-style: normal; font-weight: 600; }
+
+  /* COMPARE TABLE */
+  .compare {
+    background: white; border-radius: 16px; overflow: hidden;
+    border: 1px solid var(--rule); margin-top: 40px;
+  }
+  .compare table { width: 100%; border-collapse: collapse; }
+  .compare th, .compare td {
+    padding: 18px 20px; text-align: left;
+    border-bottom: 1px solid var(--rule); font-size: 15px;
+  }
+  .compare th {
+    background: var(--brand); color: white;
+    font-weight: 700; font-size: 14px; text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .compare td.label {
+    font-weight: 700; background: #F4F6F8;
+    width: 25%;
+  }
+  .compare tr:last-child td { border-bottom: none; }
+
+  /* THE STORY */
+  .story {
+    background: #F4F6F8; padding: 80px 0;
+  }
+  .story-card {
+    background: white; border-radius: 16px; padding: 48px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+    max-width: 800px; margin: 0 auto;
+  }
+  .story-card h3 {
+    font-size: 32px; margin-bottom: 16px; color: var(--brand);
+  }
+  .story-card .scene {
+    font-size: 18px; color: var(--ink); margin-bottom: 16px; line-height: 1.7;
+  }
+  .story-card .scene strong { color: var(--brand); }
+
+  /* WHY IT WORKS */
+  .why-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px;
+    margin: 40px 0;
+  }
+  .why-card {
+    text-align: center; padding: 32px 24px;
+  }
+  .why-card .n {
+    width: 64px; height: 64px; border-radius: 32px;
+    background: var(--brand); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 900; margin: 0 auto 20px;
+  }
+  .why-card h4 { font-size: 22px; margin-bottom: 12px; color: var(--ink); }
+  .why-card p { font-size: 16px; color: var(--muted); line-height: 1.6; }
+
+  /* MONEY */
+  .money-row {
+    display: grid; grid-template-columns: 2fr 1fr 1fr;
+    gap: 0; align-items: center;
+    padding: 24px 28px; border-bottom: 1px solid var(--rule);
+    background: white;
+  }
+  .money-row:first-child {
+    background: var(--brand); color: white; font-weight: 700;
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.8px;
+    padding: 18px 28px; border-bottom: none;
+  }
+  .money-row:last-child { border-bottom: none; }
+  .money-row .seg { font-weight: 600; font-size: 16px; }
+  .money-row .price-cell { text-align: center; font-weight: 700; font-size: 18px; color: var(--brand); }
+  .money-row .market-cell { text-align: right; font-weight: 700; font-size: 18px; color: var(--ok); }
+  .money-table {
+    background: white; border-radius: 12px; overflow: hidden;
+    border: 1px solid var(--rule); margin-top: 32px;
+  }
+
+  /* FINAL CTA */
+  .final {
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
+    color: white; padding: 100px 0; text-align: center;
+  }
+  .final h2 {
+    font-size: 56px; font-weight: 900; margin-bottom: 20px;
+    letter-spacing: -1.5px;
+  }
+  .final p {
+    font-size: 22px; opacity: 0.92; max-width: 600px;
+    margin: 0 auto 32px;
+  }
+  .final .small {
+    font-size: 14px; opacity: 0.7; margin-top: 24px;
+    font-style: italic;
+  }
+
+  h2.section-title {
+    font-size: 48px; font-weight: 800; color: var(--brand);
+    letter-spacing: -1.2px; margin-bottom: 12px;
+  }
+  .lede {
+    font-size: 20px; color: var(--muted); max-width: 700px;
+    margin-bottom: 40px;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .hero h1 { font-size: 42px; }
+    .hero p { font-size: 18px; }
+    .big-number .num { font-size: 100px; }
+    .three-up, .why-grid { grid-template-columns: 1fr; }
+    h2.section-title, .problem-hero h2 { font-size: 30px; }
+    .money-row { grid-template-columns: 1fr; gap: 8px; text-align: center; }
+    .money-row .price-cell, .money-row .market-cell { text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="tag">VerifIQ — three products, one engine</div>
+    <h1>One tool. Three audiences.<br>Three ways to make money.</h1>
+    <p>Same software. Same engine. Three different products for three different buyers. Here is what each one does and why each one matters.</p>
+  </div>
+</section>
+
+<!-- THE PROBLEM -->
+<section>
+  <div class="container">
+    <div class="problem-hero">
+      <div class="small">The problem we are solving</div>
+      <h2>Construction documents have a hidden mess inside them.</h2>
+      <p>Tender packs are the big bundle of paperwork that builders use to figure out what to build and how much it will cost. They are supposed to be perfect. They are not.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">A real example from May 2026</div>
+      <h4>One tender pack. One day of checking. 327 problems found.</h4>
+      <p>We took a real Irish tender pack — drawings, specs, the whole bundle — and ran it through our checker. In one day we found:</p>
+      <div class="quote">
+        A "Windows Schedule" that actually contained drawings of stairs.<br>
+        A spec describing a school in County Mayo — except the building is in Dublin.<br>
+        A mechanical spec written for a building with a boiler — except the project uses heat pumps.<br>
+        VAT shown as 21% when the correct rate has been 23% since 2024.<br>
+        Fire dampers spec'd to a British standard that was withdrawn in the 1970s.
+      </div>
+    </div>
+
+    <div class="big-number">
+      <div class="num">327</div>
+      <div class="lab">problems found in one pack.</div>
+      <div class="sub">A senior expert would take 5 to 10 days to find this much.</div>
+    </div>
+  </div>
+</section>
+
+<!-- THE THREE PRODUCTS -->
+<section class="alt">
+  <div class="container">
+    <h2 class="section-title">Three products, three buyers.</h2>
+    <p class="lede">
+      Same engine underneath. Different output framing. Different price. Different sales motion. The genius is one codebase doing three jobs.
+    </p>
+
+    <div class="three-up">
+
+      <div class="product verify">
+        <div class="icon">🔍</div>
+        <div class="pname">Product 1</div>
+        <h3>VerifIQ Verify</h3>
+        <div class="tagline">For the design team that builds the pack.</div>
+        <div class="for-who">
+          <div class="lab">Who buys it</div>
+          <div class="val">Architects, engineers, design partners</div>
+        </div>
+        <div class="for-who">
+          <div class="lab">Why they buy</div>
+          <div class="val">Catch your own mistakes before the client sees them.</div>
+        </div>
+        <div class="price">€150-€800<small>/check</small></div>
+        <div class="sample">
+          <div class="sl">What they see</div>
+          We noticed K10 partitions specified at REI 30. The granted Fire Safety Cert Condition 3 may require REI 60. <em>Please verify locally.</em>
+        </div>
+      </div>
+
+      <div class="product hunt">
+        <div class="icon">💰</div>
+        <div class="pname">Product 2</div>
+        <h3>VerifIQ Hunt</h3>
+        <div class="tagline">For the contractor pricing the bid.</div>
+        <div class="for-who">
+          <div class="lab">Who buys it</div>
+          <div class="val">Main contractors, pre-construction directors, QSs</div>
+        </div>
+        <div class="for-who">
+          <div class="lab">Why they buy</div>
+          <div class="val">Find where this pack will cost more than the price tag.</div>
+        </div>
+        <div class="price">€300-€2,000<small>/check</small></div>
+        <div class="sample">
+          <div class="sl">What they see</div>
+          K10 partitions REI 30 vs FSC Cond 3 REI 60. <em>Variation exposure: €18,000-€42,000 under PW-CF5 Clause 9.4.</em> Flag at tender.
+        </div>
+      </div>
+
+      <div class="product studio">
+        <div class="icon">🎯</div>
+        <div class="pname">Product 3</div>
+        <h3>VerifIQ Studio</h3>
+        <div class="tagline">For the one-person shop. Pick just your discipline.</div>
+        <div class="for-who">
+          <div class="lab">Who buys it</div>
+          <div class="val">Sole practitioners, small specialist firms</div>
+        </div>
+        <div class="for-who">
+          <div class="lab">Why they buy</div>
+          <div class="val">Cheaper. Just your discipline. Faster.</div>
+        </div>
+        <div class="price">€60-€300<small>/check</small></div>
+        <div class="sample">
+          <div class="sl">What they see</div>
+          Arch only · C&amp;S only · M&amp;E only · Fire only · EE only. <em>5-discipline buffet, pick your plate.</em>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- THE STORY -->
+<section class="story">
+  <div class="container">
+    <div class="story-card">
+      <h3>Same engine. Different story.</h3>
+      <div class="scene">
+        Imagine a smoke detector.
+      </div>
+      <div class="scene">
+        Sell it to a <strong>homeowner</strong> and it is "peace of mind, never lose your family in a fire". Sell the exact same detector to a <strong>landlord</strong> and it is "comply with rental regulations, avoid the €25,000 fine". Sell it to a <strong>school</strong> and it is "protect 800 children".
+      </div>
+      <div class="scene">
+        Same product. Three stories. Three sales motions. Three buyers willing to pay different prices for different reasons.
+      </div>
+      <div class="scene">
+        VerifIQ is the same. The engine reads the same documents, finds the same things, but tells three different stories to three different buyers.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARE -->
+<section>
+  <div class="container">
+    <h2 class="section-title">Verify vs Hunt — same finding, different story.</h2>
+    <p class="lede">
+      One issue. Same evidence. Two completely different outputs depending on who is buying.
+    </p>
+
+    <div class="compare">
+      <table>
+        <tr>
+          <th></th>
+          <th style="background: var(--verify);">VerifIQ Verify (designer)</th>
+          <th style="background: var(--hunt);">VerifIQ Hunt (contractor)</th>
+        </tr>
+        <tr>
+          <td class="label">What it says</td>
+          <td>"We noticed your partition spec may not match FSC Condition 3. Please verify locally."</td>
+          <td>"Partition spec mismatch with FSC Condition 3. Variation exposure €18-42k under PW-CF5 Clause 9.4."</td>
+        </tr>
+        <tr>
+          <td class="label">Tone</td>
+          <td>Gentle, advisory, "you might want to check this"</td>
+          <td>Direct, financial, "this will cost you money"</td>
+        </tr>
+        <tr>
+          <td class="label">Buyer feels</td>
+          <td>"Phew, glad I caught that before the client did"</td>
+          <td>"I need to flag this at tender or I am eating it"</td>
+        </tr>
+        <tr>
+          <td class="label">Where money is on the line</td>
+          <td>Reputation, time, PI insurance, future work</td>
+          <td>Bid margin, post-award variations, contract claims</td>
+        </tr>
+        <tr>
+          <td class="label">Sales channel</td>
+          <td>RIAI, Engineers Ireland, PI brokers</td>
+          <td>CIF, pre-con directors, QS associations</td>
+        </tr>
+        <tr>
+          <td class="label">Willingness to pay</td>
+          <td>€150-€800 per check</td>
+          <td>€300-€2,000 per check (higher ROI)</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- STUDIO -->
+<section class="alt">
+  <div class="container">
+    <h2 class="section-title">Studio — pick just your discipline.</h2>
+    <p class="lede">
+      Not every buyer needs the full pack reviewed. A sole-practitioner architect does not care about the electrical drawings. Charge them less for less.
+    </p>
+
+    <div class="three-up">
+      <div class="product">
+        <div class="pname">Arch only</div>
+        <h3 style="font-size: 26px;">VerifIQ Studio · Architecture</h3>
+        <div class="tagline">Architectural drawings + spec, nothing else.</div>
+        <div class="price">€75-€300<small>/check</small></div>
+        <div class="sample">For: RIAI sole practitioners, small architecture practices.</div>
+      </div>
+      <div class="product">
+        <div class="pname">C&S only</div>
+        <h3 style="font-size: 26px;">VerifIQ Studio · Structural</h3>
+        <div class="tagline">Structural drawings, calcs, spec.</div>
+        <div class="price">€75-€300<small>/check</small></div>
+        <div class="sample">For: Chartered C&amp;S engineers, structural-only consultancies.</div>
+      </div>
+      <div class="product">
+        <div class="pname">M&E only</div>
+        <h3 style="font-size: 26px;">VerifIQ Studio · M&amp;E</h3>
+        <div class="tagline">Mechanical and electrical, combined.</div>
+        <div class="price">€100-€400<small>/check</small></div>
+        <div class="sample">For: M&amp;E consultancies, building services engineers.</div>
+      </div>
+      <div class="product">
+        <div class="pname">Fire only</div>
+        <h3 style="font-size: 26px;">VerifIQ Studio · Fire</h3>
+        <div class="tagline">FSC conditions, fire compliance only.</div>
+        <div class="price">€60-€200<small>/check</small></div>
+        <div class="sample">For: Fire consultants, Assigned Certifiers checking fire stuff only.</div>
+      </div>
+      <div class="product">
+        <div class="pname">Electrical only</div>
+        <h3 style="font-size: 26px;">VerifIQ Studio · Electrical</h3>
+        <div class="tagline">IS 10101, IS 3218, IS 3217 — electrical compliance.</div>
+        <div class="price">€75-€300<small>/check</small></div>
+        <div class="sample">For: Chartered electrical engineers, EE consultancies.</div>
+      </div>
+      <div class="product">
+        <div class="pname">All disciplines</div>
+        <h3 style="font-size: 26px;">VerifIQ Studio · Pro</h3>
+        <div class="tagline">All five disciplines, full cross-check.</div>
+        <div class="price">€400-€1,500<small>/check</small></div>
+        <div class="sample">For: Lead designers, full design teams, employer-side buyers.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARKET MATH -->
+<section>
+  <div class="container">
+    <h2 class="section-title">How much money is in this?</h2>
+    <p class="lede">
+      Before the portfolio split: Irish addressable market was €3-15m a year. With three products serving more buyers? Bigger.
+    </p>
+
+    <div class="money-table">
+      <div class="money-row">
+        <div>Buyer segment</div>
+        <div class="price-cell">Price they pay</div>
+        <div class="market-cell">Irish market /yr</div>
+      </div>
+      <div class="money-row">
+        <div class="seg">VerifIQ Verify — design teams (500 firms)</div>
+        <div class="price-cell">€150-€800</div>
+        <div class="market-cell">€2.5-8m</div>
+      </div>
+      <div class="money-row">
+        <div class="seg">VerifIQ Studio — sole practitioners (1,500+ firms, NEW MARKET)</div>
+        <div class="price-cell">€60-€300</div>
+        <div class="market-cell">€1.5-4m</div>
+      </div>
+      <div class="money-row">
+        <div class="seg">VerifIQ Hunt — main contractors (120 firms)</div>
+        <div class="price-cell">€300-€2,000</div>
+        <div class="market-cell">€2-6m</div>
+      </div>
+      <div class="money-row">
+        <div class="seg">VerifIQ Programme — public-sector buyers (30+ bodies)</div>
+        <div class="price-cell">€20k-€120k/yr</div>
+        <div class="market-cell">€600k-€3.5m</div>
+      </div>
+      <div class="money-row" style="background: var(--brand); color: white; font-weight: 700;">
+        <div>Total addressable, Ireland alone</div>
+        <div class="price-cell" style="color: white;">—</div>
+        <div class="market-cell" style="color: white;">€6.6m - €21.5m /yr</div>
+      </div>
+    </div>
+
+    <div class="big-number" style="padding: 40px 0 20px;">
+      <div class="num">2-3×</div>
+      <div class="lab">bigger Irish market with the portfolio split.</div>
+      <div class="sub">And we have not even started in the UK yet.</div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY IT WORKS -->
+<section class="alt">
+  <div class="container">
+    <h2 class="section-title">Why this works.</h2>
+    <p class="lede">Three reasons, in plain English.</p>
+
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="n">1</div>
+        <h4>Same engine, three products</h4>
+        <p>We do not need to build three separate things. The engine is the same. We just change how the output is framed for each buyer. Engineering cost: tiny. Revenue uplift: 2-3×.</p>
+      </div>
+      <div class="why-card">
+        <div class="n">2</div>
+        <h4>Each buyer has different money</h4>
+        <p>A designer pays for time-saving and reputation. A contractor pays for direct money saved on a bid. Same finding, but the contractor pays more because the ROI is bigger.</p>
+      </div>
+      <div class="why-card">
+        <div class="n">3</div>
+        <h4>The Studio split opens a brand new market</h4>
+        <p>Sole-practitioner architects could never justify €400 per check. They can justify €75 for an arch-only check. That is 1,500+ new firms we could not reach before.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT NEXT -->
+<section>
+  <div class="container">
+    <h2 class="section-title">What happens next.</h2>
+    <p class="lede">In order. No skipping steps.</p>
+
+    <div class="example-card">
+      <div class="label">Step 1 · Weeks 1-12</div>
+      <h4>Build the engine first. Verify product launches first.</h4>
+      <p>Same as the original plan. MVP, friendly pilots, first paying customers. Studio and Hunt come from the same engine so they cost almost nothing extra to launch later.</p>
+    </div>
+
+    <div class="example-card" style="border-left-color: var(--studio);">
+      <div class="label">Step 2 · Months 4-6</div>
+      <h4>Launch Studio — same engine, just discipline-filtered.</h4>
+      <p>Add discipline-only filtering to the upload flow. New pricing tier under €100. Different landing pages for each discipline. Sales effort: LinkedIn outreach to sole practitioners, RIAI small-practice listings.</p>
+    </div>
+
+    <div class="example-card" style="border-left-color: var(--hunt);">
+      <div class="label">Step 3 · Months 6-9</div>
+      <h4>Launch Hunt — same engine, money-focused output.</h4>
+      <p>Add the €-band calculator on top of findings. New brand, separate landing page (verifiqhunt.ie). Sales: CIF events, pre-con director outreach, QS associations. This becomes the highest-revenue per check tier.</p>
+    </div>
+
+    <div class="example-card" style="border-left-color: var(--brand);">
+      <div class="label">Step 4 · Year 2</div>
+      <h4>Programme tier scales. UK Studio launches.</h4>
+      <p>Bigger Employer-side deals. UK Studio launches in parallel — UK standards corpus is the only difference. Ten times the addressable market.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final">
+  <div class="container">
+    <h2>One engine. Three products.<br>2-3× the market.</h2>
+    <p>That is the bet. Same code, three stories, three buyers, three prices.</p>
+    <p style="font-size: 18px; margin-top: 20px;">liam@goviq.ie · verifiq.ie</p>
+    <div class="small">VerifIQ · An Irish company · Built for Irish standards · EU data residency</div>
+  </div>
+</section>
+
+</body>
+</html>
