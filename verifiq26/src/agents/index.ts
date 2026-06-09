@@ -8,7 +8,14 @@
  * Version: 0.4.0-phase2
  */
 
-export { PromptLoader, extractSection, bundledPromptLoader } from "./prompts.js";
+export {
+  PromptLoader,
+  extractSection,
+  FsPromptSource,
+  RecordPromptSource,
+  type PromptSource,
+    bundledPromptLoader,
+} from "./prompts.js";
 export { MVP_DISCIPLINES, STAGE_CODE, type DisciplineDef } from "./disciplines.js";
 export {
   DisciplineAgent,

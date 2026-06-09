@@ -39,6 +39,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Generate src/convex/_generated/ (gitignored). Offline stub for now;
+      # replace with `npx convex codegen` once a CONVEX_DEPLOY_KEY secret exists.
+      - name: Generate Convex types
+        run: npm run codegen:stub
+
+      - name: Bundle prompts (for the Convex runtime)
+        run: npm run bundle:prompts
+
       - name: Typecheck (tsc --noEmit, strict)
         run: npm run typecheck
 

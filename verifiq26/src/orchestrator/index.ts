@@ -25,7 +25,13 @@ export {
   type RunSummary,
 } from "./queue.js";
 export { InMemoryPersistence } from "./memory.js";
-export { ConvexPersistence, type ConvexRunner } from "./convex-port.js";
+export {
+  ConvexPersistence,
+  createConvexPersistence,
+  InMemoryConvexBackend,
+  type ConvexBackend,
+  type StoredWorkflowState,
+} from "./convex-persistence.js";
 export {
   STAGES,
   STAGE_SCAN_STATE,
