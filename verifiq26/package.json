@@ -8,11 +8,10 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "codegen:stub": "node scripts/gen-convex-stub.mjs",
-    "bundle:prompts": "node scripts/bundle-prompts.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "codegen:stub": "node scripts/gen-convex-stub.mjs",
     "bundle:prompts": "node scripts/bundle-prompts.mjs",
     "convex:dev": "convex dev",
     "convex:deploy": "convex deploy",
