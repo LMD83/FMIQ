@@ -11,6 +11,7 @@
 <meta property="og:url" content="https://www.verifiq.ie/" />
 <link rel="stylesheet" href="verifiq-system.css" />
 <link rel="stylesheet" href="verifiq-cad.css" />
+<script src="verifiq-atelier.js" defer></script>
 <style>
   body { background: var(--bone); }
   .wrap { max-width: 1080px; margin: 0 auto; padding: 0 32px; }
@@ -24,9 +25,11 @@
   .nav-links a:hover { color: var(--ink); }
   @media (min-width: 860px) { .nav-links { display: flex; } }
 
-  .hero { padding: 88px 0 72px; border-bottom: 1px solid var(--ink); background: var(--paper); }
-  .hero h1 { font-family: var(--font-serif); font-weight: 600; font-size: clamp(2.6rem,6vw,5rem); line-height: 1.02; margin: 18px 0 18px; max-width: 16ch; }
-  .hero .lede { font-family: var(--font-serif); font-style: italic; font-size: clamp(1.15rem,2vw,1.45rem); color: var(--ink-soft); max-width: 56ch; margin: 0 0 36px; }
+  .hero { padding: 72px 0 64px; border-bottom: 1px solid var(--ink); background: var(--paper); }
+  .hero-grid { display: grid; gap: 48px; align-items: center; }
+  @media (min-width: 980px) { .hero-grid { grid-template-columns: 1.05fr 0.95fr; } }
+  .hero h1 { font-family: var(--font-serif); font-weight: 600; font-size: clamp(2.4rem,4.6vw,4.2rem); line-height: 1.02; margin: 18px 0 18px; max-width: 16ch; }
+  .hero .lede { font-family: var(--font-serif); font-style: italic; font-size: clamp(1.1rem,1.8vw,1.35rem); color: var(--ink-soft); max-width: 56ch; margin: 0 0 36px; }
   .hero .ctas { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; }
 
   .stat-band { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--ink); border-bottom: 1px solid var(--ink); }
@@ -34,8 +37,8 @@
   .stat-band .num { font-family: var(--font-serif); font-weight: 500; font-size: 2.5rem; line-height: 1; color: var(--brass); }
   .stat-band .lab { margin-top: 8px; }
 
-  .section { padding: 72px 0; border-bottom: 1px solid var(--ink); }
-  .section.tint { background: var(--vellum); }
+  .section { padding: 64px 0; }
+  .section.tint { background: var(--vellum); border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
   .section-head { margin-bottom: 44px; max-width: 64ch; }
   .section-head h2 { font-family: var(--font-serif); font-weight: 500; font-size: clamp(1.8rem,3vw,2.6rem); line-height: 1.1; margin: 12px 0 14px; }
   .section-head p { font-family: var(--font-serif); font-style: italic; font-size: 1.15rem; color: var(--ink-soft); margin: 0; }
@@ -73,7 +76,7 @@
   footer .brand { font-family: var(--font-serif); font-size: 1.5rem; letter-spacing: 0.06em; color: var(--bone); text-transform: none; }
 </style>
 </head>
-<body class="paper-texture">
+<body class="paper-texture" data-sheet="A-001" data-sheet-title="Index of sheets">
 
 <nav class="top-nav"><div class="wrap inner">
   <a href="index.html" class="wordmark">VerifIQ</a>
@@ -86,24 +89,44 @@
   <a href="mailto:liam@goviq.ie?subject=VerifIQ%20pilot%20—%20request%20the%20brief" class="t-meta" style="color:var(--ink);border-bottom:1px solid var(--ink);">Request the brief ↗</a>
 </div></nav>
 
-<header class="hero"><div class="wrap">
-  <span class="t-eyebrow">— Pre-build document checking · Irish standards</span>
-  <h1>Read the pack before it goes out.</h1>
-  <p class="lede">VerifIQ helps design teams, contractors and Employer-side capital programmes find document-quality issues in tender packs before issue — outdated standards, cut-paste from prior projects, missing schedules, FSC condition gaps, jurisdictional mis-references.</p>
-  <div class="ctas">
-    <a href="case-study-01.html" class="btn-sheet-tag"><span class="sheet-code">CS-01</span><span class="sheet-label">See 327 findings <span class="sheet-arrow"></span></span></a>
-    <a href="mailto:liam@goviq.ie?subject=VerifIQ%20pilot%20—%20request%20the%20brief" class="btn-leader"><span class="leader-num">01</span><span class="leader-line"></span><span class="leader-label">Request the brief</span></a>
+<header class="hero"><div class="wrap hero-grid">
+  <div>
+    <span class="t-eyebrow">— Pre-build document checking · Irish standards</span>
+    <h1>Read the pack before it goes out.</h1>
+    <p class="lede">VerifIQ helps design teams, contractors and Employer-side capital programmes find document-quality issues in tender packs before issue — outdated standards, cut-paste from prior projects, missing schedules, FSC condition gaps, jurisdictional mis-references.</p>
+    <div class="ctas">
+      <a href="case-study-01.html" class="btn-sheet-tag"><span class="sheet-code">CS-01</span><span class="sheet-label">See 327 findings <span class="sheet-arrow"></span></span></a>
+      <a href="mailto:liam@goviq.ie?subject=VerifIQ%20pilot%20—%20request%20the%20brief" class="btn-leader"><span class="leader-num">01</span><span class="leader-line"></span><span class="leader-label">Request the brief</span></a>
+    </div>
   </div>
+
+  <!-- The live review: a real fragment from the validation pack, read in
+       front of the visitor. Logic in verifiq-atelier.js (heroReview). -->
+  <figure class="doc-frag" id="hero-review" aria-label="A VerifIQ reading of a Form of Tender fragment: the blank Date for Substantial Completion is found and tagged critical.">
+    <div class="df-head"><span>Form of Tender · Schedule Part 1</span><span>§4 · Page 12</span></div>
+    <div class="df-body">
+      <div class="df-scan" aria-hidden="true"></div>
+      <p class="df-line"><span class="df-clause">4.1</span>The Contract Sum shall be the amount stated in the Tender and shall be inclusive of all obligations under the Contract.</p>
+      <p class="df-line"><span class="df-clause">4.2</span>Date for Substantial Completion: <span class="df-blank">____________</span></p>
+      <p class="df-line"><span class="df-clause">4.3</span>Liquidated damages shall apply in accordance with PW-CF5 Clause 9.5.</p>
+      <div class="df-tag" aria-hidden="true"><span class="sev sev-critical solid">Critical</span> C-03</div>
+    </div>
+    <svg class="df-leader" aria-hidden="true"></svg>
+    <figcaption class="df-finding" aria-live="polite"></figcaption>
+    <button class="df-replay" type="button">↻ Replay the read</button>
+  </figure>
 </div></header>
 
 <div class="stat-band">
-  <div class="cell"><div class="num tab-num">327</div><div class="lab t-meta">Findings · validation pack</div></div>
-  <div class="cell"><div class="num tab-num">161</div><div class="lab t-meta">Files reviewed · Stage 2C</div></div>
-  <div class="cell"><div class="num tab-num">5</div><div class="lab t-meta">Disciplines surfaced</div></div>
+  <div class="cell"><div class="num tab-num count-up" data-target="327">327</div><div class="lab t-meta">Findings · validation pack</div></div>
+  <div class="cell"><div class="num tab-num count-up" data-target="161">161</div><div class="lab t-meta">Files reviewed · Stage 2C</div></div>
+  <div class="cell"><div class="num tab-num count-up" data-target="5">5</div><div class="lab t-meta">Disciplines surfaced</div></div>
   <div class="cell"><div class="num">EU</div><div class="lab t-meta">Data residency · GDPR</div></div>
 </div>
 
-<section class="section" id="products"><div class="wrap">
+<div class="dim-rule"><span class="dim-tick"></span><span class="dim-label">§ 01 · three products, one method</span><span class="dim-tick"></span></div>
+
+<section class="section reveal" id="products"><div class="wrap">
   <div class="section-head">
     <span class="t-eyebrow">— Three products, one method</span>
     <h2>Same checking method. Three ways to read it.</h2>
@@ -146,10 +169,10 @@
   </div>
 </div></section>
 
-<section class="section tint"><div class="wrap">
+<section class="section tint reveal"><div class="wrap">
   <div class="section-head">
     <span class="t-eyebrow">— Validation · May 2026</span>
-    <h2>One real pack. 327 findings, source-quoted.</h2>
+    <h2>One real pack. <span class="rev-cloud">327 findings, source-quoted.</span></h2>
     <p>An anonymised Stage 2C tender pack for an Adult Day Service — 161 files, read across five disciplines, every finding tied to the line in the document that raised it.</p>
   </div>
   <div class="source-quote">"Date for Substantial Completion: ____________"<span class="src-ref">Form of Tender · Schedule Part 1 · §4.2 · Page 12 — a required entry, left blank. Liquidated damages unenforceable as drawn.</span></div>
@@ -158,7 +181,9 @@
   </div>
 </div></section>
 
-<section class="section"><div class="wrap">
+<div class="dim-rule"><span class="dim-tick"></span><span class="dim-label">§ 03 · the rest of the set</span><span class="dim-tick"></span></div>
+
+<section class="section reveal"><div class="wrap">
   <div class="section-head">
     <span class="t-eyebrow">— Explore</span>
     <h2>Look around the atelier.</h2>

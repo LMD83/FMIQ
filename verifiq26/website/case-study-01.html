@@ -7,6 +7,7 @@
 <meta name="description" content="A worked anonymised case study from a 327-finding Stage 2C tender pack read. Ten findings shown in full with verbatim source quotes." />
 <link rel="stylesheet" href="verifiq-system.css" />
 <link rel="stylesheet" href="verifiq-cad.css" />
+<script src="verifiq-atelier.js" defer></script>
 <style>
   body { background: var(--bone); }
   .wrap { max-width: 1080px; margin: 0 auto; padding: 0 32px; }
@@ -47,7 +48,7 @@
   footer a { color: var(--vellum); border-bottom: 1px solid var(--graphite); }
 </style>
 </head>
-<body class="paper-texture">
+<body class="paper-texture" data-sheet="CS-01" data-sheet-title="Findings register">
 <nav class="top-nav"><div class="wrap inner">
   <a href="index.html" class="wordmark">VerifIQ</a>
   <div class="nav-links">
@@ -65,12 +66,12 @@
     <h1>Adult Day Service · Stage 2C tender pack.</h1>
     <p class="lede">A worked anonymised example. 161 documents across five disciplines. Three weeks in front of the team's planned tender release date.</p>
     <div class="stat-row">
-      <div class="stat"><div class="num tab-num">327</div><div class="lab">Findings · all</div></div>
-      <div class="stat"><div class="num crit tab-num">30</div><div class="lab">Critical</div></div>
-      <div class="stat"><div class="num high tab-num">144</div><div class="lab">High</div></div>
-      <div class="stat"><div class="num med tab-num">116</div><div class="lab">Medium</div></div>
-      <div class="stat"><div class="num low tab-num">37</div><div class="lab">Low</div></div>
-      <div class="stat"><div class="num tab-num">38h</div><div class="lab">End-to-end</div></div>
+      <div class="stat"><div class="num tab-num count-up" data-target="327">327</div><div class="lab">Findings · all</div></div>
+      <div class="stat"><div class="num crit tab-num count-up" data-target="30">30</div><div class="lab">Critical</div></div>
+      <div class="stat"><div class="num high tab-num count-up" data-target="144">144</div><div class="lab">High</div></div>
+      <div class="stat"><div class="num med tab-num count-up" data-target="116">116</div><div class="lab">Medium</div></div>
+      <div class="stat"><div class="num low tab-num count-up" data-target="37">37</div><div class="lab">Low</div></div>
+      <div class="stat"><div class="num tab-num count-up" data-target="38" data-suffix="h">38h</div><div class="lab">End-to-end</div></div>
     </div>
     <p style="font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--graphite); margin-top: 18px;">Identifiers anonymised · findings reproduced verbatim · standards references preserved</p>
   </div>
@@ -88,7 +89,18 @@
   </div>
 </section>
 
-<section class="section tint">
+<!-- The register filter — sticky under the nav; logic in verifiq-atelier.js -->
+<div class="reg-controls" id="reg-controls">
+  <div class="wrap-narrow" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;width:100%;">
+    <span class="rc-label">— The register · filter</span>
+    <button type="button" class="sev" data-filter="all" aria-pressed="true">All</button>
+    <button type="button" class="sev sev-critical" data-filter="critical" aria-pressed="false">Critical</button>
+    <button type="button" class="sev sev-high" data-filter="high" aria-pressed="false">High</button>
+    <span class="rc-label" data-reg-count style="margin-left:auto;"></span>
+  </div>
+</div>
+
+<section class="section tint" data-reg-section>
   <div class="wrap-narrow">
     <div class="section-head">
       <div class="num">II.</div>
@@ -96,7 +108,7 @@
       <p>Each surfaced with the verbatim sentence from the source document and the page reference. Reproduced here exactly as released to the design team.</p>
     </div>
 
-    <article class="finding critical">
+    <article class="finding critical" data-severity="critical">
       <div class="meta">
         <span class="sev sev-critical">Critical</span>
         <span class="t-eyebrow" style="color: var(--sanguine);">C-01</span>
@@ -110,7 +122,7 @@
       <div class="reco"><span class="lab">— Recommended action</span><p>Confirm single legal entity with Employer's Representative. Issue Form of Tender Schedule Part 1 and BCAR documentation as Revision B with consistent identity throughout. Add Contracting Authority reference to Title Block on both.</p></div>
     </article>
 
-    <article class="finding critical">
+    <article class="finding critical" data-severity="critical">
       <div class="meta">
         <span class="sev sev-critical">Critical</span>
         <span class="t-eyebrow" style="color: var(--sanguine);">C-02</span>
@@ -124,7 +136,7 @@
       <div class="reco"><span class="lab">— Recommended action</span><p>Re-issue BCAR documentation aligned to PW-CF5 Employer-Designed scope. Confirm with Assigned Certifier that the Builder is not being held responsible for design completion outside the contract form's allocation. Issue as Revision B.</p></div>
     </article>
 
-    <article class="finding critical">
+    <article class="finding critical" data-severity="critical">
       <div class="meta">
         <span class="sev sev-critical">Critical</span>
         <span class="t-eyebrow" style="color: var(--sanguine);">C-03</span>
@@ -140,7 +152,7 @@
   </div>
 </section>
 
-<section class="section">
+<section class="section" data-reg-section>
   <div class="wrap-narrow">
     <div class="section-head">
       <div class="num">III.</div>
@@ -148,49 +160,49 @@
       <p>A representative sample of the 38 high-severity findings. Each one reproduced with the verbatim source quote.</p>
     </div>
 
-    <article class="finding">
+    <article class="finding" data-severity="high">
       <div class="meta"><span class="sev sev-high">High</span><span class="t-eyebrow">H-04</span><span class="t-meta">M&amp;E</span></div>
       <h3>Hoist brand named differently across M&amp;E spec, RDS, and schedule.</h3>
       <div class="source-quote">"Hoist supplier: [REDACTED — Brand A]" (M&amp;E spec). "Hoist supplier: [REDACTED — Brand B]" (Room Data Sheet 12). "Hoist supplier: [REDACTED — Brand C]" (Schedule of Mechanical Items).<span class="src-ref">M&amp;E Spec §11.4 · RDS 12 · Sch M.04</span></div>
       <div class="reco"><span class="lab">— Recommended action</span><p>Reconcile to single specified hoist brand across all three documents. Confirm SWL and sling-integration consistency.</p></div>
     </article>
 
-    <article class="finding">
+    <article class="finding" data-severity="high">
       <div class="meta"><span class="sev sev-high">High</span><span class="t-eyebrow">H-09</span><span class="t-meta">Electrical</span></div>
       <h3>"I.S. EN 10101" cited — this Irish Standard prefix does not exist.</h3>
       <div class="source-quote">"All electrical installations shall comply with I.S. EN 10101 latest edition."<span class="src-ref">Elec Spec · §3.1.2 · Page 14</span></div>
       <div class="reco"><span class="lab">— Recommended action</span><p>Suspected typo for I.S. 10101:2020 (Electrical installations of buildings). Confirm with electrical engineer and re-issue Elec Spec as Revision B with correct standard reference.</p></div>
     </article>
 
-    <article class="finding">
+    <article class="finding" data-severity="high">
       <div class="meta"><span class="sev sev-high">High</span><span class="t-eyebrow">H-12</span><span class="t-meta">Fire</span></div>
       <h3>Cause-and-effect matrix referenced but not appended to pack.</h3>
       <div class="source-quote">"Refer to Cause-and-Effect Matrix (Appendix F) for system interlocks."<span class="src-ref">Fire Strategy · §6.4 · Page 21</span></div>
       <div class="reco"><span class="lab">— Recommended action</span><p>Append Appendix F before tender release. Cause-and-effect matrix is required for bidder pricing of fire-detection, suppression, and shutdown interlocks.</p></div>
     </article>
 
-    <article class="finding">
+    <article class="finding" data-severity="high">
       <div class="meta"><span class="sev sev-high">High</span><span class="t-eyebrow">H-18</span><span class="t-meta">Architecture / Access</span></div>
       <h3>Ancillary Certificate list mismatched to design scope.</h3>
       <div class="source-quote">"Ancillary Certificates required: [REDACTED — list omits four specialist trades present in the design]."<span class="src-ref">BCAR Doc · §5.1 · Page 18</span></div>
       <div class="reco"><span class="lab">— Recommended action</span><p>Reconcile Ancillary Certificate list with actual design scope. Confirm with Assigned Certifier prior to release.</p></div>
     </article>
 
-    <article class="finding">
+    <article class="finding" data-severity="high">
       <div class="meta"><span class="sev sev-high">High</span><span class="t-eyebrow">H-22</span><span class="t-meta">QS / Procurement</span></div>
       <h3>ITT date arithmetic does not align with stated tender period.</h3>
       <div class="source-quote">"Tender period: 4 weeks from ITT issue date [DATE-A] to query deadline [DATE-B]" — calculated period is 19 calendar days, not 28.<span class="src-ref">ITT · Cover · Page 2</span></div>
       <div class="reco"><span class="lab">— Recommended action</span><p>Reconcile dates or amend stated period. Misalignment risks tender process challenge and bid invalidation.</p></div>
     </article>
 
-    <article class="finding">
+    <article class="finding" data-severity="high">
       <div class="meta"><span class="sev sev-high">High</span><span class="t-eyebrow">H-29</span><span class="t-meta">M&amp;E</span></div>
       <h3>M&amp;E specification references wrong project address.</h3>
       <div class="source-quote">"For installations at [REDACTED — different project address from Title Block]…"<span class="src-ref">M&amp;E Spec · Cover · Page 1</span></div>
       <div class="reco"><span class="lab">— Recommended action</span><p>Re-issue M&amp;E spec with correct project address. Cover-page misalignment risks bid confusion and invoice misallocation.</p></div>
     </article>
 
-    <article class="finding">
+    <article class="finding" data-severity="high">
       <div class="meta"><span class="sev sev-high">High</span><span class="t-eyebrow">H-33</span><span class="t-meta">Architecture</span></div>
       <h3>Contradictory car-park scope statements.</h3>
       <div class="source-quote">"Car park scope: [REDACTED — Drawing schedule reads 18 spaces]" / "Car park scope: [REDACTED — Spec reads 24 spaces]."<span class="src-ref">Drawings · Schedule of Spaces · vs. Arch Spec §4.2</span></div>

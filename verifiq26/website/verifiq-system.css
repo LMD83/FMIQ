@@ -195,3 +195,324 @@ h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 500; }
 
 /* Accessibility — visible keyboard focus (WCAG 2.4.7). */
 :focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   THE ISSUED SET — the site behaves like a drawing set that has been read.
+   Sheet chrome (title block, sheet drawer), drafting gestures (dimension rules,
+   leader lines, revision clouds, stamps) and the live-review document fragment.
+   Companion logic: verifiq-atelier.js
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* Page navigations cross-fade like turning a sheet (no-op where unsupported). */
+@view-transition { navigation: auto; }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+}
+
+/* The cursor over any quoted document becomes a drafting crosshair. */
+.source-quote, .doc-frag { cursor: crosshair; }
+
+/* ── Dimension-rule divider ──────────────────────────────────────────────────
+   <div class="dim-rule" data-label="§ 02 · validation"></div>
+   A measured drafting line between sections: end ticks + centred annotation. */
+.dim-rule {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 26px 32px;
+}
+.dim-rule::before, .dim-rule::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--ink);
+}
+.dim-rule .dim-label {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--graphite);
+  white-space: nowrap;
+}
+/* end ticks — the short perpendicular strokes of a dimension line */
+.dim-rule .dim-tick {
+  width: 1px; height: 12px; background: var(--ink); flex: none;
+}
+
+/* ── Sheet title block ───────────────────────────────────────────────────────
+   Injected by verifiq-atelier.js before the footer, from <body data-sheet …>.
+   Reads like the bottom-right corner of an issued drawing. */
+.title-block {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 40px 32px 48px;
+  display: flex;
+  justify-content: flex-end;
+}
+.title-block .tb {
+  display: grid;
+  grid-template-columns: auto auto;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  min-width: 300px;
+}
+.title-block .tb > div { padding: 8px 14px; border-top: 1px solid var(--ink); }
+.title-block .tb > div:nth-child(-n+2) { border-top: 0; }
+.title-block .tb > div:nth-child(odd) { color: var(--graphite); border-right: 1px solid var(--ink); }
+.title-block .tb > div:nth-child(even) { color: var(--ink); }
+.title-block .tb .tb-proj {
+  grid-column: 1 / -1;
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  color: var(--ink);
+  border-right: 0 !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 18px;
+}
+.title-block .tb .tb-proj .tb-sheetno { font-family: var(--font-mono); font-size: 0.8125rem; letter-spacing: 0.14em; color: var(--brass); }
+
+/* ── Mobile sheet drawer ─────────────────────────────────────────────────────
+   Below 860px the nav links vanish; the drawer is the drawing index. */
+.nav-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: 1px solid var(--ink);
+  padding: 8px 12px;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink);
+  cursor: pointer;
+}
+@media (min-width: 860px) { .nav-toggle { display: none; } }
+.sheet-drawer {
+  display: none;
+  border-bottom: 1px solid var(--ink);
+  background: var(--paper);
+}
+.sheet-drawer.open { display: block; }
+.sheet-drawer .sd-head {
+  font-family: var(--font-mono); font-size: 0.625rem; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--graphite);
+  padding: 14px 32px 6px;
+}
+.sheet-drawer a {
+  display: flex; align-items: baseline; gap: 16px;
+  padding: 12px 32px;
+  border-top: 1px solid rgba(26,26,31,0.12);
+  font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--ink);
+}
+.sheet-drawer a .sd-code { color: var(--brass); min-width: 56px; }
+.sheet-drawer a:hover { background: var(--vellum); }
+@media (min-width: 860px) { .sheet-drawer { display: none !important; } }
+
+/* ── Rubber-stamp CTA press ──────────────────────────────────────────────────
+   Applied to .btn-sheet-tag / .site-cta by the JS (class .stampable). */
+.stampable { transition: transform 0.12s ease, box-shadow 0.12s ease; }
+.stampable:active {
+  transform: rotate(-1deg) scale(0.97);
+  box-shadow: 0 0 0 3px rgba(140,43,39,0.12);
+}
+
+/* Footer RECEIVED date stamp (injected). */
+footer, .site-footer { position: relative; }
+.received-stamp {
+  position: absolute;
+  right: 28px;
+  bottom: 18px;
+  transform: rotate(-6deg);
+  border: 2px solid rgba(235,228,216,0.4);
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(235,228,216,0.5);
+  pointer-events: none;
+  text-align: center;
+  line-height: 1.7;
+}
+@media (max-width: 720px) { .received-stamp { display: none; } }
+
+/* ── Revision cloud ──────────────────────────────────────────────────────────
+   .rev-cloud gets a hand-wobbled checker's cloud drawn round it by the JS. */
+.rev-cloud { position: relative; display: inline-block; padding: 10px 16px; }
+.rev-cloud svg.cloud {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  overflow: visible; pointer-events: none;
+}
+.rev-cloud svg.cloud path {
+  fill: none; stroke: var(--sanguine); stroke-width: 1.4;
+  stroke-linecap: round; opacity: 0.85;
+}
+
+/* ── Scroll reveal (subtle; only when JS arms it) ───────────────────────────── */
+.reveal-armed { opacity: 0; transform: translateY(12px); }
+.reveal-in { opacity: 1; transform: none; transition: opacity 0.55s ease, transform 0.55s ease; }
+@media (prefers-reduced-motion: reduce) {
+  .reveal-armed { opacity: 1; transform: none; }
+}
+
+/* ── Document fragment · the hero live review ────────────────────────────────
+   A paper artifact of the Form of Tender being read in front of the visitor. */
+.doc-frag {
+  position: relative;
+  margin: 0;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  box-shadow: 6px 6px 0 rgba(26,26,31,0.06);
+}
+.doc-frag .df-head {
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--ink);
+  font-family: var(--font-mono); font-size: 0.5625rem; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--graphite);
+  display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+}
+.doc-frag .df-body { padding: 22px 22px 48px; position: relative; }
+.doc-frag .df-line {
+  font-family: var(--font-serif);
+  font-size: 0.9375rem; line-height: 1.9; color: var(--ink-soft); margin: 0;
+}
+.doc-frag .df-line .df-clause { color: var(--graphite); font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.08em; margin-right: 8px; }
+.doc-frag .df-blank {
+  letter-spacing: 0.08em; color: var(--ink);
+  border-bottom: 1px solid transparent;
+  transition: background 0.3s ease;
+}
+.doc-frag.df-found .df-blank { background: rgba(140,43,39,0.1); box-shadow: 0 2px 0 var(--sanguine); }
+/* the scanning bar that sweeps the fragment */
+.doc-frag .df-scan {
+  position: absolute; left: 0; right: 0; top: 0; height: 34px;
+  background: linear-gradient(to bottom, rgba(160,124,53,0), rgba(160,124,53,0.12), rgba(160,124,53,0));
+  opacity: 0; pointer-events: none;
+}
+.doc-frag.df-scanning .df-scan { opacity: 1; transition: top 1.6s linear; }
+/* leader line drawn from the blank to the finding tag */
+.doc-frag svg.df-leader {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  overflow: visible; pointer-events: none;
+}
+.doc-frag svg.df-leader path {
+  fill: none; stroke: var(--brass); stroke-width: 1.3;
+}
+.doc-frag svg.df-leader circle { fill: var(--brass); }
+/* the stamped finding tag */
+.doc-frag .df-tag {
+  position: absolute; right: 18px; bottom: 12px;
+  display: inline-flex; align-items: center; gap: 8px;
+  opacity: 0;
+  font-family: var(--font-mono); font-size: 0.625rem; letter-spacing: 0.14em; color: var(--sanguine);
+}
+.doc-frag .df-tag.stamped {
+  opacity: 1;
+  animation: df-stamp 0.32s cubic-bezier(0.2, 1.6, 0.45, 1) both;
+}
+@keyframes df-stamp {
+  0%   { transform: scale(1.7) rotate(-7deg); opacity: 0; }
+  60%  { transform: scale(0.94) rotate(-2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(-2.5deg); opacity: 1; }
+}
+/* the typed register line beneath the fragment */
+.doc-frag .df-finding {
+  display: block;
+  border-top: 1px solid var(--ink);
+  padding: 14px 18px 16px;
+  min-height: 3.2em;
+  font-family: var(--font-mono); font-size: 0.6875rem; line-height: 1.7;
+  letter-spacing: 0.04em; color: var(--ink);
+  background: var(--bone);
+}
+.doc-frag .df-finding .df-cursor {
+  display: inline-block; width: 7px; height: 1em; vertical-align: text-bottom;
+  background: var(--brass);
+  animation: df-blink 0.85s step-end infinite;
+}
+@keyframes df-blink { 50% { opacity: 0; } }
+.doc-frag .df-finding { padding-right: 110px; }
+.doc-frag .df-replay {
+  position: absolute; bottom: 10px; right: 12px;
+  background: none; border: 0; cursor: pointer;
+  font-family: var(--font-mono); font-size: 0.5625rem; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--draft);
+}
+.doc-frag .df-replay:hover { color: var(--brass); }
+@media (prefers-reduced-motion: reduce) {
+  .doc-frag .df-tag { animation: none !important; }
+  .doc-frag .df-finding .df-cursor { animation: none; }
+}
+
+/* ── Findings register controls (case study) ─────────────────────────────────
+   Severity pills that filter the register live. */
+.reg-controls {
+  position: sticky; top: 57px; z-index: 40;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 12px 0;
+  background: rgba(245,241,235,0.94);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--ink);
+}
+.reg-controls .rc-label {
+  font-family: var(--font-mono); font-size: 0.625rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--graphite); margin-right: 4px;
+}
+.reg-controls button.sev { cursor: pointer; opacity: 0.45; }
+.reg-controls button.sev.active { opacity: 1; box-shadow: 2px 2px 0 rgba(26,26,31,0.18); }
+.finding.reg-hidden { display: none; }
+/* hovering a finding redlines its source quote, like a checker's pen */
+.finding:hover .source-quote { border-left-color: var(--sanguine); }
+.finding:hover .source-quote { text-decoration: underline; text-decoration-color: rgba(140,43,39,0.45); text-underline-offset: 3px; }
+
+/* ── Request-the-brief dialog ────────────────────────────────────────────────
+   Progressive: posts to a configured endpoint, else composes the mail. */
+dialog.brief-dialog {
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  padding: 0;
+  max-width: 480px;
+  width: calc(100vw - 48px);
+}
+dialog.brief-dialog::backdrop { background: rgba(26,26,31,0.45); }
+.brief-dialog .bd-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 22px; border-bottom: 1px solid var(--ink);
+}
+.brief-dialog .bd-head .t-eyebrow { color: var(--brass); }
+.brief-dialog .bd-close { background: none; border: 0; cursor: pointer; font-family: var(--font-mono); font-size: 0.75rem; color: var(--graphite); }
+.brief-dialog form { padding: 20px 22px 24px; display: grid; gap: 14px; }
+.brief-dialog label {
+  display: grid; gap: 6px;
+  font-family: var(--font-mono); font-size: 0.625rem; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--graphite);
+}
+.brief-dialog input, .brief-dialog textarea {
+  border: 1px solid var(--ink); background: var(--bone); color: var(--ink);
+  font-family: var(--font-serif); font-size: 0.9375rem; padding: 10px 12px;
+}
+.brief-dialog textarea { min-height: 84px; resize: vertical; }
+.brief-dialog .bd-send {
+  justify-self: start;
+  border: 1px solid var(--ink); background: var(--ink); color: var(--bone);
+  font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.2em;
+  text-transform: uppercase; padding: 12px 18px; cursor: pointer;
+}
+.brief-dialog .bd-send:hover { background: var(--brass); border-color: var(--brass); }
+.brief-dialog .bd-note { font-family: var(--font-mono); font-size: 0.5625rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--draft); }
