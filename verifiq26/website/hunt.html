@@ -1,567 +1,259 @@
-<!DOCTYPE html>
-<html lang="en" class="dark">
+<!doctype html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VerifIQ Hunt — Don't get caught at award.</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-  tailwind.config = {
-    darkMode: "class",
-    theme: {
-      extend: {
-        fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'ui-monospace', 'monospace'] },
-        colors: {
-          background: '#030303', surface: '#0A0A0A', surface2: '#121212',
-          border: '#222222', primary: '#FFFFFF', secondary: '#A1A1AA',
-          hunt: '#F97316', hunt2: '#FBBF24',
-        },
-        animation: {
-          'fade-in-up': 'fadeInUp 1s ease-out forwards',
-          'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        },
-        keyframes: {
-          fadeInUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
-        }
-      }
-    }
-  }
-</script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VerifIQ Hunt — Find the exposure before award.</title>
+<meta name="description" content="VerifIQ Hunt is a scoped read of the tender pack for Irish main contractors, returned as a ranked € exposure register with PW-CF clause references — so you can price the risk at tender instead of fighting it after award. Output is indicative. You verify locally." />
+<link rel="stylesheet" href="verifiq-system.css" />
+<link rel="stylesheet" href="verifiq-cad.css" />
 <style>
-  body { -webkit-font-smoothing: antialiased; font-family: 'Inter', sans-serif; }
-  ::selection { background-color: rgba(249, 115, 22, 0.4); color: #ffffff; }
-  .noise-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 50; opacity: 0.035; }
-  .gradient-border-wrapper { position: relative; background: #121212; border-radius: 1rem; z-index: 1; }
-  .gradient-border-wrapper::before {
-    content: ""; position: absolute; inset: -1px; border-radius: 1.1rem;
-    background: linear-gradient(45deg, #F97316, #FBBF24, #F97316); background-size: 200% 200%;
-    z-index: -1; animation: gradientMove 4s ease infinite;
-  }
-  @keyframes gradientMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+  body { background: var(--bone); }
 
-  .hunt-editor { background: #0d1117; color: #c9d1d9; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; line-height: 1.7; overflow: hidden; }
-  .hunt-editor .line { display: flex; white-space: pre; min-height: 1.7em; }
-  .hunt-editor .line.active { background: rgba(255,255,255,0.025); }
-  .hunt-editor .num { width: 3rem; padding-right: 1rem; color: #484f58; text-align: right; user-select: none; font-variant-numeric: tabular-nums; flex-shrink: 0; }
-  .hunt-editor .text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-  .hunt-editor .kw { color: #ff7b72; }
-  .hunt-editor .cls { color: #fbbf24; }
-  .hunt-editor .fn { color: #fbbf24; }
-  .hunt-editor .vr { color: #79c0ff; }
-  .hunt-editor .str { color: #a5d6ff; }
-  .hunt-editor .prop { color: #79c0ff; }
-  .hunt-editor .cm { color: #8b949e; font-style: italic; }
-  .hunt-editor .euro { color: #fb923c; font-weight: 600; }
-  .caret { display: inline-block; width: 0.55ch; height: 1.05em; background: #c9d1d9; margin-left: 1px; vertical-align: -2px; animation: caretBlink 1s step-end infinite; }
-  @keyframes caretBlink { 50% { opacity: 0; } }
+  .hero { padding: 88px 0 64px; border-bottom: 1px solid var(--ink); background: var(--paper); }
+  .hero h1 { font-family: var(--font-serif); font-weight: 600; font-size: clamp(2.6rem,6vw,5rem); line-height: 1.02; margin: 18px 0 18px; max-width: 15ch; color: var(--ink); }
+  .hero .lede { font-family: var(--font-serif); font-style: italic; font-size: clamp(1.15rem,2vw,1.45rem); color: var(--ink-soft); max-width: 58ch; margin: 0 0 22px; }
+  .hero .micro { font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--graphite); margin: 0 0 34px; }
+  .hero .ctas { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; }
 
-  .hunt-money { font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.6; color: #d1d5db; }
-  .hunt-money .row { display: grid; grid-template-columns: 60px 1fr 100px; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.04); align-items: center; min-height: 2.2em; }
-  .hunt-money .row .id { font-family: 'JetBrains Mono', monospace; color: #fb923c; font-size: 11px; font-weight: 700; }
-  .hunt-money .row .lbl { font-size: 13px; color: #d1d5db; }
-  .hunt-money .row .amt { font-family: 'JetBrains Mono', monospace; color: #fbbf24; font-weight: 700; font-size: 14px; text-align: right; }
-  .hunt-money .total-row { display: grid; grid-template-columns: 1fr 140px; gap: 12px; padding: 16px 0 0; border-top: 2px solid rgba(251, 146, 60, 0.4); margin-top: 8px; align-items: baseline; }
-  .hunt-money .total-row .lbl { font-size: 12px; text-transform: uppercase; letter-spacing: 0.15em; color: #a1a1aa; font-family: 'JetBrains Mono', monospace; }
-  .hunt-money .total-row .amt { font-size: 32px; font-weight: 900; color: #fb923c; text-align: right; font-variant-numeric: tabular-nums; }
+  .section { padding: 72px 0; border-bottom: 1px solid var(--ink); }
+  .section.tint { background: var(--vellum); }
+  .section-head { margin-bottom: 40px; max-width: 64ch; }
+  .section-head h2 { font-family: var(--font-serif); font-weight: 500; font-size: clamp(1.8rem,3vw,2.6rem); line-height: 1.1; margin: 12px 0 14px; color: var(--ink); }
+  .section-head p { font-family: var(--font-serif); font-style: italic; font-size: 1.15rem; color: var(--ink-soft); margin: 0; }
+
+  /* Reviewer's workbench — static two-column panel */
+  .bench { display: grid; grid-template-columns: 1fr; gap: 1px; background: var(--ink); border: 1px solid var(--ink); }
+  @media (min-width: 880px) { .bench { grid-template-columns: 1fr 1fr; } }
+  .bench-col { background: var(--bone); padding: 30px 28px; }
+  .bench-col.right { background: var(--paper); }
+  .bench-col .col-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+  .bench-col .source-quote { margin-top: 0; }
+
+  /* Exposure register */
+  .register { display: flex; flex-direction: column; }
+  .reg-row { display: grid; grid-template-columns: auto 1fr; gap: 10px 14px; align-items: start; padding: 16px 0; border-bottom: 1px solid rgba(26,26,31,0.12); }
+  .reg-row:first-of-type { padding-top: 0; }
+  .reg-row:last-of-type { border-bottom: 0; }
+  .reg-body { display: flex; flex-direction: column; gap: 7px; }
+  .reg-title { font-family: var(--font-sans); font-size: 0.9375rem; line-height: 1.45; color: var(--ink); }
+  .reg-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+  .reg-clause { font-family: var(--font-mono); font-size: 0.625rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--graphite); }
+  .reg-amt { font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.04em; color: var(--amber); }
+  .bench-caption { font-family: var(--font-sans); font-size: 0.875rem; line-height: 1.6; color: var(--ink-soft); margin: 22px 0 0; max-width: 70ch; }
+
+  /* Steps */
+  .steps { display: grid; grid-template-columns: 1fr; gap: 1px; background: var(--ink); border: 1px solid var(--ink); }
+  @media (min-width: 820px) { .steps { grid-template-columns: repeat(3, 1fr); } }
+  .step { background: var(--bone); padding: 32px 28px; display: flex; flex-direction: column; }
+  .step .num { font-family: var(--font-serif); font-weight: 500; font-size: 2.4rem; line-height: 1; color: var(--brass); }
+  .step h3 { font-family: var(--font-serif); font-weight: 500; font-size: 1.3rem; margin: 14px 0 8px; color: var(--ink); }
+  .step p { font-family: var(--font-sans); font-size: 0.9375rem; line-height: 1.6; color: var(--ink-soft); margin: 0; }
+
+  /* Value props */
+  .props { display: grid; grid-template-columns: 1fr; gap: 1px; background: var(--ink); border: 1px solid var(--ink); }
+  @media (min-width: 720px) { .props { grid-template-columns: repeat(3, 1fr); } }
+  .prop { background: var(--bone); padding: 30px 26px; display: flex; flex-direction: column; gap: 10px; }
+  .prop .tag { font-family: var(--font-mono); font-size: 0.625rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--brass); }
+  .prop h3 { font-family: var(--font-serif); font-weight: 500; font-size: 1.3rem; margin: 4px 0 0; color: var(--ink); }
+  .prop p { font-family: var(--font-sans); font-size: 0.9375rem; line-height: 1.6; color: var(--ink-soft); margin: 0; }
+
+  /* Validation strip */
+  .stat-band { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--ink); border: 1px solid var(--ink); margin-top: 32px; }
+  .stat-band .cell { background: var(--bone); padding: 24px 20px; }
+  .stat-band .num { font-family: var(--font-serif); font-weight: 500; font-size: 2.4rem; line-height: 1; color: var(--brass); }
+  .stat-band .num.crit { color: var(--sanguine); }
+  .stat-band .num.high { color: var(--amber); }
+  .stat-band .num.med { color: var(--olive); }
+  .stat-band .num.low { color: var(--moss); }
+  .stat-band .lab { margin-top: 8px; }
+
+  /* Pricing */
+  .price-card { margin-top: 28px; border: 1px solid var(--ink); background: var(--paper); padding: 34px 32px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px; }
+  .price-card .price { font-family: var(--font-serif); font-weight: 500; font-size: clamp(2rem,4vw,2.8rem); color: var(--ink); line-height: 1; }
+  .price-card .price span { font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite); }
+  .price-card .pd { font-family: var(--font-sans); font-size: 0.9375rem; line-height: 1.6; color: var(--ink-soft); max-width: 46ch; margin-top: 8px; }
 </style>
 </head>
-<body class="bg-[#030303] text-white">
+<body class="paper-texture">
 
-<div class="relative flex flex-col min-h-screen bg-[#030303] text-white overflow-x-hidden">
+<nav class="top-nav"><div class="wrap inner">
+  <a href="index.html" class="wordmark">VerifIQ</a>
+  <div class="nav-links">
+    <a href="index.html#products">Products</a>
+    <a href="case-study-01.html">Case study</a>
+    <a href="hunt.html">Hunt</a>
+    <a href="about.html">About</a>
+  </div>
+  <a href="mailto:liam@goviq.ie?subject=VerifIQ%20Hunt%20—%20request%20a%20scan" class="site-cta">Request a Hunt scan ↗</a>
+</div></nav>
 
-  <div class="noise-bg" style="background-image: url(&quot;data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E&quot;)"></div>
-  <div class="absolute top-0 left-[-10%] w-[40vw] h-[40vw] rounded-full bg-orange-900/25 blur-[120px] pointer-events-none mix-blend-screen"></div>
-  <div class="absolute top-[20%] right-[-10%] w-[30vw] h-[30vw] rounded-full bg-amber-900/15 blur-[100px] pointer-events-none mix-blend-screen"></div>
+<main>
 
-  <header class="fixed top-0 w-full z-40 border-b border-white/[0.04] bg-[#030303]/80 backdrop-blur-xl">
-    <div class="max-w-7xl mx-auto px-6 h-16 sm:h-20 flex justify-between items-center">
-      <a href="#" class="flex items-center gap-2.5">
-        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-[0_0_15px_rgba(249,115,22,0.4)]">
-          <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"/></svg>
-        </div>
-        <span class="text-xl font-semibold tracking-tight text-white">VerifIQ<span class="ml-1.5 text-[10px] uppercase tracking-[0.2em] text-orange-400 font-mono align-middle">· Hunt</span></span>
-      </a>
-      <nav class="hidden md:flex gap-8 items-center">
-        <a class="text-sm font-medium text-gray-400 hover:text-white" href="#how">How it works</a>
-        <a class="text-sm font-medium text-gray-400 hover:text-white" href="#sample">Sample output</a>
-        <a class="text-sm font-medium text-gray-400 hover:text-white" href="#pricing">Pricing</a>
-        <a class="text-sm font-medium text-gray-400 hover:text-white" href="index.html">VerifIQ.ie ↗</a>
-      </nav>
-      <a href="#pricing" class="inline-flex h-9 items-center justify-center rounded-full bg-orange-500 px-5 font-semibold text-black text-sm hover:bg-orange-400 transition-colors">
-        Free scan
-      </a>
+<header class="hero"><div class="wrap">
+  <span class="t-eyebrow">— For main contractors · pre-construction · QS</span>
+  <h1>Find the exposure before award.</h1>
+  <p class="lede">VerifIQ Hunt is a scoped read of the tender pack, returned as a ranked € exposure register with PW-CF clause references — so you can price the risk at tender instead of fighting it after award.</p>
+  <p class="micro">Output is indicative — you verify locally</p>
+  <div class="ctas">
+    <a href="mailto:liam@goviq.ie?subject=VerifIQ%20Hunt%20—%20request%20a%20scan" class="btn-sheet-tag"><span class="sheet-code">HUNT</span><span class="sheet-label">Request a Hunt scan <span class="sheet-arrow"></span></span></a>
+    <a href="case-study-01.html" class="btn-leader"><span class="leader-num">01</span><span class="leader-line"></span><span class="leader-label">See the register</span></a>
+  </div>
+</div></header>
+
+<section class="section"><div class="wrap">
+  <div class="section-head">
+    <span class="t-eyebrow">— The reviewer's workbench</span>
+    <h2>The document on the left. The € exposure on the right.</h2>
+    <p>A reviewer reads the pack against the live Irish corpus, pulls the line that raises the risk, and maps it to a PW-CF clause and an exposure band.</p>
+  </div>
+
+  <div class="bench">
+    <div class="bench-col left">
+      <div class="col-head">
+        <span class="t-eyebrow">— The pack, marked up</span>
+        <span class="scale-chip">Stage 2C · 161 files</span>
+      </div>
+      <div class="source-quote">"…every dry-lining partition (Wall Types 1–4) defined as 'REI 30 or better' only, with no 60-minute compartment wall type."<span class="src-ref">Architectural Works Specification · Section K10 · p.58–62</span></div>
     </div>
-  </header>
 
-  <main class="flex-1 w-full pt-28 sm:pt-36">
-
-    <section class="relative w-full px-6 flex flex-col items-center text-center max-w-[1400px] mx-auto opacity-0 animate-fade-in-up" style="animation-delay: 0.1s">
-      <div class="mb-8 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-orange-500/20 bg-orange-500/5 backdrop-blur-md text-xs font-medium text-orange-300">
-        <span class="flex h-2 w-2 rounded-full bg-orange-400 animate-pulse"></span>
-        VerifIQ Hunt — variation risk scanner for Irish main contractors
+    <div class="bench-col right">
+      <div class="col-head">
+        <span class="t-eyebrow">— Ranked exposure register</span>
+        <span class="t-meta">Indicative</span>
       </div>
-      <h1 class="text-[clamp(48px,9.5vw,128px)] font-bold tracking-tighter leading-[1.02] mb-8 text-white">
-        Don't get caught<br class="hidden sm:block">
-        <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-400 to-orange-400 animate-pulse-slow">at award.</span>
-      </h1>
-      <p class="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto mb-10 font-light">
-        Upload a tender pack before you commit pricing resource. Hunt scans for variation triggers and returns a ranked €-exposure list mapped to PW-CF5 clauses. Price it, flag it, or walk away.
-      </p>
-      <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-        <a href="#pricing" class="inline-flex items-center justify-center h-12 px-8 rounded-full bg-orange-500 text-black font-semibold text-sm hover:bg-orange-400 w-full sm:w-auto shadow-[0_0_30px_rgba(249,115,22,0.3)]">
-          Scan a tender free
-        </a>
-        <a href="#live-synth" class="inline-flex items-center justify-center h-12 px-8 rounded-full bg-[#121212] border border-[#222222] text-white font-medium text-sm hover:bg-[#222222] w-full sm:w-auto">
-          See sample output
-        </a>
-      </div>
-      <p class="mt-6 text-xs font-mono uppercase tracking-[0.3em] text-gray-500">
-        4-hour turnaround · No card · First scan free
-      </p>
-    </section>
-
-    <!-- THE BIG QUESTION -->
-    <section class="relative w-full px-6 mt-20 sm:mt-28 max-w-[1100px] mx-auto">
-      <div class="relative rounded-2xl border border-orange-500/15 bg-gradient-to-br from-orange-950/40 via-[#0a0a0a] to-amber-950/30 px-8 py-12 sm:px-12 sm:py-16 text-center overflow-hidden">
-        <div class="absolute -top-20 right-1/4 w-64 h-64 rounded-full bg-orange-500/[0.08] blur-3xl"></div>
-        <div class="relative">
-          <span class="text-[10px] font-mono uppercase tracking-[0.4em] text-orange-400">// Quick reality check</span>
-          <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mt-4 mb-6 text-white leading-tight">
-            How many of your last 10 awarded jobs<br class="hidden sm:block">
-            had a tender-pack defect that became a variation?
-          </h2>
-          <p class="text-lg text-gray-400 max-w-2xl mx-auto">
-            And on how many of those did the variation conversation actually recover the full cost?
-          </p>
-          <div class="mt-8 inline-flex items-center gap-3 px-5 py-3 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-300 text-sm font-medium">
-            <span class="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
-            PW-CF5 variations are slow, expensive and contested. Hunt scans before you commit.
+      <div class="register">
+        <div class="reg-row">
+          <span class="sev sev-critical">Critical</span>
+          <div class="reg-body">
+            <div class="reg-title">Compartment wall type missing — partitions specified to REI 30 only, no 60-minute type defined.</div>
+            <div class="reg-foot"><span class="reg-clause">PW-CF5 Cl. 9.4</span><span class="reg-amt">€18,000–€42,000</span></div>
+          </div>
+        </div>
+        <div class="reg-row">
+          <span class="sev sev-critical">Critical</span>
+          <div class="reg-body">
+            <div class="reg-title">Date for Substantial Completion left blank — liquidated damages unenforceable as drawn.</div>
+            <div class="reg-foot"><span class="reg-clause">PW-CF5 Cl. 9.5</span><span class="reg-amt">€30,000–€120,000</span></div>
+          </div>
+        </div>
+        <div class="reg-row">
+          <span class="sev sev-high">High</span>
+          <div class="reg-body">
+            <div class="reg-title">Foundation design assumes "undisturbed and firm soil" — no ground investigation report, no bearing pressure stated.</div>
+            <div class="reg-foot"><span class="reg-clause">PW-CF5 Cl. 10.6</span><span class="reg-amt">€22,000–€60,000</span></div>
+          </div>
+        </div>
+        <div class="reg-row">
+          <span class="sev sev-high">High</span>
+          <div class="reg-body">
+            <div class="reg-title">PV array three-way size mismatch across specification, inverter schedule and drawing.</div>
+            <div class="reg-foot"><span class="reg-clause">PW-CF5 Cl. 9.4</span><span class="reg-amt">€12,000–€35,000</span></div>
+          </div>
+        </div>
+        <div class="reg-row">
+          <span class="sev sev-medium">Medium</span>
+          <div class="reg-body">
+            <div class="reg-title">Cause-and-effect matrix referenced for fire interlocks but not appended to the pack.</div>
+            <div class="reg-foot"><span class="reg-clause">PW-CF5 Cl. 4.5</span><span class="reg-amt">€6,000–€18,000</span></div>
           </div>
         </div>
       </div>
-    </section>
-
-    <!-- STEP 02 — LIVE SCAN DEMO -->
-    <section id="live-synth" class="relative w-full px-4 sm:px-6 mt-20 sm:mt-28 mb-8">
-      <div class="max-w-[1400px] mx-auto">
-        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-8 px-2">
-          <div>
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-[10px] font-mono uppercase tracking-[0.3em] text-gray-300 mb-4">
-              <span>Step 01</span>
-              <span class="w-px h-3 bg-white/20"></span>
-              <span class="text-orange-300 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>Hunt · Live</span>
-            </div>
-            <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white">Watch Hunt count the money.</h2>
-          </div>
-          <p class="text-gray-400 text-sm sm:text-base max-w-md leading-relaxed">A real Irish Stage 2C pack scanned for variation risk. Code on the left calls the Hunt API. Money on the right — €-banded exposure, ranked, with PW-CF clause references.</p>
-        </div>
-
-        <div class="relative rounded-xl sm:rounded-2xl overflow-hidden ring-1 ring-orange-500/10 shadow-[0_30px_120px_-20px_rgba(249,115,22,0.25)]">
-          <div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[60%] h-64 bg-orange-500/30 blur-[120px] -z-10 pointer-events-none"></div>
-
-          <div class="h-11 bg-[#161b22] border-b border-white/5 flex items-stretch pl-4 pr-4 gap-3">
-            <div class="flex items-center gap-1.5">
-              <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
-              <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
-              <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
-            </div>
-            <div class="flex items-stretch ml-3 gap-px">
-              <div class="flex items-center gap-2 px-3 bg-[#0d1117] border-r border-l border-t border-white/10 -mb-px rounded-t text-xs text-gray-200 font-mono">
-                <svg class="w-3 h-3 text-orange-400" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" opacity=".4"/><path d="M14 2v6h6"/></svg>
-                <span>Stage_2C_Tender_Pack.pdf</span>
-                <span class="w-1 h-1 rounded-full bg-orange-400 ml-1"></span>
-              </div>
-            </div>
-            <div class="ml-auto flex items-center gap-3 sm:gap-4 text-[10px] font-mono uppercase tracking-[0.25em] text-gray-500">
-              <span class="hidden sm:inline-flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>Hunting</span>
-              <span class="hidden md:inline">Files 161</span>
-              <span class="text-orange-300">€3.9m</span>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 bg-[#0d1117]">
-            <div class="hunt-editor relative border-b md:border-b-0 md:border-r border-white/5 min-h-[480px]">
-              <div class="pl-4 pr-4 py-4">
-                <div id="code-typer"></div>
-              </div>
-            </div>
-
-            <div class="relative bg-[#0a0d12] p-6 sm:p-8 min-h-[480px] flex flex-col">
-              <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center gap-2">
-                  <span class="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse"></span>
-                  <span class="text-[10px] font-mono uppercase tracking-[0.3em] text-orange-300">Variation Exposure</span>
-                </div>
-                <span class="text-[10px] font-mono uppercase tracking-[0.25em] text-gray-500">Central estimate</span>
-              </div>
-
-              <div class="hunt-money flex-1" id="money-typer"></div>
-
-              <div class="mt-4 pt-4 border-t border-white/5 flex items-center justify-between text-[10px] font-mono uppercase tracking-[0.25em] text-gray-500">
-                <span class="flex items-center gap-1.5">
-                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/></svg>
-                  PW-CF5 clauses mapped
-                </span>
-                <span class="flex items-center gap-1.5">
-                  <span class="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
-                  Range €1.3m — €10.2m
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div class="h-7 bg-gradient-to-r from-orange-600 via-amber-500 to-orange-600 px-3 flex items-center text-[10px] text-white/95 font-mono uppercase tracking-[0.2em] gap-3 select-none">
-            <span>main</span>
-            <span class="hidden sm:inline">UTF-8</span>
-            <span>TypeScript</span>
-            <span class="ml-auto">Ln <span id="lnval">1</span></span>
-            <span>Col <span id="colval">1</span></span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- THREE USE CASES -->
-    <section class="w-full px-6 py-24 sm:py-32 max-w-6xl mx-auto relative z-10 border-t border-white/5 mt-16">
-      <div class="text-center mb-16">
-        <span class="text-[10px] uppercase tracking-[0.4em] text-orange-400 font-semibold">// Three scenarios</span>
-        <h2 class="mt-4 text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white">Where Hunt saves you money.</h2>
-        <p class="mt-5 text-gray-300 text-base md:text-lg leading-relaxed max-w-2xl mx-auto">Real situations Irish main contractors face. Real cost of getting it wrong.</p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="group relative overflow-hidden rounded-2xl border border-white/10 bg-[#0E0E0E] p-8 hover:border-orange-500/40 transition-all">
-          <div class="absolute -right-12 -top-12 w-40 h-40 rounded-full bg-orange-500/[0.08] blur-3xl"></div>
-          <div class="relative z-10">
-            <span class="text-[10px] font-mono uppercase tracking-[0.3em] text-orange-400 mb-3 block">Pre-tender</span>
-            <h3 class="text-xl font-semibold text-white mb-3 tracking-tight">Bid / no-bid decision</h3>
-            <p class="text-gray-400 leading-relaxed text-sm mb-4">Three CWMF tenders on the desk. Resource for one full bid. Hunt scans all three in 12 hours.</p>
-            <div class="border-l-2 border-orange-500/30 pl-4 text-sm space-y-2">
-              <p class="text-gray-300"><span class="text-red-400 font-semibold">Without:</span> Pick the best margin look. Find the buried variation risk after award.</p>
-              <p class="text-gray-300"><span class="text-emerald-400 font-semibold">With:</span> Pick the lowest exposure profile. Avoid the trap that cost €200-500k post-award.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="group relative overflow-hidden rounded-2xl border border-white/10 bg-[#0E0E0E] p-8 hover:border-orange-500/40 transition-all">
-          <div class="absolute -right-12 -top-12 w-40 h-40 rounded-full bg-orange-500/[0.08] blur-3xl"></div>
-          <div class="relative z-10">
-            <span class="text-[10px] font-mono uppercase tracking-[0.3em] text-orange-400 mb-3 block">Active bid</span>
-            <h3 class="text-xl font-semibold text-white mb-3 tracking-tight">Where to flag, where to price</h3>
-            <p class="text-gray-400 leading-relaxed text-sm mb-4">Committed to bid. QS team deciding what's RFI, what's base bid, what's contingency.</p>
-            <div class="border-l-2 border-orange-500/30 pl-4 text-sm space-y-2">
-              <p class="text-gray-300"><span class="text-red-400 font-semibold">Without:</span> 100-hour scan. Miss 30% of variations. Lose them at award.</p>
-              <p class="text-gray-300"><span class="text-emerald-400 font-semibold">With:</span> Ranked exposure list day one. Decide systematically per item.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="group relative overflow-hidden rounded-2xl border border-white/10 bg-[#0E0E0E] p-8 hover:border-orange-500/40 transition-all">
-          <div class="absolute -right-12 -top-12 w-40 h-40 rounded-full bg-orange-500/[0.08] blur-3xl"></div>
-          <div class="relative z-10">
-            <span class="text-[10px] font-mono uppercase tracking-[0.3em] text-orange-400 mb-3 block">Post-award</span>
-            <h3 class="text-xl font-semibold text-white mb-3 tracking-tight">Defensible variation record</h3>
-            <p class="text-gray-400 leading-relaxed text-sm mb-4">Award goes through. Variations emerge on site. Need to prove the pack was unclear at tender.</p>
-            <div class="border-l-2 border-orange-500/30 pl-4 text-sm space-y-2">
-              <p class="text-gray-300"><span class="text-red-400 font-semibold">Without:</span> Email trail. CA pushes back. Absorb 40% of cost.</p>
-              <p class="text-gray-300"><span class="text-emerald-400 font-semibold">With:</span> Pre-tender Hunt report. Defensible at compensation event.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- SAMPLE OUTPUT -->
-    <section id="sample" class="w-full px-6 py-24 sm:py-32 border-t border-white/5 relative z-10">
-      <div class="max-w-6xl mx-auto">
-        <div class="mb-16">
-          <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4 text-white">Real findings. Real € exposure.</h2>
-          <p class="text-gray-300 text-lg max-w-2xl">Eight items from a real Irish Stage 2C scan in May 2026. PW-CF clauses mapped. €-bands derived from Irish market rates.</p>
-        </div>
-
-        <div class="rounded-2xl border border-white/10 bg-[#0A0A0A] overflow-hidden">
-          <div class="grid grid-cols-12 gap-4 px-6 py-4 border-b border-white/10 bg-[#121212] text-[10px] font-mono uppercase tracking-[0.2em] text-gray-500">
-            <div class="col-span-1">ID</div>
-            <div class="col-span-1">Sev</div>
-            <div class="col-span-5">Issue</div>
-            <div class="col-span-2 text-right">Central €</div>
-            <div class="col-span-3">PW-CF clause</div>
-          </div>
-
-          <div class="divide-y divide-white/5 text-sm">
-            <div class="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-white/[0.02]">
-              <div class="col-span-1 font-mono text-xs font-bold text-orange-400">SD-001</div>
-              <div class="col-span-1"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-400">CRIT</span></div>
-              <div class="col-span-5 text-gray-300">Windows Schedule AR-40002 contains stair-section drawings, not window schedule. Bidders cannot price envelope.</div>
-              <div class="col-span-2 text-right font-mono font-bold text-amber-300 text-lg">€150,000</div>
-              <div class="col-span-3"><span class="px-2 py-1 rounded bg-orange-500/10 text-orange-300 text-[11px] font-mono">Cl 9.4 Employer Change</span></div>
-            </div>
-            <div class="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-white/[0.02]">
-              <div class="col-span-1 font-mono text-xs font-bold text-orange-400">S-008</div>
-              <div class="col-span-1"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-400">CRIT</span></div>
-              <div class="col-span-5 text-gray-300">Foundation design on "undisturbed and firm soil" — no GI report, no bearing pressure stated.</div>
-              <div class="col-span-2 text-right font-mono font-bold text-amber-300 text-lg">€45,000</div>
-              <div class="col-span-3"><span class="px-2 py-1 rounded bg-orange-500/10 text-orange-300 text-[11px] font-mono">Cl 10 Unforeseeable Ground</span></div>
-            </div>
-            <div class="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-white/[0.02]">
-              <div class="col-span-1 font-mono text-xs font-bold text-orange-400">E-209</div>
-              <div class="col-span-1"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-400">CRIT</span></div>
-              <div class="col-span-5 text-gray-300">PV system three-way size mismatch — spec §13.04 = 10.4 kWp, inverter §13.05 = 12 kW, drawing = 6 kWp.</div>
-              <div class="col-span-2 text-right font-mono font-bold text-amber-300 text-lg">€35,000</div>
-              <div class="col-span-3"><span class="px-2 py-1 rounded bg-orange-500/10 text-orange-300 text-[11px] font-mono">Cl 9.4 Employer Change</span></div>
-            </div>
-            <div class="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-white/[0.02]">
-              <div class="col-span-1 font-mono text-xs font-bold text-orange-400">M-200</div>
-              <div class="col-span-1"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-400">CRIT</span></div>
-              <div class="col-span-5 text-gray-300">Fire dampers spec'd to BS 476 Part 8:1972 (withdrawn). CE-marking under EU 305/2011 requires IS EN 15650.</div>
-              <div class="col-span-2 text-right font-mono font-bold text-amber-300 text-lg">€22,000</div>
-              <div class="col-span-3"><span class="px-2 py-1 rounded bg-orange-500/10 text-orange-300 text-[11px] font-mono">Cl 9.4 design info</span></div>
-            </div>
-            <div class="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-white/[0.02]">
-              <div class="col-span-1 font-mono text-xs font-bold text-orange-400">E-103</div>
-              <div class="col-span-1"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-400">CRIT</span></div>
-              <div class="col-span-5 text-gray-300">Lightning Protection §12.20 describes a school in Mayo. Wrong project entirely.</div>
-              <div class="col-span-2 text-right font-mono font-bold text-amber-300 text-lg">€18,000</div>
-              <div class="col-span-3"><span class="px-2 py-1 rounded bg-orange-500/10 text-orange-300 text-[11px] font-mono">Cl 9.4 design info</span></div>
-            </div>
-            <div class="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-white/[0.02]">
-              <div class="col-span-1 font-mono text-xs font-bold text-orange-400">E-212</div>
-              <div class="col-span-1"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400">HIGH</span></div>
-              <div class="col-span-5 text-gray-300">Form of Tender VAT lines include 13.5% AND 21%. Correct rate is 23% (since 2024); construction services 13.5%.</div>
-              <div class="col-span-2 text-right font-mono font-bold text-amber-300 text-lg">€15,000</div>
-              <div class="col-span-3"><span class="px-2 py-1 rounded bg-orange-500/10 text-orange-300 text-[11px] font-mono">Cl 12 Pricing error</span></div>
-            </div>
-            <div class="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-white/[0.02]">
-              <div class="col-span-1 font-mono text-xs font-bold text-orange-400">M-203</div>
-              <div class="col-span-1"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400">HIGH</span></div>
-              <div class="col-span-5 text-gray-300">No HSE L8 / HTM 04-01 Legionella regime. Only one-off chlorination at handover. Occupation blocked.</div>
-              <div class="col-span-2 text-right font-mono font-bold text-amber-300 text-lg">€15,000</div>
-              <div class="col-span-3"><span class="px-2 py-1 rounded bg-orange-500/10 text-orange-300 text-[11px] font-mono">Cl 9.4 Employer instruction</span></div>
-            </div>
-            <div class="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-white/[0.02]">
-              <div class="col-span-1 font-mono text-xs font-bold text-orange-400">S-207</div>
-              <div class="col-span-1"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400">HIGH</span></div>
-              <div class="col-span-5 text-gray-300">SW attenuation calc methodologically flawed; 75mm orifice passes more than declared 2 l/s.</div>
-              <div class="col-span-2 text-right font-mono font-bold text-amber-300 text-lg">€25,000</div>
-              <div class="col-span-3"><span class="px-2 py-1 rounded bg-orange-500/10 text-orange-300 text-[11px] font-mono">Cl 10 ground / design</span></div>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-12 gap-4 px-6 py-5 border-t-2 border-orange-500/30 bg-orange-500/5 items-center">
-            <div class="col-span-7 text-[11px] font-mono uppercase tracking-[0.2em] text-gray-400">Top 8 items — pack total <span class="text-orange-300">€3.9m</span> across 328 findings</div>
-            <div class="col-span-2 text-right text-[11px] text-gray-400 font-mono">SUBTOTAL</div>
-            <div class="col-span-3 text-right text-2xl font-bold text-orange-300 font-mono">€325,000</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- PRICING -->
-    <section id="pricing" class="w-full px-6 py-24 sm:py-32 border-t border-white/5 relative z-10">
-      <div class="max-w-5xl mx-auto">
-        <div class="text-center mb-16">
-          <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4 text-white">Pay per scan. Or subscribe.</h2>
-          <p class="text-gray-300 text-lg max-w-xl mx-auto">Catch one €25k variation and Hunt has paid for itself 10× over.</p>
-        </div>
-        <div class="grid md:grid-cols-3 gap-6">
-
-          <div class="rounded-2xl border border-white/10 bg-[#0E0E0E] p-8 flex flex-col hover:border-orange-500/40 transition-all">
-            <h3 class="text-lg font-medium text-white mb-2">Single scan</h3>
-            <p class="text-sm text-gray-300 mb-6">One pack. One bid. One decision.</p>
-            <div class="mb-6 flex items-baseline gap-1">
-              <span class="text-4xl font-bold tracking-tighter text-white">€800</span>
-              <span class="text-gray-400 text-sm">/scan</span>
-            </div>
-            <ul class="space-y-3 mb-8 flex-1 text-sm text-gray-200">
-              <li class="flex items-start gap-2"><span class="text-orange-400 mt-1">✓</span>€-banded exposure register</li>
-              <li class="flex items-start gap-2"><span class="text-orange-400 mt-1">✓</span>PW-CF clause mapping</li>
-              <li class="flex items-start gap-2"><span class="text-orange-400 mt-1">✓</span>4-hour turnaround</li>
-              <li class="flex items-start gap-2"><span class="text-orange-400 mt-1">✓</span>Excel + Word export</li>
-            </ul>
-            <a href="#" class="w-full inline-flex h-11 items-center justify-center rounded-lg border border-orange-500/40 bg-orange-500/10 text-orange-400 font-medium text-sm hover:bg-orange-500/20">
-              Buy scan
-            </a>
-          </div>
-
-          <div class="gradient-border-wrapper shadow-2xl shadow-orange-500/15">
-            <div class="h-full bg-[#121212] rounded-2xl p-8 flex flex-col relative overflow-hidden">
-              <div class="absolute top-0 right-0">
-                <div class="bg-gradient-to-r from-orange-500 to-amber-500 text-black text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-bl-lg">Most popular</div>
-              </div>
-              <h3 class="text-lg font-medium text-white mb-2">Bid Pipeline</h3>
-              <p class="text-sm text-gray-300 mb-6">15-25 bids per year.</p>
-              <div class="mb-6 flex items-baseline gap-1">
-                <span class="text-4xl font-bold tracking-tighter text-white">€9,600</span>
-                <span class="text-gray-400 text-sm">/year</span>
-              </div>
-              <ul class="space-y-3 mb-8 flex-1 text-sm text-gray-200">
-                <li class="flex items-start gap-2"><span class="text-orange-400 mt-1">✓</span>Unlimited small + mid scans</li>
-                <li class="flex items-start gap-2"><span class="text-orange-400 mt-1">✓</span>12 large scans included</li>
-                <li class="flex items-start gap-2"><span class="text-orange-400 mt-1">✓</span>Team accounts (5 users)</li>
-                <li class="flex items-start gap-2"><span class="text-orange-400 mt-1">✓</span>Priority queue · 1-2 hour turnaround</li>
-                <li class="flex items-start gap-2"><span class="text-orange-400 mt-1">✓</span>Quarterly portfolio review</li>
-              </ul>
-              <a href="#" class="w-full inline-flex h-11 items-center justify-center rounded-lg bg-orange-500 text-black font-semibold text-sm hover:bg-orange-400">
-                Subscribe
-              </a>
-            </div>
-          </div>
-
-          <div class="rounded-2xl border border-white/10 bg-[#0E0E0E] p-8 flex flex-col hover:border-orange-500/40 transition-all">
-            <h3 class="text-lg font-medium text-white mb-2">Enterprise</h3>
-            <p class="text-sm text-gray-300 mb-6">Top-20 main contractors.</p>
-            <div class="mb-6 flex items-baseline gap-1">
-              <span class="text-4xl font-bold tracking-tighter text-white">Custom</span>
-            </div>
-            <ul class="space-y-3 mb-8 flex-1 text-sm text-gray-200">
-              <li class="flex items-start gap-2"><span class="text-orange-400 mt-1">✓</span>Unlimited all tiers</li>
-              <li class="flex items-start gap-2"><span class="text-orange-400 mt-1">✓</span>SSO + audit trail</li>
-              <li class="flex items-start gap-2"><span class="text-orange-400 mt-1">✓</span>Custom risk calibration</li>
-              <li class="flex items-start gap-2"><span class="text-orange-400 mt-1">✓</span>Dedicated success manager</li>
-              <li class="flex items-start gap-2"><span class="text-orange-400 mt-1">✓</span>Annual exec readout</li>
-            </ul>
-            <a href="#" class="w-full inline-flex h-11 items-center justify-center rounded-lg border border-white/20 bg-white/5 text-white font-medium text-sm hover:bg-white/10">
-              Talk to us
-            </a>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <footer class="border-t border-white/5 py-12 w-full mt-auto relative z-10 bg-[#030303]">
-    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-      <div class="flex items-center gap-3 opacity-70">
-        <div class="w-6 h-6 rounded border border-orange-500/30 flex items-center justify-center">
-          <svg class="w-3 h-3 text-orange-400" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"/></svg>
-        </div>
-        <span class="text-sm font-medium text-white tracking-tight">VerifIQ Hunt © 2026 · Built for Irish main contractors</span>
-      </div>
-      <nav class="flex flex-wrap justify-center gap-6">
-        <a class="text-sm text-gray-400 hover:text-white" href="index.html">VerifIQ →</a>
-        <a class="text-sm text-gray-400 hover:text-white" href="three-products.html">Studio →</a>
-        <a class="text-sm text-gray-400 hover:text-white" href="#">Terms</a>
-        <a class="text-sm text-gray-400 hover:text-white" href="#">hunt@verifiq.ie</a>
-      </nav>
     </div>
-    <div class="max-w-7xl mx-auto px-6 mt-8 pt-6 border-t border-white/[0.04] text-[11px] text-gray-500 leading-relaxed">
-      <strong class="text-gray-400">Important.</strong> VerifIQ Hunt is a software scanning tool. Output is indicative — € exposure bands are estimates derived from typical Irish market rates and PW-CF clause mapping, not professional advice. The user is responsible for verifying every finding and for any bid, pricing or contractual decision. VerifIQ Hunt is not a substitute for the work of a Chartered Quantity Surveyor, pre-construction professional or any other designated chartered role.
+  </div>
+
+  <p class="bench-caption">A scoped read of the pack, returned as a ranked exposure register with PW-CF clause references. Indicative — you verify locally.</p>
+</div></section>
+
+<section class="section tint"><div class="wrap">
+  <div class="section-head">
+    <span class="t-eyebrow">— How it works</span>
+    <h2>Three steps. A reviewer, not a black box.</h2>
+    <p>You send the pack. A reviewer reads it and maps the exposure. You receive a ranked register, source-quoted.</p>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="num">01</div>
+      <h3>Send us the tender pack.</h3>
+      <p>The Stage 2C pack as issued — architecture, structures, M&amp;E, fire, BCAR. We work from the documents you would hand a bidder, EU data residency throughout.</p>
     </div>
-  </footer>
+    <div class="step">
+      <div class="num">02</div>
+      <h3>A reviewer reads it.</h3>
+      <p>A reviewer reads the pack against the live Irish corpus, finds the gaps, ambiguities and missing entries, and maps each one to the PW-CF clause that would carry it into a variation.</p>
+    </div>
+    <div class="step">
+      <div class="num">03</div>
+      <h3>You receive the register.</h3>
+      <p>A ranked € exposure register, every line tied to the verbatim sentence in the document that raised it and the clause it maps to. Indicative — you verify locally before you act.</p>
+    </div>
+  </div>
+</div></section>
 
-</div>
+<section class="section"><div class="wrap">
+  <div class="section-head">
+    <span class="t-eyebrow">— Why it pays</span>
+    <h2>Price the variation risk at tender, not after award.</h2>
+    <p>The gap, ambiguity or missing entry surfaced while you can still price it, flag it as an RFI, or walk away.</p>
+  </div>
 
-<script>
-  const CODE_LINES = [
-    { t: "import { Hunt } from '@verifiq/hunt'", h: "<span class=\"kw\">import</span> { <span class=\"cls\">Hunt</span> } <span class=\"kw\">from</span> <span class=\"str\">'@verifiq/hunt'</span>" },
-    { t: "", h: "&nbsp;" },
-    { t: "const pack = await Hunt.load(", h: "<span class=\"kw\">const</span> <span class=\"vr\">pack</span> = <span class=\"kw\">await</span> <span class=\"cls\">Hunt</span>.<span class=\"fn\">load</span>(" },
-    { t: "  'Stage_2C_Tender_Pack.pdf'", h: "  <span class=\"str\">'Stage_2C_Tender_Pack.pdf'</span>" },
-    { t: ")", h: ")" },
-    { t: "", h: "&nbsp;" },
-    { t: "const risk = await Hunt.scan(pack, {", h: "<span class=\"kw\">const</span> <span class=\"vr\">risk</span> = <span class=\"kw\">await</span> <span class=\"cls\">Hunt</span>.<span class=\"fn\">scan</span>(<span class=\"vr\">pack</span>, {" },
-    { t: "  contract: 'PW-CF5',", h: "  <span class=\"prop\">contract</span>: <span class=\"str\">'PW-CF5'</span>," },
-    { t: "  band: 'central',", h: "  <span class=\"prop\">band</span>: <span class=\"str\">'central'</span>," },
-    { t: "})", h: "})" },
-    { t: "", h: "&nbsp;" },
-    { t: "// -> 328 variation triggers found", h: "<span class=\"cm\">// -> 328 variation triggers found</span>" },
-    { t: "// -> Cl 9.4 + Cl 10 + Cl 12 mapped", h: "<span class=\"cm\">// -> Cl 9.4 + Cl 10 + Cl 12 mapped</span>" },
-    { t: "// -> central exposure: €3,890,400", h: "<span class=\"cm\">// -> central exposure: <span class=\"euro\">€3,890,400</span></span>" },
-  ];
+  <div class="props">
+    <div class="prop">
+      <span class="tag">At tender</span>
+      <h3>Price the exposure early</h3>
+      <p>See the variation triggers before you commit pricing resource. Carry the risk into your number, or raise it as a pre-tender query — instead of finding it on site.</p>
+    </div>
+    <div class="prop">
+      <span class="tag">PW-CF mapping</span>
+      <h3>Mapped to the clause</h3>
+      <p>Each line is tied to the PW-CF clause that would carry it into a compensation event — the contractual route the conversation will actually take after award.</p>
+    </div>
+    <div class="prop">
+      <span class="tag">Source-quoted</span>
+      <h3>Acted on, not argued over</h3>
+      <p>Every finding carries the verbatim sentence and page reference from the pack, so your QS can act on it — read it, verify it locally, and decide.</p>
+    </div>
+  </div>
 
-  const MONEY_LINES = [
-    { t: "SD-001  Windows schedule wrong content", h: "<div class=\"row\"><span class=\"id\">SD-001</span><span class=\"lbl\">Windows schedule · stair drawings</span><span class=\"amt\">€150,000</span></div>", isHtml: true },
-    { t: "S-008   Foundation soil assumption", h: "<div class=\"row\"><span class=\"id\">S-008</span><span class=\"lbl\">Foundation · no GI report</span><span class=\"amt\">€45,000</span></div>", isHtml: true },
-    { t: "E-209   PV three-way mismatch", h: "<div class=\"row\"><span class=\"id\">E-209</span><span class=\"lbl\">PV system · size mismatch</span><span class=\"amt\">€35,000</span></div>", isHtml: true },
-    { t: "M-203   No Legionella regime", h: "<div class=\"row\"><span class=\"id\">M-203</span><span class=\"lbl\">Water · no L8 / HTM 04-01</span><span class=\"amt\">€15,000</span></div>", isHtml: true },
-    { t: "E-212   VAT defect 21% vs 23%", h: "<div class=\"row\"><span class=\"id\">E-212</span><span class=\"lbl\">BoQ VAT · wrong rate</span><span class=\"amt\">€15,000</span></div>", isHtml: true },
-    { t: "M-200   Fire damper 1972 standard", h: "<div class=\"row\"><span class=\"id\">M-200</span><span class=\"lbl\">Fire damper · BS 476:1972 withdrawn</span><span class=\"amt\">€22,000</span></div>", isHtml: true },
-    { t: "S-207   SW attenuation calc flawed", h: "<div class=\"row\"><span class=\"id\">S-207</span><span class=\"lbl\">Drainage · attenuation calc</span><span class=\"amt\">€25,000</span></div>", isHtml: true },
-    { t: "E-103   Lightning prot. wrong project", h: "<div class=\"row\"><span class=\"id\">E-103</span><span class=\"lbl\">Lightning · Convent Hill school</span><span class=\"amt\">€18,000</span></div>", isHtml: true },
-    { t: "TOTAL central exposure", h: "<div class=\"total-row\"><span class=\"lbl\">Pack total central exposure</span><span class=\"amt\">€3,890,400</span></div>", isHtml: true },
-  ];
+  <div class="stat-band">
+    <div class="cell"><div class="num tab-num">327</div><div class="lab t-meta">Findings · validation pack</div></div>
+    <div class="cell"><div class="num crit tab-num">30</div><div class="lab t-meta">Critical</div></div>
+    <div class="cell"><div class="num high tab-num">144</div><div class="lab t-meta">High</div></div>
+    <div class="cell"><div class="num med tab-num">116</div><div class="lab t-meta">Medium</div></div>
+    <div class="cell"><div class="num low tab-num">37</div><div class="lab t-meta">Low</div></div>
+    <div class="cell"><div class="num tab-num">161</div><div class="lab t-meta">Files · Stage 2C</div></div>
+  </div>
+  <p class="bench-caption">A real anonymised Stage 2C pack: €3.9m of exposure across 327 findings, read across five disciplines. <a href="case-study-01.html" style="color:var(--brass);border-bottom:1px solid var(--brass);">Read the case study ↗</a></p>
+</div></section>
 
-  function escapeHtml(s) {
-    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  }
+<section class="section tint"><div class="wrap">
+  <div class="section-head">
+    <span class="t-eyebrow">— Pricing</span>
+    <h2>One pack. One scan. One decision.</h2>
+    <p>Priced by pack size and tier. Catch one variation early and the scan has paid for itself many times over.</p>
+  </div>
 
-  function buildCode(lines, state) {
-    let html = "";
-    for (let k = 0; k < lines.length; k++) {
-      let content;
-      if (k < state.i) content = lines[k].h || "&nbsp;";
-      else if (k === state.i) {
-        const typed = lines[k].t.slice(0, state.j);
-        content = (typed.length ? escapeHtml(typed) : "") + '<span class="caret"></span>';
-      } else content = "&nbsp;";
-      const active = k === state.i && state.j < lines[k].t.length ? " active" : "";
-      html += '<div class="line' + active + '"><span class="num">' + (k + 1) + '</span><span class="text">' + content + '</span></div>';
-    }
-    return html;
-  }
+  <div class="price-card">
+    <div>
+      <div class="price">€300–€2,000 <span>/ scan</span></div>
+      <div class="pd">By pack size and tier. You receive a ranked € exposure register with PW-CF clause references, source-quoted. Indicative — you verify locally.</div>
+    </div>
+    <a href="mailto:liam@goviq.ie?subject=VerifIQ%20Hunt%20—%20request%20a%20scan" class="btn-sheet-tag"><span class="sheet-code">HUNT</span><span class="sheet-label">Request a Hunt scan <span class="sheet-arrow"></span></span></a>
+  </div>
+</div></section>
 
-  function buildMoney(lines, state) {
-    let html = "";
-    for (let k = 0; k < lines.length; k++) {
-      if (k < state.i) {
-        html += lines[k].h;
-      } else if (k === state.i) {
-        const typed = lines[k].t.slice(0, state.j);
-        if (state.j >= lines[k].t.length) html += lines[k].h;
-        else html += '<div class="row"><span class="id">' + escapeHtml(typed) + '<span class="caret"></span></span><span class="lbl"></span><span class="amt"></span></div>';
-      }
-    }
-    return html;
-  }
+</main>
 
-  function startTyper(targetEl, lines, opts, onTick, builder) {
-    let state = { i: 0, j: 0 };
-    const charDelay = opts.charDelay || 22;
-    const lineDelay = opts.lineDelay || 90;
-    const rand = opts.rand || 18;
-    const restart = opts.restart || 7500;
-    function render() { targetEl.innerHTML = builder(lines, state); if (onTick) onTick(state); }
-    function tick() {
-      if (state.i >= lines.length) {
-        setTimeout(() => { state = { i: 0, j: 0 }; render(); setTimeout(tick, 600); }, restart);
-        return;
-      }
-      const cur = lines[state.i];
-      if (state.j < cur.t.length) {
-        state.j += 1; render();
-        const ch = cur.t.charAt(state.j - 1);
-        const d = ch === " " ? charDelay * 0.6 : charDelay + Math.random() * rand;
-        setTimeout(tick, d);
-      } else {
-        state.i += 1; state.j = 0; render();
-        setTimeout(tick, lineDelay);
-      }
-    }
-    setTimeout(() => { render(); tick(); }, opts.initial || 0);
-  }
-
-  const codeEl = document.getElementById('code-typer');
-  const moneyEl = document.getElementById('money-typer');
-  const lnEl = document.getElementById('lnval');
-  const colEl = document.getElementById('colval');
-
-  startTyper(codeEl, CODE_LINES, { charDelay: 16, lineDelay: 90, rand: 22, restart: 7500, initial: 200 }, (state) => {
-    const ln = Math.min(state.i + 1, CODE_LINES.length);
-    const col = (state.i < CODE_LINES.length ? state.j : CODE_LINES[CODE_LINES.length - 1].t.length) + 1;
-    if (lnEl) lnEl.textContent = ln;
-    if (colEl) colEl.textContent = col;
-  }, buildCode);
-
-  startTyper(moneyEl, MONEY_LINES, { charDelay: 22, lineDelay: 420, rand: 18, restart: 7500, initial: 1200 }, null, buildMoney);
-</script>
+<section class="locked-block"><div class="wrap-narrow">
+  <span class="t-eyebrow">— Notice · Locked disclaimer</span>
+  <p class="lb-text">VerifIQ is a software-based reading aid. It surfaces, in the documents' own words, what a registered professional may wish to read closely. It does not certify, sign, opine, or substitute for professional judgement. The registered designer reads our output, exercises their own judgement, verifies locally, and signs. The professional indemnity remains theirs. We carry product-quality risk only.</p>
+</div></section>
+<footer class="site-footer"><div class="foot-row">
+  <span>© MMXXVI · VerifIQ Hunt · GovIQ Ltd · Dublin</span>
+  <span><a href="legal.html">Legal notice ↗</a></span>
+  <span><a href="mailto:liam@goviq.ie">liam@goviq.ie</a></span>
+</div></footer>
 
 </body>
 </html>

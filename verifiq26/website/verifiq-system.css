@@ -168,3 +168,30 @@ h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 500; }
 }
 .btn-leader:hover .leader-line { width: 56px; }
 .btn-leader .leader-label { border-bottom: 1px solid var(--ink); padding-bottom: 2px; }
+
+/* ── Shared site chrome (header / footer / layout) ───────────────────────────
+   Defaults shared by every page so the site reads as one system. Pages may
+   still override locally via their own inline <style>. */
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 32px; }
+.wrap-narrow { max-width: 780px; margin: 0 auto; padding: 0 32px; }
+
+.top-nav { position: sticky; top: 0; z-index: 50; background: rgba(245,241,235,0.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--ink); }
+.top-nav .inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 0; }
+.wordmark { font-family: var(--font-serif); font-weight: 600; font-size: 1.4rem; letter-spacing: 0.06em; color: var(--ink); border-bottom: 0; }
+.nav-links { display: none; gap: 28px; }
+.nav-links a { font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--graphite); }
+.nav-links a:hover { color: var(--ink); }
+@media (min-width: 860px) { .nav-links { display: flex; } }
+.site-cta { font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink); border-bottom: 1px solid var(--ink); white-space: nowrap; }
+
+/* Locked-disclaimer block — required in every page footer (spec 08). */
+.locked-block { padding: 48px 0; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); background: var(--paper); text-align: center; }
+.locked-block .lb-text { font-family: var(--font-serif); font-style: italic; font-size: 1rem; line-height: 1.7; color: var(--ink); max-width: 60ch; margin: 14px auto 0; padding: 0 20px; }
+
+.site-footer { padding: 36px 0 40px; background: var(--ink); color: var(--bone); }
+.site-footer .foot-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; max-width: 1080px; margin: 0 auto; padding: 0 32px; font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--vellum); }
+.site-footer a { color: var(--vellum); }
+.site-footer a:hover { border-bottom: 1px solid var(--graphite); }
+
+/* Accessibility — visible keyboard focus (WCAG 2.4.7). */
+:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
