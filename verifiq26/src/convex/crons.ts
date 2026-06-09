@@ -1,12 +1,13 @@
 /**
- * VerifIQ — scheduled jobs (Phase 5).
+ * VerifIQ — scheduled jobs (Phase 4).
  *
- * Convex cron registry: the nightly inference-cache TTL cleanup (file 20 §2) and
- * the 1-minute job-queue tick that claims runnable jobs and dispatches them to
- * the council runner (`runner.tick` → `jobs.claimNextRunnable`). Both call
- * `internal*` functions — the cron is a trusted caller.
+ * Convex cron registry. Currently drives the inference-cache TTL cleanup
+ * (file 20 §2). The 60-second job-queue `tick` that claims runnable jobs
+ * (`jobs.claimNextRunnable`) and dispatches them to the orchestrator runner is
+ * added once the runner action lands (it needs prompt bundling + PDF text
+ * extraction — see docs/33).
  *
- * Version: 0.8.0-phase5
+ * Version: 0.7.0-phase4
  */
 
 import { cronJobs } from "convex/server";
@@ -21,9 +22,5 @@ crons.daily(
   internal.cache.purgeExpired,
   {},
 );
-
-// Drain the persistent job queue every minute: claim runnable jobs across
-// projects with waiting work and run the resumable review pipeline (file 20 §2).
-crons.interval("drain review job queue", { minutes: 1 }, internal.runner.tick, {});
 
 export default crons;

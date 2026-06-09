@@ -95,6 +95,19 @@ The source of truth is `verifiq-prompts/` (and `docs/`). Key files:
   `interface_discipline`/`required_action` persist + flow into adjudication.
   Removed the duplicate `src/classifier/` (kept `src/classify/`). See
   `docs/33-phase5-completion.md`.
+- **Phase 5 additive modules (done):** three leaf modules ported from the
+  parallel track and rewired onto this stack:
+  - `src/extraction/` — injectable PDF text extractor (`PdfTextExtractor`,
+    optional `pdf-parse` via dynamic import, size/timeout guards) that shapes
+    page-1 text into the classifier's `ClassifyInput` (Source 3).
+  - `src/geo/` — free-API GIS layer (radon/flood/geology/zoning/ecology/
+    heritage) over a shared SSRF-safe ArcGIS query, emitting `Finding`s.
+  - `src/procurement/` — pack-completeness checker (proof of concept). See
+    `docs/37-procurement-pack-review-module.md`.
+  CI is self-sufficient: `scripts/gen-convex-stub.mjs` (`codegen:stub`) +
+  `bundle:prompts` generate `src/convex/_generated/` and the prompt bundle in
+  the runner. Swap the stub for `npx convex codegen` once a `CONVEX_DEPLOY_KEY`
+  secret exists.
 - **Phase 6 (next):** concrete PDF adapters (`PdfRenderer`/`TextExtractor`),
   tus.io resumable upload (mandatory #1), exports (PDF/DOCX/XLSX/CSV/JSON,
   §05.5), and the classification-confirmation UX. NOT started.

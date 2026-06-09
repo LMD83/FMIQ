@@ -2,7 +2,7 @@
  * VerifIQ — PDF text extractor (Phase 5, file 20 §1).
  *
  * Wraps an injected raw PDF parse into the `PdfExtractor` port and shapes the
- * result into the classifier's `ClassificationInput` (content text = first ~500
+ * result into the classifier's `ClassifyInput` (first-page text = first ~500
  * tokens, Source 3). The default parse binds the optional `pdf-parse` package via
  * a non-literal dynamic import, so `tsc`/CI don't require the dependency to be
  * installed; install it (or inject a `RawPdfParse`) to enable server extraction.
@@ -10,7 +10,7 @@
  * Version: 0.8.0-phase5
  */
 
-import type { ClassificationInput } from "../classifier/index.js";
+import type { ClassifyInput } from "../classify/index.js";
 import type { PdfExtraction, PdfExtractor, RawPdfParse } from "./types.js";
 
 /** Default content window handed to the classifier (Source 3). */
@@ -94,18 +94,14 @@ export function normaliseWhitespace(text: string): string {
   return text.replace(/\r\n/g, "\n").replace(/[ \t]+\n/g, "\n").trim();
 }
 
-/** Build the classifier input (Source 3 content text) from an extraction. */
+/** Build the classifier input (Source 3 first-page text) from an extraction. */
 export function extractionToInput(
   filename: string,
   extraction: PdfExtraction,
-  opts: { sizeBytes?: number; folder?: string; contentTokens?: number } = {},
-): ClassificationInput {
+  opts: { contentTokens?: number } = {},
+): ClassifyInput {
   return {
     filename,
-    sizeBytes: opts.sizeBytes,
-    folder: opts.folder,
-    contentText: firstTokens(extraction.text, opts.contentTokens),
-    titleBlockImage: extraction.titleBlockImage,
-    titleBlockMediaType: extraction.titleBlockMediaType,
+    firstPageText: firstTokens(extraction.text, opts.contentTokens),
   };
 }

@@ -3,22 +3,17 @@
  *
  * The persistent side of the orchestrator's queue: enqueue (idempotent),
  * dependency-gated claim, completion/failure with retry backoff, and the
- * project scan-state advance. The scheduled `runner.tick` action (Phase 5)
- * claims the next runnable job and dispatches it to the council handler; this
+ * project scan-state advance. A scheduled `tick` function (Phase 4) will claim
+ * the next runnable job and dispatch it to the matching internal action; this
  * module provides the data operations that tick is built from.
- *
- * These are all `internal*` functions: the queue is driven by the trusted runner
- * /cron, never a public client (a public `mutation`/`query` here would be an IDOR
- * surface — any caller with a `project_id` could read/write the queue). A future
- * authed "start review" entry point wraps `enqueueJob` behind Clerk membership.
  *
  * Audit-log writes elsewhere are mutations (never actions) so they survive
  * action retries (file 20 §2); the same holds for these job-state writes.
  *
- * Version: 0.8.0-phase5
+ * Version: 0.5.0-phase3
  */
 
-import { internalMutation, internalQuery } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { JobType, ScanState } from "./schema";
 
@@ -28,7 +23,7 @@ function backoffMs(attempt: number): number {
 }
 
 /** Enqueue a job. Idempotent on `idempotency_key` (file 20 §2). */
-export const enqueueJob = internalMutation({
+export const enqueueJob = mutation({
   args: {
     project_id: v.id("projects"),
     job_type: JobType,
@@ -62,7 +57,7 @@ export const enqueueJob = internalMutation({
  * passed and whose every dependency has succeeded. Marks it running and returns
  * it, or null when nothing is runnable.
  */
-export const claimNextRunnable = internalMutation({
+export const claimNextRunnable = mutation({
   args: { project_id: v.id("projects"), now: v.optional(v.number()) },
   handler: async (ctx, args) => {
     const now = args.now ?? Date.now();
@@ -94,7 +89,7 @@ export const claimNextRunnable = internalMutation({
 });
 
 /** Mark a running job succeeded. */
-export const completeJob = internalMutation({
+export const completeJob = mutation({
   args: { job_id: v.id("jobs"), result_ref: v.optional(v.string()) },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.job_id, {
@@ -106,7 +101,7 @@ export const completeJob = internalMutation({
 });
 
 /** Fail a job: reschedule with backoff while attempts remain, else mark failed. */
-export const failJob = internalMutation({
+export const failJob = mutation({
   args: { job_id: v.id("jobs"), error: v.string(), max_attempts: v.optional(v.number()) },
   handler: async (ctx, args) => {
     const job = await ctx.db.get(args.job_id);
@@ -129,7 +124,7 @@ export const failJob = internalMutation({
 });
 
 /** Advance a project's scan state (file 20 §5 state machine). */
-export const advanceScanState = internalMutation({
+export const advanceScanState = mutation({
   args: { project_id: v.id("projects"), scan_state: ScanState },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.project_id, {
@@ -140,32 +135,12 @@ export const advanceScanState = internalMutation({
 });
 
 /** List jobs for a project (queue inspection / dashboard). */
-export const listJobs = internalQuery({
+export const listJobs = query({
   args: { project_id: v.id("projects") },
   handler: async (ctx, args) => {
     return ctx.db
       .query("jobs")
       .withIndex("by_project", (q) => q.eq("project_id", args.project_id))
       .collect();
-  },
-});
-
-/**
- * Distinct project ids with at least one pending/retrying job. The global
- * `runner.tick` cron uses this to know which projects to drain (the claim is
- * per-project), so it scans the small set of waiting work, not every project.
- */
-export const pendingProjectIds = internalQuery({
-  args: {},
-  handler: async (ctx) => {
-    const ids = new Set<string>();
-    for (const status of ["pending", "retrying"] as const) {
-      const waiting = await ctx.db
-        .query("jobs")
-        .withIndex("by_status", (q) => q.eq("status", status))
-        .collect();
-      for (const job of waiting) ids.add(job.project_id);
-    }
-    return [...ids];
   },
 });

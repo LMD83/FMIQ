@@ -3,7 +3,7 @@
  *
  * Exercises the extractor with an injected fake parse (no pdf-parse, no real
  * PDF): text normalisation, empty-buffer guard, the 500-token content window,
- * and the extraction → ClassificationInput shaping that feeds the classifier.
+ * and the extraction → ClassifyInput shaping that feeds the classifier.
  *
  * Version: 0.8.0-phase5
  */
@@ -63,18 +63,13 @@ describe("normaliseWhitespace", () => {
 });
 
 describe("extractionToInput", () => {
-  it("shapes an extraction into a ClassificationInput (Source 3 + passthroughs)", () => {
-    const img = new Uint8Array([9]);
+  it("shapes an extraction into a ClassifyInput (Source 3 first-page text)", () => {
     const input = extractionToInput(
       "A-101-Ground-Floor.pdf",
-      { text: "Architectural general arrangement plan", pageCount: 1, titleBlockImage: img, titleBlockMediaType: "image/png" },
-      { sizeBytes: 2048, folder: "Architecture", contentTokens: 3 },
+      { text: "Architectural general arrangement plan", pageCount: 1 },
+      { contentTokens: 3 },
     );
     expect(input.filename).toBe("A-101-Ground-Floor.pdf");
-    expect(input.sizeBytes).toBe(2048);
-    expect(input.folder).toBe("Architecture");
-    expect(input.contentText).toBe("Architectural general arrangement"); // first 3 tokens
-    expect(input.titleBlockImage).toBe(img);
-    expect(input.titleBlockMediaType).toBe("image/png");
+    expect(input.firstPageText).toBe("Architectural general arrangement"); // first 3 tokens
   });
 });

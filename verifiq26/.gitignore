@@ -28,6 +28,3 @@ npm-debug.log*
 .idea/
 .vscode/
 *.swp
-
-# Generated prompt bundle (bundle:prompts)
-src/agents/prompts.bundle.ts
