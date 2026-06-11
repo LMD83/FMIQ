@@ -106,9 +106,16 @@ from a clean checkout.
   `interface_discipline`/`required_action` persist + flow into adjudication.
   Removed the duplicate `src/classifier/` (kept `src/classify/`). See
   `docs/33-phase5-completion.md`.
-- **Phase 6 (next):** concrete PDF adapters (`PdfRenderer`/`TextExtractor`),
-  tus.io resumable upload (mandatory #1), exports (PDF/DOCX/XLSX/CSV/JSON,
-  §05.5), and the classification-confirmation UX. NOT started.
+- **Phase 6 (in progress):** the terminal run-review script + public project
+  read queries + frontend build plan are in (PRs #17/#18). **Concrete PDF
+  adapters are done:** `src/pdf/` implements the classify ports
+  (`PdfRenderer`/`TextExtractor`) over `pdfjs-dist` + `@napi-rs/canvas` —
+  edge-only, lazy-loaded, byte-deterministic tests in `tests/pdf.test.ts`. They
+  are not yet wired into a classify action: `src/convex/classify.ts` only
+  *persists* classifier output; a `"use node"` action that runs
+  `classifyDocument` (passing `createNodePdf()` as `renderer`/`textExtractor`)
+  on upload is the next step. Still open: tus.io resumable upload (mandatory #1),
+  exports (PDF/DOCX/XLSX/CSV/JSON, §05.5), and the classification-confirmation UX.
 
 Note: `requestReview` enforces project ownership only when a Clerk identity is
 present (auth is still stubbed); the workflow/cache mutations are internal-only,
