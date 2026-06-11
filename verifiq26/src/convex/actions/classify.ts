@@ -18,7 +18,7 @@
  * After classification of all files in a disciplineUpload → triggers the discipline scan.
  */
 
-import { action, internalAction } from "../_generated/server";
+import { internalAction } from "../_generated/server";
 import { v } from "convex/values";
 import { internal } from "../_generated/api";
 import { Anthropic } from "@anthropic-ai/sdk";
@@ -45,7 +45,7 @@ export const classifyDisciplineUpload = internalAction({
 
     // Mark upload as classified, trigger scan
     await ctx.runMutation(internal.uploads.markClassified, { uploadId: args.uploadId });
-    await ctx.scheduler.runAfter(0, internal.scan.scanDisciplineUpload, {
+    await ctx.scheduler.runAfter(0, internal.actions.scan.scanDisciplineUpload, {
       uploadId: args.uploadId,
     });
   },

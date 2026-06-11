@@ -22,7 +22,18 @@ const STRICT_MATCH = "strict";
 const NORMALISED_MATCH = "normalised";
 const FUZZY_MATCH = "fuzzy";
 
-export interface VerifiedFinding extends ClaudeResponse["findings"][number] {
+export interface VerifiedFinding {
+  severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+  category: string;
+  oneSentenceIssue: string;
+  document: string;
+  sectionLocation: string;
+  regulatoryBasis: string;
+  operationalRisk: string;
+  recommendedAction: string;
+  evidenceQuote: string;
+  element?: string;
+  standardCode?: string;
   verificationMethod: "strict" | "normalised" | "fuzzy";
   verificationConfidence: number;
 }

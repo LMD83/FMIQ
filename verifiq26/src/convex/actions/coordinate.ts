@@ -64,13 +64,14 @@ export const runCrossDisciplinePass = internalAction({
     // Cross-discipline source-quote gate is stricter:
     // Each finding's evidenceQuote must appear in at least one of the
     // discipline documents it claims to connect.
-    const sourceTexts = allFindings.map(f => f.evidenceQuote);
+    const sourceTexts = allFindings.map((f: { evidenceQuote: string }) => f.evidenceQuote);
     const verified = await verifySourceQuotes(response.findings, sourceTexts);
 
     // Persist cross-discipline findings with discipline = "cross"
     for (const f of verified) {
       await ctx.runMutation(internal.findings.create, {
         orgId: project.orgId,
+        projectId: args.projectId,
         checkId: project.crossDisciplineCheckId,
         finding: {
           ...f,

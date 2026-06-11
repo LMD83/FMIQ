@@ -20,9 +20,13 @@
  *  - ZIP > 1GB → reject with 413, ask customer to split
  */
 
-import { action, internalMutation } from "../_generated/server";
+import { createHash } from "crypto";
+import { writeFileSync } from "fs";
+import { join } from "path";
+import { action } from "../_generated/server";
 import { v } from "convex/values";
 import { internal } from "../_generated/api";
+import type { Id } from "../_generated/dataModel";
 import StreamZip from "node-stream-zip";
 
 const MAX_ZIP_SIZE_BYTES = 1_000_000_000; // 1 GB cap per discipline ZIP
@@ -35,7 +39,11 @@ export const submitDisciplineZip = action({
     zipStorageId: v.id("_storage"),
     consultantEmail: v.string(),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<{
+    uploadId: Id<"disciplineUploads">;
+    fileCount: number;
+    totalSizeBytes: number;
+  }> => {
     // 1. Verify token
     const invitation = await ctx.runQuery(internal.invitations.findByToken, {
       tokenHash: hashToken(args.magicLinkToken),
@@ -74,7 +82,7 @@ export const submitDisciplineZip = action({
     // 4. Extract entries
     const zip = new StreamZip.async({ file: zipBufferToTempPath(zipBuffer) });
     const entries = await zip.entries();
-    const extractedFiles: string[] = [];
+    const extractedFiles: Id<"files">[] = [];
     let totalSize = 0;
     let estimatedPages = 0;
 
@@ -92,13 +100,14 @@ export const submitDisciplineZip = action({
       }
 
       const data = await zip.entryData(name);
-      const fileStorageId = await ctx.storage.store(new Blob([data]));
+      const fileStorageId = await ctx.storage.store(new Blob([new Uint8Array(data)]));
       totalSize += entry.size;
       estimatedPages += estimatePagesFromSize(entry.size, ext);
 
       const fileId = await ctx.runMutation(internal.files.create, {
         orgId: invitation.orgId,
-        packId: undefined, // legacy pack model; using disciplineUpload now
+        uploadId,
+        packId: undefined,
         fileName: name.split("/").pop() || name,
         filePath: name,
         mimeType: mimeFromExt(ext),
@@ -123,7 +132,7 @@ export const submitDisciplineZip = action({
     await ctx.runMutation(internal.invitations.markUploaded, { id: invitation._id });
 
     // 7. Trigger classification (async, fire-and-forget)
-    await ctx.scheduler.runAfter(0, internal.classify.classifyDisciplineUpload, {
+    await ctx.scheduler.runAfter(0, internal.actions.classify.classifyDisciplineUpload, {
       uploadId,
     });
 
@@ -134,16 +143,12 @@ export const submitDisciplineZip = action({
 // ===== HELPERS =====
 
 function hashToken(token: string): string {
-  // In production: SHA-256 of token + server salt
-  return require("crypto").createHash("sha256").update(token).digest("hex");
+  return createHash("sha256").update(token).digest("hex");
 }
 
 function zipBufferToTempPath(buf: Buffer): string {
-  // Convex actions run in Node — write to /tmp for node-stream-zip
-  const fs = require("fs");
-  const path = require("path");
-  const tmpPath = path.join("/tmp", `verifiq_zip_${Date.now()}_${Math.random().toString(36).slice(2)}.zip`);
-  fs.writeFileSync(tmpPath, buf);
+  const tmpPath = join("/tmp", `verifiq_zip_${Date.now()}_${Math.random().toString(36).slice(2)}.zip`);
+  writeFileSync(tmpPath, buf);
   return tmpPath;
 }
 

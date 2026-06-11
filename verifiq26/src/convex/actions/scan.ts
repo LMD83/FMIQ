@@ -70,7 +70,8 @@ export const scanDisciplineUpload = internalAction({
     });
 
     // Compute budget
-    const tierBudget = TIER_TOKEN_BUDGETS[project.tier || "mid"];
+    const tierKey = (project.tier ?? "mid") as keyof typeof TIER_TOKEN_BUDGETS;
+    const tierBudget = TIER_TOKEN_BUDGETS[tierKey];
     const disciplinePct = DISCIPLINE_BUDGET_PCT[upload.discipline as keyof typeof DISCIPLINE_BUDGET_PCT] || 0.1;
     let budgetRemaining = tierBudget.total * disciplinePct;
 
@@ -93,7 +94,7 @@ export const scanDisciplineUpload = internalAction({
     // Process specs first (biggest, highest signal)
     for (const file of grouped.specifications) {
       if (budgetRemaining <= tierBudget.perFile * 0.5) break; // out of budget
-      const result = await scanSpecFile(ctx, file, systemPrompt, tierBudget.perFile, upload);
+      const result = await scanSpecFile(ctx, file, systemPrompt, tierBudget.perFile, upload, checkId);
       totalFindings += result.findingsCount;
       totalInputTokens += result.inputTokens;
       totalOutputTokens += result.outputTokens;
@@ -103,7 +104,7 @@ export const scanDisciplineUpload = internalAction({
     // Then schedules (high data density)
     for (const file of grouped.schedules) {
       if (budgetRemaining <= tierBudget.perFile * 0.3) break;
-      const result = await scanScheduleFile(ctx, file, systemPrompt, tierBudget.perFile / 2, upload);
+      const result = await scanScheduleFile(ctx, file, systemPrompt, tierBudget.perFile / 2, upload, checkId);
       totalFindings += result.findingsCount;
       totalInputTokens += result.inputTokens;
       totalOutputTokens += result.outputTokens;
@@ -113,7 +114,7 @@ export const scanDisciplineUpload = internalAction({
     // Then drawings via vision (parallelisable)
     const drawingBatch = grouped.drawings.slice(0, Math.floor(budgetRemaining / 20_000));
     const drawingResults = await Promise.all(
-      drawingBatch.map(d => scanDrawingFile(ctx, d, systemPrompt, tierBudget.perFile / 4, upload))
+      drawingBatch.map((d) => scanDrawingFile(ctx, d, systemPrompt, tierBudget.perFile / 4, upload, checkId))
     );
     for (const r of drawingResults) {
       totalFindings += r.findingsCount;
@@ -124,7 +125,7 @@ export const scanDisciplineUpload = internalAction({
     // Reports + register hygiene last (smallest impact)
     for (const file of [...grouped.reports, ...grouped.registers]) {
       if (budgetRemaining <= 30_000) break;
-      const result = await scanHygieneFile(ctx, file, systemPrompt, 60_000, upload);
+      const result = await scanHygieneFile(ctx, file, systemPrompt, 60_000, upload, checkId);
       totalFindings += result.findingsCount;
       totalInputTokens += result.inputTokens;
       totalOutputTokens += result.outputTokens;
@@ -152,7 +153,7 @@ export const scanDisciplineUpload = internalAction({
     // Check if cross-discipline coordination should trigger
     const projectStatus = await ctx.runQuery(internal.projects.getStatus, { id: upload.projectId });
     if (shouldTriggerCrossDiscipline(projectStatus)) {
-      await ctx.scheduler.runAfter(0, internal.coordinate.runCrossDisciplinePass, {
+      await ctx.scheduler.runAfter(0, internal.actions.coordinate.runCrossDisciplinePass, {
         projectId: upload.projectId,
       });
     }
@@ -168,7 +169,8 @@ async function scanSpecFile(
   file: any,
   systemPrompt: string,
   budgetTokens: number,
-  upload: any
+  upload: any,
+  checkId: string,
 ): Promise<{ findingsCount: number; inputTokens: number; outputTokens: number }> {
   // Extract spec text, chunk to ~50 pages per Claude call
   const text = await extractPdfText(ctx, file.storageId, file.estimatedPages);
@@ -197,7 +199,8 @@ async function scanSpecFile(
     for (const f of verified) {
       await ctx.runMutation(internal.findings.create, {
         orgId: upload.orgId,
-        checkId: file.checkId,
+        projectId: upload.projectId,
+        checkId: checkId,
         finding: {
           ...f,
           findingId: nextFindingId(upload.discipline, findingsCount),
@@ -213,7 +216,7 @@ async function scanSpecFile(
   return { findingsCount, inputTokens: totalIn, outputTokens: totalOut };
 }
 
-async function scanScheduleFile(ctx: any, file: any, systemPrompt: string, budget: number, upload: any) {
+async function scanScheduleFile(ctx: any, file: any, systemPrompt: string, budget: number, upload: any, checkId: string) {
   // Schedules are dense tables; read full text, check for blank fields, inconsistencies, value drift
   const text = await extractPdfText(ctx, file.storageId, file.estimatedPages);
 
@@ -228,15 +231,23 @@ async function scanScheduleFile(ctx: any, file: any, systemPrompt: string, budge
   const verified = await verifySourceQuotes(response.findings, [text]);
   let count = 0;
   for (const f of verified) {
-    await ctx.runMutation(internal.findings.create, { orgId: upload.orgId, checkId: file.checkId,
-      finding: { ...f, findingId: nextFindingId(upload.discipline, count), status: "pending_review", sourceFile: file.fileName },
+    await ctx.runMutation(internal.findings.create, {
+      orgId: upload.orgId,
+      projectId: upload.projectId,
+      checkId,
+      finding: {
+        ...f,
+        findingId: nextFindingId(upload.discipline, count),
+        status: "pending_review",
+        sourceFile: file.fileName,
+      },
     });
     count++;
   }
   return { findingsCount: count, inputTokens: response.usage.input_tokens, outputTokens: response.usage.output_tokens };
 }
 
-async function scanDrawingFile(ctx: any, file: any, systemPrompt: string, budget: number, upload: any) {
+async function scanDrawingFile(ctx: any, file: any, systemPrompt: string, budget: number, upload: any, checkId: string) {
   // Drawings: vision-based, page-by-page
   const images = await extractPdfImages(ctx, file.storageId, file.estimatedPages);
   let totalIn = 0, totalOut = 0, findingsCount = 0;
@@ -256,8 +267,17 @@ async function scanDrawingFile(ctx: any, file: any, systemPrompt: string, budget
 
     const verified = await verifySourceQuotes(response.findings, [`Drawing ${file.fileName} page ${img.page}`]);
     for (const f of verified) {
-      await ctx.runMutation(internal.findings.create, { orgId: upload.orgId, checkId: file.checkId,
-        finding: { ...f, findingId: nextFindingId(upload.discipline, findingsCount), status: "pending_review", sourceFile: file.fileName, sourcePageRange: String(img.page) },
+      await ctx.runMutation(internal.findings.create, {
+        orgId: upload.orgId,
+        projectId: upload.projectId,
+        checkId,
+        finding: {
+          ...f,
+          findingId: nextFindingId(upload.discipline, findingsCount),
+          status: "pending_review",
+          sourceFile: file.fileName,
+          sourcePageRange: String(img.page),
+        },
       });
       findingsCount++;
     }
@@ -265,7 +285,7 @@ async function scanDrawingFile(ctx: any, file: any, systemPrompt: string, budget
   return { findingsCount, inputTokens: totalIn, outputTokens: totalOut };
 }
 
-async function scanHygieneFile(ctx: any, file: any, systemPrompt: string, budget: number, upload: any) {
+async function scanHygieneFile(ctx: any, file: any, systemPrompt: string, budget: number, upload: any, checkId: string) {
   // Use CHEAP model for register / drawing-index hygiene
   const text = await extractPdfText(ctx, file.storageId, file.estimatedPages);
   const response = await callClaudeWithCache({
@@ -279,8 +299,16 @@ async function scanHygieneFile(ctx: any, file: any, systemPrompt: string, budget
   const verified = await verifySourceQuotes(response.findings, [text]);
   let count = 0;
   for (const f of verified) {
-    await ctx.runMutation(internal.findings.create, { orgId: upload.orgId, checkId: file.checkId,
-      finding: { ...f, findingId: nextFindingId(upload.discipline, count), status: "pending_review", sourceFile: file.fileName },
+    await ctx.runMutation(internal.findings.create, {
+      orgId: upload.orgId,
+      projectId: upload.projectId,
+      checkId,
+      finding: {
+        ...f,
+        findingId: nextFindingId(upload.discipline, count),
+        status: "pending_review",
+        sourceFile: file.fileName,
+      },
     });
     count++;
   }
