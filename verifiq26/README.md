@@ -91,7 +91,7 @@ The `docs/` folder is the canonical commercial documentation set. Open in order:
 The `evidence/` folder contains the anonymised output from the May 2026 validation engagement that anchors the entire VerifIQ proposition.
 
 - **Findings register v0.8 (Scan View)** — 327 findings across 5 disciplines, source-quoted, severity-tagged.
-- **Pack manifest** — 161-file inventory of the original Stage 2C pack reviewed.
+- **Pack manifest** — 161-file inventory of the original Office project pack reviewed.
 
 ---
 
@@ -105,7 +105,7 @@ VerifIQ ships three branded products on the same underlying checking engine:
 | **Hunt** | Main contractors (pre-con, QS) | €300–€2,000 / scan | "Variation exposure with PW-CF clause mapping" |
 | **Studio** | Sole practitioners, small firms | €60–€300 / check | "Single discipline, faster, cheaper" |
 
-Plus a **Programme** tier for Employer-side capital programmes (HSE Estates, OGP framework holders, Section 38/39 bodies) — custom pricing, SSO, audit trail, single-tenant deployment.
+Plus a **Programme** tier for Employer-side capital programmes (OGP framework holders, commercial landlords, multi-site office programmes) — custom pricing, SSO, audit trail, single-tenant deployment.
 
 ---
 

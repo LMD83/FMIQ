@@ -16,7 +16,7 @@
  * where Claude is fabricating evidence.
  */
 
-import { ClaudeResponse } from "./anthropic-client";
+import { ClaudeResponse } from "./anthropicClient";
 
 const STRICT_MATCH = "strict";
 const NORMALISED_MATCH = "normalised";

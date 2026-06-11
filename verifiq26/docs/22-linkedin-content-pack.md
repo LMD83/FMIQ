@@ -61,7 +61,7 @@ out — a project of theirs you saw, mutual contact, etc.}}.
 I've put together something I'd value 15 minutes of your time on.
 We've built a software-based reading aid that scans pre-tender packs
 against the Irish corpus and surfaces source-quoted findings. The
-last validation pack we ran (a Stage 2C public-sector job) surfaced
+last validation pack we ran (a Office project public-sector job) surfaced
 327 findings across 5 disciplines including three critical pre-tender
 risks.
 
@@ -89,7 +89,7 @@ the design team might want to read closely before tender release.
 Not AI hype — we're explicit that it's an augmentation, not a
 replacement. The chartered eye stays where it always was.
 
-One Stage 2C pack we ran recently surfaced 327 findings, three of
+One Office project pack we ran recently surfaced 327 findings, three of
 them critical pre-tender issues. Worked example on the site.
 
 If it's interesting, 15 minutes on Zoom or coffee in Dublin — your
@@ -116,7 +116,7 @@ Not replacing the QS role — the chartered review stays with you. We
 just surface the document hunt faster so you spend your time on the
 judgement calls.
 
-One real Stage 2C pack we ran surfaced 327 findings; 38 of them
+One real Office project pack we ran surfaced 327 findings; 38 of them
 became RFIs the practice raised before the query deadline.
 
 Worth 15 minutes? verifiq.ie
@@ -155,7 +155,7 @@ the link.
 verifiq.ie
 
 The worked example I mentioned — C-03 on the homepage — is the real
-one from the Stage 2C pack we ran. Verbatim source quote, the
+one from the Office project pack we ran. Verbatim source quote, the
 critical pre-tender risk, the recommended action.
 
 Happy to send a magic-link upload for a free taster when you have a

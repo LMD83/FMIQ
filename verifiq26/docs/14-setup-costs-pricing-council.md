@@ -250,7 +250,7 @@ The question is not what to charge but **what to charge by**. Three coherent bas
 | Large | €590 | €1,290 | €2,400 | €4,800 |
 | Programme | €1,200 | €2,400 | €4,400 | €9,000 |
 
-**Strengths:** Captures both volume *and* engagement depth. Acknowledges that a forensic pre-award review (high stakes) is a different product to a quick skim before issue. Lets us serve quick-look engagements (skim of a Stage 2C pack before the QS meeting tomorrow morning) at a lower price point that broadens market access. Forensic tier captures high-margin work.
+**Strengths:** Captures both volume *and* engagement depth. Acknowledges that a forensic pre-award review (high stakes) is a different product to a quick skim before issue. Lets us serve quick-look engagements (skim of an Office project pack before the QS meeting tomorrow morning) at a lower price point that broadens market access. Forensic tier captures high-margin work.
 
 **Weaknesses:** More choices = harder to sell. Customer has to understand both axes. Risk of paralysis at the onboarding wizard. Twice as many price points to maintain across markets.
 
@@ -290,7 +290,7 @@ The Tier I–V model with a free taster is the *only* pricing structure that let
 **Acquisition channels — Ireland year 1, by efficiency:**
 
 1. **RIAI / EI / SCSI member outreach** via the panel chair's network — warm intros, ~€0 CAC, ~25% close rate on Tier II/III.
-2. **One named pilot success story** published with consent (the 327-finding HSE Day Service pack, anonymised) — drives ~30 inbound enquiries in first 3 months.
+2. **One named pilot success story** published with consent (the 327-finding Office project pack, anonymised) — drives ~30 inbound enquiries in first 3 months.
 3. **RIAI Conference + Engineers Ireland Annual Conference** speaking slots — €5–8k per event, expected 10–20 enquiries each.
 4. **Targeted LinkedIn ads to "RIAI member" / "Engineers Ireland CEng" audiences** — €4–8k spend test, CAC likely €150–€450 per qualified enquiry. Defer to month 6+.
 5. **Practice-magazine sponsored articles (Plan Magazine, Engineers Journal)** — €2–4k each, soft brand-building, low direct attribution.

@@ -377,12 +377,12 @@ Different chartered reviewers may judge differently. We track this but do NOT ca
 
 ## Per-stage calibration
 
-Findings at Stage 2C (pre-tender) have different expected acceptance patterns from findings at Stage 4 (construction monitoring).
+Findings at pre-tender have different expected acceptance patterns from findings at construction monitoring.
 
 ### The pattern
 
-- At Stage 2C: design team is open to material findings — high acceptance, low REJ-08 (stage inappropriate).
-- At Stage 4: design is largely frozen — material findings less actionable, REJ-08 cluster more likely.
+- At pre-tender: design team is open to material findings — high acceptance, low REJ-08 (stage inappropriate).
+- At construction: design is largely frozen — material findings less actionable, REJ-08 cluster more likely.
 - At post-completion audit: only highest-stakes findings have value.
 
 ### Calibration response
@@ -392,7 +392,7 @@ For each agent, maintain stage-aware risk-rating defaults. Example:
 ```markdown
 ### Architectural finding stage-appropriateness
 
-| Finding type | Stage 2C | Stage 3 (post-award) | Stage 4 (construction) |
+| Finding type | Pre-tender | Post-award | Construction |
 |---|---|---|---|
 | Missing dimension on critical detail | High | High | Critical (build-blocker) |
 | Inconsistent room naming | Medium | Low | Advisory |

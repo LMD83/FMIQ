@@ -5,9 +5,9 @@ import { SeverityPill } from "@/components/ui/SeverityPill";
 import { SourceQuote } from "@/components/ui/SourceQuote";
 
 export const metadata = {
-  title: "VerifIQ — Case study 01 · 327 findings · Adult Day Service · Stage 2C",
+  title: "VerifIQ — Case study 01 · 327 findings · Office project",
   description:
-    "A worked anonymised case study from a 327-finding Stage 2C tender pack read. Ten findings shown in full with verbatim source quotes.",
+    "A worked anonymised case study from a 327-finding Office project tender pack read. Ten findings shown in full with verbatim source quotes.",
 };
 
 type Stat = { num: string; lab: string; tone?: "crit" | "high" | "med" | "low" };
@@ -321,7 +321,7 @@ export default function CaseStudy01Page() {
         <Wrap>
           <span className="t-eyebrow">— Reference · 01 · Anonymised</span>
           <h1 className="t-h1" style={{ color: "var(--text)", margin: "14px 0 12px" }}>
-            Adult Day Service · Stage 2C tender pack.
+            Office project tender pack.
           </h1>
           <p className="t-lede" style={{ maxWidth: "60ch" }}>
             A worked anonymised example. 161 documents across five disciplines. Three weeks in front
@@ -354,7 +354,7 @@ export default function CaseStudy01Page() {
               margin: "0 0 16px",
             }}
           >
-            The Stage 2C tender pack covered architecture, structures, M&amp;E, fire, and BCAR — five
+            The Office project tender pack covered architecture, structures, M&amp;E, fire, and BCAR — five
             disciplines, 161 documents. The Employer was a public-sector body procuring under CWMF
             using PW-CF5 (Employer-Designed Works Contract). Programme pressure was real; the tender
             release date was anchored against a wider capital-programme milestone.

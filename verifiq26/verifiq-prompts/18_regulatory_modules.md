@@ -246,12 +246,12 @@ Notification trigger: HSA AF-1 notification if (project > 500 person days) OR (>
 
 ## Module activation worked example
 
-**Project:** New HSE Day Service for adults with disabilities, Dublin.
+**Project:** New office fit-out, Dublin.
 
 **Intake answers:**
 - Building type: Healthcare / day service (non-residential)
-- Project stage: Pre-tender Stage 2C
-- HIQA relevance: Yes (Section 38 service, day service for disabilities — note: not designated centre but HIQA standards inform design)
+- Project stage: Pre-tender
+- HIQA relevance: No (commercial office — standard TGD / BCAR / NZEB corpus applies)
 - BCAR applicable: Yes
 - Planning status: Granted, 8 conditions
 - FSC status: Applied for

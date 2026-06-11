@@ -1,3 +1,5 @@
+"use node";
+
 /**
  * VerifIQ — Per-Discipline Scan Orchestrator
  *
@@ -21,9 +23,9 @@
 import { internalAction } from "../_generated/server";
 import { v } from "convex/values";
 import { internal } from "../_generated/api";
-import { callClaudeWithCache, ClaudeResponse } from "../lib/anthropic-client";
+import { callClaudeWithCache, ClaudeResponse } from "../lib/anthropicClient";
 import { loadDisciplineCorpus, buildSystemPrompt } from "../lib/corpus";
-import { verifySourceQuotes } from "../lib/source-quote";
+import { verifySourceQuotes } from "../lib/sourceQuote";
 import { extractPdfText, extractPdfImages } from "../lib/extract";
 
 // Tier budgets (tunable per pack tier)

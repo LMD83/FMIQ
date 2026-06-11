@@ -1,0 +1,12 @@
+{
+  "name": "FMIQ — Integrated Workplace Management",
+  "short_name": "FMIQ",
+  "description": "FMIQ field app — work orders, readiness gate, collection care.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F7F5F2",
+  "theme_color": "#1C4532",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

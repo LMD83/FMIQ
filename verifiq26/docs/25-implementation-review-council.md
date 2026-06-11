@@ -298,7 +298,7 @@ For each Critical finding, estimate the tender release delay if the finding requ
 
 **P6 · Anonymised industry benchmarking**
 
-"Your pack has 3 critical findings; industry average for Stage 2C public-sector packs is 2.4." Powerful for the customer's internal politics. **Build value: medium. Build cost: 1 week. Privacy considerations: significant — must be properly anonymised.**
+"Your pack has 3 critical findings; industry average for comparable public-sector office packs is 2.4." Powerful for the customer's internal politics. **Build value: medium. Build cost: 1 week. Privacy considerations: significant — must be properly anonymised.**
 
 **P7 · BCMS / eTenders connector**
 
@@ -442,7 +442,7 @@ These are competitive moves the founder has not yet considered:
 
 1. **Real-time scan-state push to the customer's Slack / Teams / email.** Customer doesn't have to check the dashboard. The scan tells them when it transitions states. Trivial to build, brand-defining.
 2. **Reviewer-signed audit log as a verifiable cryptographic artefact.** The reviewer signs the audit log with a private key; customers can verify the signature without trusting VerifIQ. Solves the "is this real" question for adversarial procurement panels. Builds defensibility in litigation.
-3. **Anonymised peer comparison: "your design vs. industry baseline."** The Product Owner mentioned P6 benchmarking; I'd go further — at the PRINCIPLE level. "Your fire strategy is more compartmented than 65% of comparable HSE Day Service packs we've reviewed." Builds trust + sells to the customer's board.
+3. **Anonymised peer comparison: "your design vs. industry baseline."** The Product Owner mentioned P6 benchmarking; I'd go further — at the PRINCIPLE level. "Your fire strategy is more compartmented than 65% of comparable office packs we've reviewed." Builds trust + sells to the customer's board.
 
 ---
 

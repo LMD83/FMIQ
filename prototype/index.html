@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FMIQ by GovIQ — IWMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+:root{
+  --heritage-green:#1C4532; --forest:#14362A; --sage:#2F6B4A;
+  --limestone:#F7F5F2; --pale-stone:#EFEDE9; --white:#FFFFFF;
+  --charcoal:#1A1814; --slate:#4A4744; --granite:#D9D6D0;
+  --gold:#8B6020; --gold-large:#B07D2A; --terracotta:#C0522A; --info:#2E4C6E; --garnet:#9B1C1C;
+  --font-display:'DM Serif Display',Georgia,serif;
+  --font-ui:'DM Sans','Helvetica Neue',Arial,sans-serif;
+  --font-body:'Inter',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --shadow:0 1px 3px rgba(26,24,20,.08);
+  --shadow-lg:0 8px 28px rgba(26,24,20,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font-body);color:var(--charcoal);background:var(--limestone);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font-family:var(--font-ui);cursor:pointer;border:none;background:none;color:inherit}
+:focus-visible{outline:2px solid var(--forest);outline-offset:2px;border-radius:3px}
+.tnum{font-variant-numeric:tabular-nums}
+.mono{font-family:var(--font-mono)}
+
+/* Layout */
+.app{display:grid;grid-template-columns:248px 1fr;height:100vh;overflow:hidden}
+
+/* Sidebar */
+.sidebar{background:var(--heritage-green);color:#E8EDE9;display:flex;flex-direction:column;overflow-y:auto}
+.brand{padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,.1)}
+.brand h1{font-family:var(--font-display);font-size:24px;color:#fff;letter-spacing:.2px;line-height:1}
+.brand .sub{font-family:var(--font-ui);font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#9DBFAE;margin-top:6px}
+.nav{padding:12px 12px;flex:1}
+.nav-label{font-family:var(--font-ui);font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:#7FA38F;padding:14px 12px 6px}
+.nav-item{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:9px 12px;border-radius:6px;color:#D5E1DA;font-size:13.5px;font-weight:500;height:40px;margin-bottom:1px;transition:background .12s}
+.nav-item:hover{background:rgba(255,255,255,.07)}
+.nav-item.active{background:rgba(255,255,255,.14);color:#fff}
+.nav-item svg{width:18px;height:18px;flex-shrink:0;stroke-width:1.5}
+.nav-item .badge{margin-left:auto;background:var(--terracotta);color:#fff;font-size:11px;font-weight:600;padding:1px 7px;border-radius:10px;font-family:var(--font-ui)}
+.sidebar-foot{padding:14px 16px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;color:#9DBFAE;display:flex;align-items:center;gap:8px}
+.sidebar-foot svg{width:14px;height:14px}
+
+/* Topbar */
+.main{display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:60px;background:var(--white);border-bottom:1px solid var(--granite);display:flex;align-items:center;padding:0 24px;gap:16px;flex-shrink:0}
+.crumb{font-family:var(--font-ui);font-weight:600;font-size:15px}
+.crumb span{color:var(--slate);font-weight:400}
+.search{margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--limestone);border:1px solid var(--granite);border-radius:6px;padding:7px 11px;width:280px;color:var(--slate)}
+.search input{border:none;background:none;outline:none;font-family:var(--font-body);font-size:13px;width:100%;color:var(--charcoal)}
+.search svg{width:15px;height:15px}
+.topbar-btn{width:36px;height:36px;display:grid;place-items:center;border-radius:6px;color:var(--slate)}
+.topbar-btn:hover{background:var(--limestone)}
+.topbar-btn svg{width:18px;height:18px}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--heritage-green);color:#fff;display:grid;place-items:center;font-family:var(--font-ui);font-weight:600;font-size:13px}
+.entra{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--slate)}
+.entra svg{width:14px;height:14px;color:var(--sage)}
+
+/* Content */
+.content{overflow-y:auto;padding:24px;flex:1}
+.view{display:none}
+.view.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px;gap:16px;flex-wrap:wrap}
+.page-title{font-family:var(--font-display);font-size:28px;line-height:1.1}
+.page-sub{color:var(--slate);font-size:13.5px;margin-top:5px;max-width:640px}
+.btn{display:inline-flex;align-items:center;gap:7px;background:var(--heritage-green);color:#fff;font-weight:600;font-size:13px;padding:9px 15px;border-radius:6px;height:38px}
+.btn:hover{background:var(--forest)}
+.btn.ghost{background:var(--white);color:var(--charcoal);border:1px solid var(--granite)}
+.btn.ghost:hover{background:var(--limestone)}
+.btn svg{width:15px;height:15px;stroke-width:2}
+
+/* KPI cards */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+.kpi{background:var(--white);border:1px solid var(--granite);border-radius:8px;padding:16px 18px;box-shadow:var(--shadow)}
+.kpi .lbl{font-size:11.5px;letter-spacing:.4px;text-transform:uppercase;color:var(--slate);font-family:var(--font-ui);font-weight:600;display:flex;align-items:center;gap:7px}
+.kpi .lbl svg{width:15px;height:15px}
+.kpi .val{font-family:var(--font-ui);font-size:30px;font-weight:700;margin-top:10px;line-height:1}
+.kpi .delta{font-size:12px;margin-top:7px;color:var(--slate);display:flex;align-items:center;gap:4px}
+.kpi .delta svg{width:13px;height:13px}
+.up{color:var(--sage)} .down{color:var(--terracotta)}
+
+/* Cards / panels */
+.grid2{display:grid;grid-template-columns:1.55fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.panel{background:var(--white);border:1px solid var(--granite);border-radius:8px;box-shadow:var(--shadow);overflow:hidden}
+.panel-head{padding:14px 18px;border-bottom:1px solid var(--granite);display:flex;align-items:center;justify-content:space-between}
+.panel-head h3{font-family:var(--font-ui);font-size:15px;font-weight:600}
+.panel-head .hint{font-size:12px;color:var(--slate)}
+.panel-body{padding:18px}
+
+/* Status chips (icon+text, never colour alone) */
+.chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--font-ui);font-weight:600;font-size:11.5px;padding:3px 9px;border-radius:20px;border:1px solid transparent;white-space:nowrap}
+.chip svg{width:12px;height:12px;stroke-width:2.2}
+.chip.ok{background:#E6F0EA;color:var(--sage);border-color:#CADBC0}
+.chip.watch{background:#FAF1E0;color:var(--gold);border-color:#EAD9B5}
+.chip.crit{background:#F8E5DD;color:var(--terracotta);border-color:#EFCBBC}
+.chip.danger{background:#F6E2E2;color:var(--garnet);border-color:#E9C4C4}
+.chip.info{background:#E6ECF3;color:var(--info);border-color:#C9D6E5}
+.chip.neutral{background:var(--pale-stone);color:var(--slate);border-color:var(--granite)}
+
+/* Site portfolio strip */
+.portfolio{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.site-card{background:var(--white);border:1px solid var(--granite);border-radius:8px;padding:14px 16px;box-shadow:var(--shadow);position:relative;cursor:pointer;transition:border-color .12s,transform .12s}
+.site-card:hover{border-color:var(--heritage-green);transform:translateY(-1px)}
+.site-card .ico{width:30px;height:30px;color:var(--heritage-green)}
+.site-card .nm{font-family:var(--font-ui);font-weight:600;font-size:14px;margin-top:8px}
+.site-card .loc{font-size:11.5px;color:var(--slate);margin-top:2px}
+.site-card .stat{margin-top:11px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--slate)}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.dot.ok{background:var(--sage)} .dot.watch{background:var(--gold-large)} .dot.crit{background:var(--terracotta)}
+
+/* Excursion hero */
+.excursion{background:linear-gradient(180deg,#fff, #FDF6F2);border:1px solid #EFCBBC;border-left:4px solid var(--terracotta);border-radius:8px;box-shadow:var(--shadow);margin-bottom:18px;overflow:hidden}
+.exc-top{padding:16px 20px;display:flex;align-items:flex-start;gap:14px}
+.exc-pulse{width:40px;height:40px;border-radius:50%;background:#F8E5DD;display:grid;place-items:center;color:var(--terracotta);flex-shrink:0;position:relative}
+.exc-pulse svg{width:20px;height:20px}
+.exc-pulse::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--terracotta);animation:pulse 1.8s infinite}
+@keyframes pulse{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.6);opacity:0}}
+.exc-title{font-family:var(--font-ui);font-weight:700;font-size:16px}
+.exc-meta{font-size:12.5px;color:var(--slate);margin-top:3px}
+.exc-readout{margin-left:auto;text-align:right;flex-shrink:0}
+.exc-readout .big{font-family:var(--font-ui);font-weight:700;font-size:26px;color:var(--terracotta)}
+.exc-readout .small{font-size:11px;color:var(--slate)}
+
+/* Closed loop timeline */
+.loop{display:grid;grid-template-columns:repeat(6,1fr);gap:0;padding:6px 20px 18px;position:relative}
+.loop-step{text-align:center;position:relative;padding:0 4px}
+.loop-step::before{content:"";position:absolute;top:15px;left:-50%;width:100%;height:2px;background:var(--granite);z-index:0}
+.loop-step:first-child::before{display:none}
+.loop-step.done::before{background:var(--sage)}
+.loop-node{width:30px;height:30px;border-radius:50%;background:var(--white);border:2px solid var(--granite);display:grid;place-items:center;margin:0 auto 7px;position:relative;z-index:1;color:var(--slate)}
+.loop-node svg{width:15px;height:15px}
+.loop-step.done .loop-node{background:var(--sage);border-color:var(--sage);color:#fff}
+.loop-step.active .loop-node{background:var(--terracotta);border-color:var(--terracotta);color:#fff;animation:pulse-node 1.6s infinite}
+@keyframes pulse-node{0%,100%{box-shadow:0 0 0 0 rgba(192,82,42,.4)}50%{box-shadow:0 0 0 6px rgba(192,82,42,0)}}
+.loop-step .lp-t{font-family:var(--font-ui);font-weight:600;font-size:12px}
+.loop-step .lp-s{font-size:10.5px;color:var(--slate);margin-top:2px}
+
+/* At-risk objects */
+.objects{display:flex;flex-direction:column;gap:8px}
+.obj{display:flex;align-items:center;gap:11px;padding:10px 12px;border:1px solid var(--granite);border-radius:6px;background:var(--white)}
+.obj .oi{width:34px;height:34px;border-radius:6px;background:var(--pale-stone);display:grid;place-items:center;color:var(--slate);flex-shrink:0}
+.obj .oi svg{width:17px;height:17px}
+.obj .on{font-family:var(--font-ui);font-weight:600;font-size:13px}
+.obj .om{font-size:11.5px;color:var(--slate)}
+.obj .ref{margin-left:auto;font-size:11px}
+
+/* Zone grid */
+.zones{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:13px}
+.zone{background:var(--white);border:1px solid var(--granite);border-radius:8px;padding:14px;box-shadow:var(--shadow);border-top:3px solid var(--sage)}
+.zone.watch{border-top-color:var(--gold-large)}
+.zone.crit{border-top-color:var(--terracotta)}
+.zone .zh{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.zone .zn{font-family:var(--font-ui);font-weight:600;font-size:13.5px}
+.zone .zl{font-size:11px;color:var(--slate)}
+.zone .zstd{font-size:10px;color:var(--slate);margin-top:2px;font-family:var(--font-mono)}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.metric{background:var(--limestone);border-radius:6px;padding:8px 10px}
+.metric .ml{font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--slate);font-family:var(--font-ui);font-weight:600}
+.metric .mv{font-family:var(--font-ui);font-weight:700;font-size:18px;margin-top:2px}
+.metric .mt{font-size:10px;color:var(--slate)}
+.metric.alert .mv{color:var(--terracotta)}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{text-align:left;font-family:var(--font-ui);font-weight:600;font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--slate);padding:10px 14px;border-bottom:1px solid var(--granite);background:var(--pale-stone)}
+tbody td{padding:11px 14px;border-bottom:1px solid var(--granite)}
+tbody tr:hover{background:var(--limestone)}
+tbody tr:last-child td{border-bottom:none}
+.wo-id{font-family:var(--font-mono);font-size:12px;color:var(--info)}
+.pri{font-weight:600}
+.bar{height:7px;border-radius:4px;background:var(--pale-stone);overflow:hidden;min-width:90px}
+.bar > i{display:block;height:100%;border-radius:4px}
+
+/* Misc */
+.muted{color:var(--slate)}
+.section-gap{margin-top:18px}
+.trend-wrap{height:240px;position:relative}
+.legend{display:flex;gap:16px;font-size:11.5px;color:var(--slate);margin-top:8px;flex-wrap:wrap}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.banner{display:flex;align-items:center;gap:10px;background:#E6F0EA;border:1px solid #CADBC0;color:var(--sage);padding:10px 14px;border-radius:7px;font-size:12.5px;font-weight:500;margin-top:14px}
+.banner svg{width:16px;height:16px;flex-shrink:0}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--charcoal);color:#fff;padding:13px 18px;border-radius:8px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;transform:translateY(80px);opacity:0;transition:.3s;z-index:50}
+.toast.show{transform:none;opacity:1}
+.toast svg{width:17px;height:17px;color:var(--sage)}
+.placeholder{background:var(--white);border:1px dashed var(--granite);border-radius:8px;padding:40px;text-align:center;color:var(--slate)}
+.placeholder svg{width:30px;height:30px;margin-bottom:10px;color:var(--granite)}
+.proto-tag{position:fixed;top:8px;right:8px;background:var(--gold-large);color:#fff;font-family:var(--font-ui);font-size:10px;font-weight:700;letter-spacing:.5px;padding:3px 9px;border-radius:4px;z-index:60;text-transform:uppercase}
+@media(max-width:1100px){.kpi-row,.portfolio{grid-template-columns:repeat(2,1fr)}.grid2,.grid3{grid-template-columns:1fr}.loop{grid-template-columns:repeat(3,1fr);gap:14px 0}}
+</style>
+</head>
+<body>
+<div class="proto-tag">Prototype · provisional name</div>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <h1>FMIQ</h1>
+      <div class="sub">by GovIQ · IWMS</div>
+    </div>
+    <nav class="nav" id="nav">
+      <div class="nav-label">Overview</div>
+      <button class="nav-item active" data-view="command"><i data-lucide="shield-check"></i>Collection-Care Centre<span class="badge">1</span></button>
+      <button class="nav-item" data-view="dashboard"><i data-lucide="layout-dashboard"></i>Estate Dashboard</button>
+      <div class="nav-label">Operate</div>
+      <button class="nav-item" data-view="maintenance"><i data-lucide="wrench"></i>Maintenance<span class="badge">7</span></button>
+      <button class="nav-item" data-view="compliance"><i data-lucide="clipboard-check"></i>Compliance</button>
+      <button class="nav-item" data-view="estate"><i data-lucide="building-2"></i>Estate &amp; Assets</button>
+      <button class="nav-item" data-view="projects"><i data-lucide="hard-hat"></i>Projects (CWMF)</button>
+      <button class="nav-item" data-view="sustain"><i data-lucide="leaf"></i>Sustainability</button>
+      <div class="nav-label">Platform</div>
+      <button class="nav-item" data-view="integrations"><i data-lucide="plug"></i>Integrations</button>
+      <button class="nav-item" data-view="reports"><i data-lucide="file-bar-chart"></i>Reports</button>
+    </nav>
+    <div class="sidebar-foot"><i data-lucide="server"></i>Azure North Europe · EU-resident</div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="crumb" id="crumb">Collection-Care Centre <span>· National Museum of Ireland</span></div>
+      <div class="search"><i data-lucide="search"></i><input placeholder="Search assets, zones, work orders…" aria-label="Search"></div>
+      <button class="topbar-btn" aria-label="Notifications"><i data-lucide="bell"></i></button>
+      <button class="topbar-btn" aria-label="Help"><i data-lucide="help-circle"></i></button>
+      <div class="entra" title="Signed in via Azure Entra ID SSO"><i data-lucide="shield"></i>Entra SSO</div>
+      <div class="avatar" title="Aoife N. — Conservation Officer">AN</div>
+    </header>
+
+    <div class="content">
+
+      <!-- ============ COMMAND CENTRE ============ -->
+      <section class="view active" id="view-command" role="region" aria-label="Collection-Care Command Centre">
+        <div class="page-head">
+          <div>
+            <div class="page-title">Collection-Care Command Centre</div>
+            <div class="page-sub">Live conservation status across every site, gallery, case and store — with the operational loop closed from sensor to response.</div>
+          </div>
+          <button class="btn ghost" onclick="toast('Loan facility report generated from live data')"><i data-lucide="file-down"></i>Generate loan report</button>
+        </div>
+
+        <!-- Portfolio strip -->
+        <div class="portfolio" id="portfolio"></div>
+
+        <!-- ACTIVE EXCURSION -->
+        <div class="excursion" id="excursion">
+          <div class="exc-top">
+            <div class="exc-pulse"><i data-lucide="alert-triangle"></i></div>
+            <div>
+              <div class="exc-title">Active excursion — Textile Gallery, Collins Barracks</div>
+              <div class="exc-meta">Relative humidity rising <strong>6.2%/hr</strong> · rate-of-change breach of <span class="mono">ASHRAE Class A</span> target band · detected 14:32</div>
+            </div>
+            <div class="exc-readout">
+              <div class="big tnum" id="rhNow">62.4%</div>
+              <div class="small">RH · target 45–55%</div>
+            </div>
+          </div>
+
+          <!-- Closed loop -->
+          <div class="loop">
+            <div class="loop-step done"><div class="loop-node"><i data-lucide="radio"></i></div><div class="lp-t">Sense</div><div class="lp-s">Conserv sensor</div></div>
+            <div class="loop-step done"><div class="loop-node"><i data-lucide="ruler"></i></div><div class="lp-t">Evaluate</div><div class="lp-s">Std. breached</div></div>
+            <div class="loop-step done"><div class="loop-node"><i data-lucide="boxes"></i></div><div class="lp-t">Name risk</div><div class="lp-s">3 objects</div></div>
+            <div class="loop-step done"><div class="loop-node"><i data-lucide="route"></i></div><div class="lp-t">Route</div><div class="lp-s">WO + alerts</div></div>
+            <div class="loop-step active" id="stepAct"><div class="loop-node"><i data-lucide="user-cog"></i></div><div class="lp-t">Act</div><div class="lp-s" id="actSub">Tech en route</div></div>
+            <div class="loop-step" id="stepEvidence"><div class="loop-node"><i data-lucide="archive"></i></div><div class="lp-t">Evidence</div><div class="lp-s">Auto-logged</div></div>
+          </div>
+        </div>
+
+        <!-- Detail row: at-risk objects + trend -->
+        <div class="grid2">
+          <div class="panel">
+            <div class="panel-head"><h3>RH trend — Textile Gallery (24h)</h3><span class="chip crit"><i data-lucide="trending-up"></i>Excursion</span></div>
+            <div class="panel-body">
+              <div class="trend-wrap"><canvas id="rhChart"></canvas></div>
+              <div class="legend"><span><i style="background:var(--info)"></i>Relative humidity</span><span><i style="background:#CADBC0"></i>Target band (ASHRAE A)</span><span><i style="background:var(--terracotta)"></i>Excursion onset</span></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Objects at risk</h3><span class="hint">via Axiell Collections</span></div>
+            <div class="panel-body">
+              <div class="objects">
+                <div class="obj"><div class="oi"><i data-lucide="shirt"></i></div><div><div class="on">Silk court mantua, 1740s</div><div class="om">Silk / metal thread · <strong>High</strong> sensitivity</div></div><span class="chip crit ref"><i data-lucide="alert-circle"></i>Risk</span></div>
+                <div class="obj"><div class="oi"><i data-lucide="frame"></i></div><div><div class="on">Polychrome carved oak panel</div><div class="om">Wood / gesso / pigment · <strong>High</strong> sensitivity</div></div><span class="chip crit ref"><i data-lucide="alert-circle"></i>Risk</span></div>
+                <div class="obj"><div class="oi"><i data-lucide="scroll"></i></div><div><div class="on">Vellum charter, 15th c.</div><div class="om">Parchment · <strong>High</strong> sensitivity</div></div><span class="chip watch ref"><i data-lucide="eye"></i>Watch</span></div>
+              </div>
+              <div class="banner"><i data-lucide="check-circle-2"></i>Work order <span class="mono">WO-20614</span> raised automatically in 41 seconds with conservation notes attached.</div>
+              <div style="margin-top:12px;display:flex;gap:10px">
+                <button class="btn" id="ackBtn" onclick="acknowledge()"><i data-lucide="check"></i>Acknowledge &amp; dispatch</button>
+                <button class="btn ghost" onclick="toast('BMS setpoint change queued for authorisation')"><i data-lucide="sliders-horizontal"></i>Adjust BMS</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Zone grid -->
+        <div class="panel section-gap">
+          <div class="panel-head"><h3>Monitored zones</h3><span class="hint">12 zones · 4 sites · live</span></div>
+          <div class="panel-body"><div class="zones" id="zones"></div></div>
+        </div>
+      </section>
+
+      <!-- ============ DASHBOARD ============ -->
+      <section class="view" id="view-dashboard" role="region" aria-label="Estate Dashboard">
+        <div class="page-head"><div><div class="page-title">Estate Dashboard</div><div class="page-sub">Portfolio health across the National Museum of Ireland estate.</div></div></div>
+        <div class="kpi-row">
+          <div class="kpi"><div class="lbl"><i data-lucide="building-2"></i>Buildings</div><div class="val tnum">11</div><div class="delta">4 sites · 2 stores</div></div>
+          <div class="kpi"><div class="lbl"><i data-lucide="shield-check"></i>Zones compliant</div><div class="val tnum">83%</div><div class="delta down"><i data-lucide="arrow-down-right"></i>2 in excursion</div></div>
+          <div class="kpi"><div class="lbl"><i data-lucide="wrench"></i>Open work orders</div><div class="val tnum">37</div><div class="delta up"><i data-lucide="arrow-up-right"></i>7 raised today</div></div>
+          <div class="kpi"><div class="lbl"><i data-lucide="clipboard-check"></i>Compliance RAG</div><div class="val tnum" style="color:var(--gold)">Amber</div><div class="delta">3 items due ≤14d</div></div>
+        </div>
+        <div class="grid2">
+          <div class="panel"><div class="panel-head"><h3>Work orders by status (30 days)</h3></div><div class="panel-body"><div class="trend-wrap"><canvas id="woChart"></canvas></div></div></div>
+          <div class="panel"><div class="panel-head"><h3>Conservation compliance by site</h3></div><div class="panel-body"><div class="trend-wrap"><canvas id="siteChart"></canvas></div></div></div>
+        </div>
+      </section>
+
+      <!-- ============ MAINTENANCE ============ -->
+      <section class="view" id="view-maintenance" role="region" aria-label="Maintenance">
+        <div class="page-head"><div><div class="page-title">Maintenance</div><div class="page-sub">Reactive and planned work orders. Excursion-triggered jobs carry conservation context and object-risk priority.</div></div><button class="btn"><i data-lucide="plus"></i>New work order</button></div>
+        <div class="panel"><div class="panel-head"><h3>Open work orders</h3><span class="hint">37 open · 7 today</span></div>
+          <table>
+            <thead><tr><th>ID</th><th>Task</th><th>Location</th><th>Source</th><th>Priority</th><th>SLA</th><th>Status</th></tr></thead>
+            <tbody id="woTable"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============ COMPLIANCE ============ -->
+      <section class="view" id="view-compliance" role="region" aria-label="Compliance">
+        <div class="page-head"><div><div class="page-title">Compliance &amp; Inspections</div><div class="page-sub">Statutory obligations with full audit trail — fire, electrical, legionella, asbestos, conservation surveys.</div></div></div>
+        <div class="panel"><div class="panel-head"><h3>Compliance register</h3></div>
+          <table>
+            <thead><tr><th>Obligation</th><th>Building</th><th>Frequency</th><th>Next due</th><th>Owner</th><th>Status</th></tr></thead>
+            <tbody id="cmpTable"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============ ESTATE ============ -->
+      <section class="view" id="view-estate" role="region" aria-label="Estate and Assets">
+        <div class="page-head"><div><div class="page-title">Estate &amp; Assets</div><div class="page-sub">Portfolio → Site → Building → Floor → Room → Zone. Heritage fabric and protected-structure aware.</div></div><button class="btn ghost"><i data-lucide="upload"></i>Import IFC / COBie</button></div>
+        <div class="grid3" id="estateCards"></div>
+      </section>
+
+      <!-- ============ PROJECTS ============ -->
+      <section class="view" id="view-projects" role="region" aria-label="Projects">
+        <div class="page-head"><div><div class="page-title">Projects &amp; Programmes</div><div class="page-sub">Capital works governed to the CWMF / Public Works Contract. Closure-impact and asset write-back built in.</div></div></div>
+        <div class="panel"><div class="panel-head"><h3>Capital projects</h3></div>
+          <table><thead><tr><th>Project</th><th>CWMF stage</th><th>Budget</th><th>Spend</th><th>Status</th></tr></thead><tbody id="prjTable"></tbody></table>
+        </div>
+      </section>
+
+      <!-- ============ SUSTAINABILITY ============ -->
+      <section class="view" id="view-sustain" role="region" aria-label="Sustainability">
+        <div class="page-head"><div><div class="page-title">Sustainability &amp; Utilities</div><div class="page-sub">Energy, carbon and the Bizot Green Protocol — balancing conservation with decarbonisation.</div></div></div>
+        <div class="kpi-row">
+          <div class="kpi"><div class="lbl"><i data-lucide="zap"></i>Energy (YTD)</div><div class="val tnum">2.84<span style="font-size:15px"> GWh</span></div><div class="delta up"><i data-lucide="arrow-down-right"></i>6% vs last yr</div></div>
+          <div class="kpi"><div class="lbl"><i data-lucide="cloud"></i>Carbon</div><div class="val tnum">512<span style="font-size:15px"> tCO₂e</span></div><div class="delta">Scope 1+2</div></div>
+          <div class="kpi"><div class="lbl"><i data-lucide="thermometer"></i>Bizot-compliant hrs</div><div class="val tnum">91%</div><div class="delta">galleries, 12-mo</div></div>
+          <div class="kpi"><div class="lbl"><i data-lucide="target"></i>Net-zero path</div><div class="val tnum">On track</div><div class="delta">2030 target</div></div>
+        </div>
+        <div class="panel"><div class="panel-head"><h3>Bizot Green Protocol — % gallery-hours within 40–60% RH band</h3></div><div class="panel-body"><div class="trend-wrap"><canvas id="bizotChart"></canvas></div></div></div>
+      </section>
+
+      <!-- ============ INTEGRATIONS ============ -->
+      <section class="view" id="view-integrations" role="region" aria-label="Integrations">
+        <div class="page-head"><div><div class="page-title">Integrations</div><div class="page-sub">Hardware-agnostic adapters and open APIs. We integrate; we don't replace your sensors or your catalogue.</div></div></div>
+        <div class="grid3" id="integGrid"></div>
+      </section>
+
+      <!-- ============ REPORTS ============ -->
+      <section class="view" id="view-reports" role="region" aria-label="Reports">
+        <div class="page-head"><div><div class="page-title">Reports</div><div class="page-sub">Scheduled, accessible (WCAG 2.2 AA), board- and funder-ready.</div></div></div>
+        <div class="grid3" id="reportGrid"></div>
+      </section>
+
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"><i data-lucide="check-circle-2"></i><span id="toastMsg"></span></div>
+
+<script>
+/* ---------- Data ---------- */
+const sites=[
+  {nm:"Archaeology",loc:"Kildare Street, Dublin",ico:"landmark",stat:"ok",txt:"All zones compliant"},
+  {nm:"Decorative Arts & History",loc:"Collins Barracks, Dublin",ico:"castle",stat:"crit",txt:"1 active excursion"},
+  {nm:"Natural History",loc:"Merrion Street, Dublin",ico:"bird",stat:"watch",txt:"1 zone drifting"},
+  {nm:"Country Life",loc:"Turlough Park, Co. Mayo",ico:"trees",stat:"ok",txt:"All zones compliant"},
+];
+const zones=[
+  {nm:"Treasury",loc:"Archaeology · Ground",std:"ASHRAE AA",t:20.1,rh:50.2,st:"ok"},
+  {nm:"Viking Gallery",loc:"Archaeology · Ground",std:"ASHRAE A",t:20.4,rh:51.8,st:"ok"},
+  {nm:"Textile Gallery",loc:"Collins Barracks · 2nd",std:"ASHRAE A",t:21.6,rh:62.4,st:"crit"},
+  {nm:"Textile Store",loc:"Collins Barracks · LG",std:"BS 4971",t:18.9,rh:54.1,st:"ok"},
+  {nm:"Silver & Decorative",loc:"Collins Barracks · 1st",std:"ASHRAE A",t:20.8,rh:49.7,st:"ok"},
+  {nm:"Mammal Hall",loc:"Natural History · 1st",std:"Bizot 2023",t:19.2,rh:58.9,st:"watch"},
+  {nm:"Irish Room",loc:"Natural History · Ground",std:"Bizot 2023",t:18.7,rh:55.0,st:"ok"},
+  {nm:"Folklife Store",loc:"Country Life · LG",std:"BS 4971",t:17.8,rh:52.3,st:"ok"},
+  {nm:"Gallery 2",loc:"Country Life · 1st",std:"ASHRAE B",t:19.9,rh:53.5,st:"ok"},
+  {nm:"Costume Vitrine 4",loc:"Collins Barracks · 2nd",std:"ASHRAE AA",t:20.0,rh:50.9,st:"ok"},
+  {nm:"Bog Bodies Case",loc:"Archaeology · Ground",std:"Custom anoxic",t:20.2,rh:50.0,st:"ok"},
+  {nm:"Archive Store",loc:"Collins Barracks · LG",std:"BS 4971",t:18.5,rh:48.2,st:"watch"},
+];
+const wos=[
+  {id:"WO-20614",task:"RH excursion — humidification fault",loc:"Textile Gallery, Collins Barracks",src:"excursion",pri:"Critical",sla:"2h",st:"crit"},
+  {id:"WO-20611",task:"AHU filter replacement (PPM)",loc:"Natural History · Plant",src:"ppm",pri:"Routine",sla:"5d",st:"info"},
+  {id:"WO-20609",task:"Lux level above target — relamp",loc:"Viking Gallery, Archaeology",src:"reactive",pri:"High",sla:"1d",st:"watch"},
+  {id:"WO-20604",task:"Quarterly fire damper inspection",loc:"Collins Barracks · All",src:"ppm",pri:"Routine",sla:"7d",st:"info"},
+  {id:"WO-20598",task:"Roof lead flashing repair",loc:"Kildare Street · Roof",src:"reactive",pri:"High",sla:"2d",st:"watch"},
+  {id:"WO-20593",task:"Dehumidifier service — store",loc:"Folklife Store, Country Life",src:"ppm",pri:"Routine",sla:"6d",st:"info"},
+  {id:"WO-20590",task:"Pest trap activity — casemaking moth",loc:"Textile Store, Collins Barracks",src:"inspection",pri:"High",sla:"1d",st:"watch"},
+];
+const cmps=[
+  {ob:"Fire risk assessment",b:"Collins Barracks",fr:"Annual",due:"12 Aug 2026",ow:"S. Byrne",st:"ok"},
+  {ob:"Legionella (L8) monitoring",b:"Natural History",fr:"Monthly",due:"18 Jun 2026",ow:"Estates",st:"watch"},
+  {ob:"Asbestos re-inspection",b:"Kildare Street",fr:"Annual",due:"02 Jul 2026",ow:"S. Byrne",st:"watch"},
+  {ob:"Fixed wiring (electrical)",b:"Country Life",fr:"5-yearly",due:"21 Nov 2027",ow:"Estates",st:"ok"},
+  {ob:"Lift (LOLER) examination",b:"Collins Barracks",fr:"6-monthly",due:"30 Jun 2026",ow:"Contractor",st:"watch"},
+  {ob:"Conservation fabric survey",b:"Kildare Street",fr:"Tri-annual",due:"15 Sep 2026",ow:"Conservation",st:"ok"},
+];
+const prjs=[
+  {nm:"Natural History refurbishment",stg:"Stage 4 — Construction",bud:"€14.2m",sp:62,st:"ok"},
+  {nm:"Collins Barracks store upgrade",stg:"Stage 2 — Design",bud:"€2.8m",sp:24,st:"ok"},
+  {nm:"Kildare St. environmental controls",stg:"Stage 3 — Tender",bud:"€1.6m",sp:11,st:"watch"},
+];
+const integs=[
+  {nm:"Conserv",d:"Collection-care sensors (LoRaWAN)",ic:"radio",st:"Connected"},
+  {nm:"Hanwell Pro",d:"Heritage data loggers",ic:"thermometer",st:"Connected"},
+  {nm:"Axiell Collections",d:"Collections management (object risk)",ic:"boxes",st:"Connected"},
+  {nm:"Trend BMS (BACnet)",d:"Building management · read + write-back",ic:"sliders-horizontal",st:"Connected"},
+  {nm:"Azure Entra ID",d:"SSO · B2B cross-tenant · SCIM",ic:"shield",st:"Active"},
+  {nm:"Power BI / OData",d:"Analytics feed",ic:"bar-chart-3",st:"Available"},
+];
+const reports=[
+  {nm:"Loan facility report",d:"Auto-built from live environmental history",ic:"file-down"},
+  {nm:"Board conservation summary",d:"Monthly · compliance + risk RAG",ic:"file-bar-chart"},
+  {nm:"Bizot Green Protocol",d:"Gallery-hours in band · funder-ready",ic:"leaf"},
+  {nm:"Statutory compliance pack",d:"Audit-trail export (FOI-ready)",ic:"clipboard-check"},
+  {nm:"Backlog maintenance",d:"Costed defects by building",ic:"list-checks"},
+  {nm:"Accessibility statement (ACR)",d:"WCAG 2.2 AA conformance",ic:"accessibility"},
+];
+
+/* ---------- Render ---------- */
+const chipFor=(s)=>({ok:'<span class="chip ok"><i data-lucide="check"></i>Compliant</span>',watch:'<span class="chip watch"><i data-lucide="eye"></i>Watch</span>',crit:'<span class="chip crit"><i data-lucide="alert-triangle"></i>Excursion</span>',info:'<span class="chip info"><i data-lucide="clock"></i>Scheduled</span>'}[s]||'');
+function render(){
+  document.getElementById('portfolio').innerHTML=sites.map(s=>`<div class="site-card"><i class="ico" data-lucide="${s.ico}"></i><div class="nm">${s.nm}</div><div class="loc">${s.loc}</div><div class="stat"><span class="dot ${s.stat}"></span>${s.txt}</div></div>`).join('');
+  document.getElementById('zones').innerHTML=zones_html();
+  woTable.innerHTML=wos.map(w=>`<tr><td><span class="wo-id">${w.id}</span></td><td>${w.task}</td><td class="muted">${w.loc}</td><td><span class="chip neutral">${w.src}</span></td><td class="pri" style="color:${w.pri==='Critical'?'var(--terracotta)':w.pri==='High'?'var(--gold)':'var(--slate)'}">${w.pri}</td><td class="tnum">${w.sla}</td><td>${chipFor(w.st)}</td></tr>`).join('');
+  cmpTable.innerHTML=cmps.map(c=>`<tr><td><strong>${c.ob}</strong></td><td>${c.b}</td><td class="muted">${c.fr}</td><td class="tnum">${c.due}</td><td>${c.ow}</td><td>${chipFor(c.st)}</td></tr>`).join('');
+  prjTable.innerHTML=prjs.map(p=>`<tr><td><strong>${p.nm}</strong></td><td class="muted">${p.stg}</td><td class="tnum">${p.bud}</td><td><div class="bar"><i style="width:${p.sp}%;background:${p.st==='watch'?'var(--gold-large)':'var(--sage)'}"></i></div><span class="muted tnum" style="font-size:11px">${p.sp}% spend</span></td><td>${chipFor(p.st)}</td></tr>`).join('');
+  estateCards.innerHTML=sites.map(s=>`<div class="panel"><div class="panel-body"><i data-lucide="${s.ico}" style="width:26px;height:26px;color:var(--heritage-green)"></i><div style="font-family:var(--font-ui);font-weight:600;margin-top:8px">${s.nm}</div><div class="muted" style="font-size:12px">${s.loc}</div><div style="margin-top:10px;display:flex;gap:14px;font-size:12px" class="muted"><span><strong style="color:var(--charcoal)" class="tnum">${3+Math.floor(Math.random()*4)}</strong> buildings</span><span><strong style="color:var(--charcoal)" class="tnum">${40+Math.floor(Math.random()*120)}</strong> assets</span></div><div style="margin-top:10px">${chipFor(s.stat)}</div></div></div>`).join('');
+  integGrid.innerHTML=integs.map(i=>`<div class="panel"><div class="panel-body" style="display:flex;gap:12px;align-items:flex-start"><div class="oi" style="width:38px;height:38px;border-radius:8px;background:var(--pale-stone);display:grid;place-items:center;color:var(--heritage-green)"><i data-lucide="${i.ic}"></i></div><div><div style="font-family:var(--font-ui);font-weight:600">${i.nm}</div><div class="muted" style="font-size:12px">${i.d}</div><div style="margin-top:8px"><span class="chip ok"><i data-lucide="check"></i>${i.st}</span></div></div></div></div>`).join('');
+  reportGrid.innerHTML=reports.map(r=>`<div class="panel" style="cursor:pointer" onclick="toast('${r.nm} generated')"><div class="panel-body"><i data-lucide="${r.ic}" style="width:24px;height:24px;color:var(--heritage-green)"></i><div style="font-family:var(--font-ui);font-weight:600;margin-top:8px">${r.nm}</div><div class="muted" style="font-size:12px;margin-top:2px">${r.d}</div></div></div>`).join('');
+  if(window.lucide)lucide.createIcons();
+}
+function zones_html(){
+  return zones.map(z=>{
+    const alertRh = z.st==='crit'||z.rh>57;
+    return `<div class="zone ${z.st}"><div class="zh"><div><div class="zn">${z.nm}</div><div class="zl">${z.loc}</div><div class="zstd">${z.std}</div></div>${chipFor(z.st)}</div>
+    <div class="metrics">
+      <div class="metric ${alertRh?'alert':''}"><div class="ml">RH</div><div class="mv tnum">${z.rh.toFixed(1)}%</div><div class="mt">target 45–55</div></div>
+      <div class="metric"><div class="ml">Temp</div><div class="mv tnum">${z.t.toFixed(1)}°</div><div class="mt">target 18–22</div></div>
+    </div></div>`;
+  }).join('');
+}
+
+/* ---------- Nav ---------- */
+const titles={command:["Collection-Care Centre","National Museum of Ireland"],dashboard:["Estate Dashboard","National Museum of Ireland"],maintenance:["Maintenance","Operations"],compliance:["Compliance","Operations"],estate:["Estate & Assets","Portfolio"],projects:["Projects","Capital governance"],sustain:["Sustainability","Performance"],integrations:["Integrations","Platform"],reports:["Reports","Platform"]};
+document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  const v=b.dataset.view;
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  crumb.innerHTML=`${titles[v][0]} <span>· ${titles[v][1]}</span>`;
+  document.querySelector('.content').scrollTop=0;
+  if(v==='dashboard')drawDashboard();
+  if(v==='sustain')drawBizot();
+}));
+
+/* ---------- Interactions ---------- */
+function toast(m){toastMsg.textContent=m;toast_el.classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(()=>toast_el.classList.remove('show'),2600);}
+const toast_el=document.getElementById('toast');
+function acknowledge(){
+  document.getElementById('stepAct').classList.remove('active');document.getElementById('stepAct').classList.add('done');
+  document.getElementById('actSub').textContent='On site 14:51';
+  const ev=document.getElementById('stepEvidence');ev.classList.add('active');
+  document.getElementById('ackBtn').innerHTML='<i data-lucide="check-check"></i>Dispatched';
+  toast('Dispatched — technician notified, conservator CC’d, evidence log open');
+  lucide.createIcons();
+  // simulate RH recovering
+  let rh=62.4;const el=document.getElementById('rhNow');
+  const iv=setInterval(()=>{rh-=1.1;if(rh<=53){rh=52.9;clearInterval(iv);ev.classList.remove('active');ev.classList.add('done');toast('Excursion resolved — loan-ready evidence record archived');}el.textContent=rh.toFixed(1)+'%';},900);
+}
+
+/* ---------- Charts ---------- */
+const gridc='#E3E0DA',axc='#8A857E';
+Chart.defaults.font.family="'Inter',sans-serif";Chart.defaults.font.size=11;Chart.defaults.color=axc;
+function rhData(){const a=[];let v=50;for(let i=0;i<24;i++){if(i<18){v=49+Math.sin(i/3)*1.6+(Math.random()*1-.5);}else{v=v+ (i-17)*1.6 + Math.random();}a.push(+v.toFixed(1));}return a;}
+let rhChartObj;
+function drawRH(){
+  const ctx=document.getElementById('rhChart');if(!ctx)return;
+  const d=rhData();const labels=[...Array(24)].map((_,i)=>`${i}:00`);
+  rhChartObj=new Chart(ctx,{type:'line',data:{labels,datasets:[
+    {label:'Target max',data:Array(24).fill(55),borderColor:'#CADBC0',borderWidth:1,borderDash:[4,4],pointRadius:0,fill:'+1'},
+    {label:'Target min',data:Array(24).fill(45),borderColor:'#CADBC0',borderWidth:1,borderDash:[4,4],pointRadius:0,backgroundColor:'rgba(202,219,192,.25)',fill:false},
+    {label:'RH %',data:d,borderColor:'#2E4C6E',backgroundColor:'rgba(46,76,110,.06)',borderWidth:2.2,pointRadius:0,tension:.35,fill:true},
+  ]},options:{maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:42,max:66,grid:{color:gridc},ticks:{callback:v=>v+'%'}},x:{grid:{display:false},ticks:{maxTicksLimit:8}}}}});
+}
+let dashDrawn=false;
+function drawDashboard(){
+  if(dashDrawn)return;dashDrawn=true;
+  new Chart(document.getElementById('woChart'),{type:'bar',data:{labels:['W1','W2','W3','W4'],datasets:[
+    {label:'Raised',data:[28,34,31,37],backgroundColor:'#2E4C6E',borderRadius:4},
+    {label:'Closed',data:[25,30,33,30],backgroundColor:'#2F6B4A',borderRadius:4}]},
+    options:{maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{grid:{color:gridc}},x:{grid:{display:false}}}}});
+  new Chart(document.getElementById('siteChart'),{type:'bar',data:{labels:['Archaeology','Collins B.','Nat. History','Country Life'],datasets:[
+    {label:'% compliant',data:[100,78,82,100],backgroundColor:['#2F6B4A','#C0522A','#B07D2A','#2F6B4A'],borderRadius:4}]},
+    options:{indexAxis:'y',maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{max:100,grid:{color:gridc},ticks:{callback:v=>v+'%'}},y:{grid:{display:false}}}}});
+}
+let bizotDrawn=false;
+function drawBizot(){
+  if(bizotDrawn)return;bizotDrawn=true;
+  new Chart(document.getElementById('bizotChart'),{type:'line',data:{labels:['Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun'],datasets:[
+    {label:'% gallery-hours in band',data:[88,86,90,93,95,94,92,89,90,91,93,91],borderColor:'#1C4532',backgroundColor:'rgba(28,69,50,.07)',borderWidth:2.4,tension:.35,fill:true,pointRadius:2}]},
+    options:{maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:80,max:100,grid:{color:gridc},ticks:{callback:v=>v+'%'}},x:{grid:{display:false}}}}});
+}
+
+/* ---------- Init ---------- */
+render();drawRH();
+</script>
+</body>
+</html>

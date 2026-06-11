@@ -408,7 +408,7 @@ The cross-reference + peer challenge cycle is the strongest signal in the Counci
 
 ## Worked example — Fire Agent cross-reference run
 
-**Project:** the 327-finding HSE Day Service pack.
+**Project:** the 327-finding Office project pack.
 
 **Fire Agent own-discipline review** (complete) identified:
 

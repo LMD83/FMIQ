@@ -1,3 +1,5 @@
+"use node";
+
 /**
  * VerifIQ — Per-Discipline ZIP Upload Action
  *

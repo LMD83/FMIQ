@@ -154,7 +154,7 @@ These were council-recommended but explicitly Phase 2 to keep MVP shippable in 1
 
 ### Week 4 (2026-06-22)
 
-- [ ] **Live POC scan pipeline end-to-end** — wire `src/convex/actions/*.ts` to prod Convex, test ZIP upload → classify → scan (1 discipline) → source-quote verify → review queue → release. Benchmark against the 327-finding HSE pack
+- [ ] **Live POC scan pipeline end-to-end** — wire `src/convex/actions/*.ts` to prod Convex, test ZIP upload → classify → scan (1 discipline) → source-quote verify → review queue → release. Benchmark against the 327-finding Office project pack
 - [ ] **14-day deletion + 90-day hash retention** scheduled jobs in Convex — running
 - [ ] **First free-tier pilot pack uploaded** — friendly contact, full E2E flow tested
 - [ ] **P1 close review** — Friday 2026-06-26 — confirm readiness to take paid customer
@@ -174,7 +174,7 @@ These were council-recommended but explicitly Phase 2 to keep MVP shippable in 1
 
 ### August 2026 — Month 3
 
-- [ ] **Case study artefact** — 327-finding HSE pack, anonymised, designed, published — €2,000–€4,500 — funnel-critical
+- [ ] **Case study artefact** — 327-finding Office project pack, anonymised, designed, published — €2,000–€4,500 — funnel-critical
 - [ ] **3 paying customers cumulative**
 - [ ] **Panel chair retained** on equity-share + first honorarium — triggered by cumulative revenue or first dispute
 - [ ] **Per-pack M&E specialist** invoiced first time (Option C in Doc 16) — €150–€350

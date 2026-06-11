@@ -103,7 +103,7 @@ What **does** change:
 - **Date / number formats.** ISO 8601 (`2026-06-01`) is acceptable in all markets we'll enter. Currency must localise: €, £, AU$, CA$, US$. Tier prices must be set per market with deliberate anchoring, not converted at spot rates.
 - **Profession marks.** The hero strip currently reads "RIAI · EI · SCSI · ACEI · OGP · HSE." This list must rotate per locale. UK: "ARB · RIBA · ICE · RICS · NEC4." Australia: "AIA · IEAust · AIQS · NCC." Etc. We need a per-locale `professionMarks` config.
 - **Reference projects shown.** The atelier marquee currently shows Trinity, Custom House, Convention Centre. Each market needs its own reference set — UK uses Tate Modern / Heatherwick / Foster work; Australia uses Sydney Opera House / Melbourne Recital / Glenn Murcutt residences; Canada uses Habitat 67 / Aga Khan Museum.
-- **Sector taxonomy.** "HSE Day Service" is meaningless outside Ireland. The 8-sector taxonomy in the onboarding wizard needs per-market sub-types and per-market terminology (UK: "NHS Trust capital scheme"; Australia: "Local Health District redevelopment").
+- **Sector taxonomy.** "Irish healthcare day-service terminology" is meaningless outside Ireland. The 8-sector taxonomy in the onboarding wizard needs per-market sub-types and per-market terminology (UK: "NHS Trust capital scheme"; Australia: "Local Health District redevelopment").
 - **Statutory disclaimer.** The exact words of "we do not certify" must be reviewed by local counsel in each jurisdiction. The intent is identical; the wording is not portable.
 
 What **must not** change:

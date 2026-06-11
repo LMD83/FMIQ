@@ -1,3 +1,5 @@
+"use node";
+
 /**
  * VerifIQ — File Classification Action
  *

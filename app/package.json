@@ -1,0 +1,58 @@
+{
+  "name": "fmiq",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "FMIQ - Integrated Workplace Management System by GovIQ",
+  "workspaces": [
+    "packages/api",
+    "packages/web"
+  ],
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:api": "npm --workspace packages/api run dev",
+    "dev:web": "npm --workspace packages/web run dev",
+    "db:start": "npm --workspace packages/api run db:start",
+    "db:setup": "npm --workspace packages/api run db:setup",
+    "db:up": "npm --workspace packages/api run db:up",
+    "db:reset": "npm --workspace packages/api run db:reset",
+    "build": "npm --workspace packages/api run build && npm --workspace packages/web run build",
+    "typecheck": "npm --workspace packages/api run typecheck && npm --workspace packages/web run typecheck",
+    "lint": "eslint .",
+    "test": "npm --workspace packages/api run test",
+    "test:coverage": "npm --workspace packages/api run test:coverage",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.0",
+    "@eslint/js": "^9.13.0",
+    "@playwright/test": "^1.48.0",
+    "@tailwindcss/vite": "^4.3.0",
+    "eslint": "^9.13.0",
+    "eslint-plugin-jsx-a11y": "^6.10.0",
+    "tailwindcss": "^4.3.0",
+    "tw-animate-css": "^1.4.0",
+    "typescript-eslint": "^8.11.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.16",
+    "@radix-ui/react-dropdown-menu": "^2.1.17",
+    "@radix-ui/react-select": "^2.3.0",
+    "@radix-ui/react-slot": "^1.2.5",
+    "@radix-ui/react-tabs": "^1.1.14",
+    "@radix-ui/react-tooltip": "^1.2.9",
+    "@tanstack/react-table": "^8.21.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
+    "framer-motion": "^12.40.0",
+    "lucide-react": "^1.17.0",
+    "recharts": "^3.8.1",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.6.0"
+  }
+}

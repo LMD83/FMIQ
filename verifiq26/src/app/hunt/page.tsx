@@ -81,7 +81,7 @@ export default function HuntPage() {
                 &euro;3.89m
               </div>
               <span className="t-meta" style={{ letterSpacing: "0.18em", textTransform: "uppercase" }}>
-                central exposure surfaced · single Stage 2C pack
+                central exposure surfaced · single Office project pack
               </span>
               <hr className="hairline" style={{ margin: "22px 0" }} />
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
@@ -138,7 +138,7 @@ export default function HuntPage() {
               num="II."
               eyebrow="— The math"
               title="What it costs you not to hunt."
-              lede="One real Stage 2C pack we read pre-tender. The contractor that priced it caught most of these in week 8 of construction, at variation rates rather than tender rates."
+              lede="One real Office project pack we read pre-tender. The contractor that priced it caught most of these in week 8 of construction, at variation rates rather than tender rates."
             />
             <div
               style={{
@@ -151,7 +151,7 @@ export default function HuntPage() {
                 Pack profile
               </h3>
               <p className="t-body" style={{ margin: "0 0 18px" }}>
-                Adult Day Service, Stage 2C, public-sector procurement under PW-CF5. 161
+                Office project, public-sector procurement under PW-CF5. 161
                 documents, five disciplines. Likely Contract Sum &euro;1.1m. Six bidders.
               </p>
               <div

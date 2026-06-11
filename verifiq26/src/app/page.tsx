@@ -95,7 +95,7 @@ export default function Page() {
         />
         <Wrap style={{ position: "relative", display: "grid", gridTemplateColumns: "1fr", gap: 48 }}>
           <div>
-            <span className="t-eyebrow">— Drawing 01 · Pre-Build Compliance Council</span>
+            <span className="t-eyebrow">Pre-Construction Compliance Checks</span>
             <h1
               className="t-display"
               style={{ fontSize: "clamp(3rem, 7vw, 5.5rem)", lineHeight: 0.98, margin: "24px 0", color: "var(--text)" }}
@@ -114,7 +114,7 @@ export default function Page() {
               before build, or Insufficient information. Source-quoted. Reviewer-gated. Indicative.
             </p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 22, marginTop: 28 }}>
-              <span className="t-meta">Tender pack · Stage 2C / 3 / 4</span>
+              <span className="t-meta">Review your Construction Tender Pack before you go to market</span>
               <span className="t-meta">Standards · I.S. · TGD · BCAR · CWMF · PW-CF</span>
               <span className="t-meta">EU data residency · Dublin</span>
             </div>
@@ -146,7 +146,7 @@ export default function Page() {
                 </div>
               </div>
               <p className="t-meta" style={{ marginTop: 22 }}>
-                Adult Day Service · Stage 2C · Dublin · MMXXVI
+                Office project · Dublin · MMXXVI
               </p>
             </div>
           </div>
@@ -289,7 +289,7 @@ export default function Page() {
               tag="I · Verify"
               eyebrow="— Verify · I"
               title="For the Design Team."
-              meta="Multi-discipline · Pre-tender · Stage 2C / 3"
+              meta="Multi-discipline · Pre-tender · Office project"
               body="A full pre-tender read of the design pack across all the disciplines on your project. The atelier's flagship."
               link="Learn more about Verify"
               img="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1600&auto=format&fit=crop"
@@ -349,7 +349,7 @@ export default function Page() {
             num="V."
             eyebrow="— Worked Finding"
             title="One finding, in full."
-            lede="The method, on one example. The 327-finding Stage 2C pack referenced above contained this — a critical contract-form defect."
+            lede="The method, on one example. The 327-finding Office project pack referenced above contained this — a critical contract-form defect."
           />
           <div style={{ border: "1px solid var(--hairline-strong)", background: "var(--surface)", padding: "32px 28px" }}>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginBottom: 12, alignItems: "center" }}>
@@ -513,8 +513,8 @@ export default function Page() {
               tag="Ref · 01 · Health"
               img="https://images.unsplash.com/photo-1538108149393-fbbd81895907?q=80&w=1100&auto=format&fit=crop"
               alt="Healthcare interior"
-              title="Adult Day Service."
-              body="Stage 2C tender pack · 161 documents · 5 disciplines. The atelier surfaced 327 source-quoted findings. Three critical: identity ambiguity, BCAR doc written for wrong contract form, blank LD date."
+              title="Office project."
+              body="Office project tender pack · 161 documents · 5 disciplines. The atelier surfaced 327 source-quoted findings. Three critical: identity ambiguity, BCAR doc written for wrong contract form, blank LD date."
               stats={[
                 { num: "327", lab: "findings" },
                 { num: "3", lab: "critical" },

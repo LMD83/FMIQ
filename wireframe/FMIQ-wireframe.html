@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FMIQ — Concept Wireframe</title>
+<style>
+  :root{
+    --green:#1C4532;--forest:#14362A;--sage:#2F6B4A;--sageBg:#E6F0EA;--sageBd:#CADBC0;
+    --limestone:#F7F5F2;--stone:#EFEDE9;--white:#fff;--charcoal:#1A1814;--slate:#5A5650;--granite:#D9D6D0;
+    --gold:#8B6020;--goldBg:#FAF1E0;--goldBd:#EAD9B5;--terra:#C0522A;--terraBg:#F8E5DD;--terraBd:#EFCBBC;
+    --info:#2E4C6E;--garnet:#9B1C1C;
+    --f-display:'DM Serif Display',Georgia,serif;--f-ui:'Segoe UI',Arial,sans-serif;
+    --shadow:0 1px 3px rgba(26,24,20,.09);--shadow-lg:0 10px 30px rgba(26,24,20,.14);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--f-ui);color:var(--charcoal);background:var(--limestone);font-size:14px;line-height:1.45}
+  .wrap{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+  /* sidebar */
+  .side{background:var(--green);color:#E8EDE9;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+  .brand{padding:18px 18px 14px;border-bottom:1px solid rgba(255,255,255,.12)}
+  .brand h1{font-family:var(--f-display);font-size:23px;color:#fff;line-height:1}
+  .brand .s{font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:#9DBFAE;margin-top:5px}
+  .navlbl{font-size:9.5px;letter-spacing:1.1px;text-transform:uppercase;color:#7FA38F;padding:14px 16px 5px}
+  .nav a{display:block;padding:8px 16px;color:#D5E1DA;font-size:13px;font-weight:500;cursor:pointer;border-left:3px solid transparent}
+  .nav a:hover{background:rgba(255,255,255,.07)}
+  .nav a.on{background:rgba(255,255,255,.13);color:#fff;border-left-color:var(--terra)}
+  .side .foot{margin-top:auto;padding:14px 16px;border-top:1px solid rgba(255,255,255,.12);font-size:10.5px;color:#9DBFAE}
+  /* content */
+  .main{padding:26px 30px 60px;max-width:1180px}
+  .hd{margin-bottom:18px}
+  .hd .t{font-family:var(--f-display);font-size:27px;line-height:1.1}
+  .hd .d{color:var(--slate);margin-top:6px;max-width:760px}
+  .sec{display:none}
+  .sec.on{display:block;animation:f .2s ease}
+  @keyframes f{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .note{background:#FFFDF6;border:1px dashed var(--goldBd);color:var(--gold);font-size:12px;padding:8px 12px;border-radius:7px;margin:10px 0 18px}
+  .note b{color:var(--charcoal)}
+  /* generic wireframe pieces */
+  .card{background:#fff;border:1px solid var(--granite);border-radius:9px;box-shadow:var(--shadow);padding:16px}
+  .card h3{font-size:14px;margin-bottom:4px}
+  .card .sub{font-size:11.5px;color:var(--slate)}
+  .grid{display:grid;gap:14px}
+  .g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:900px){.g2,.g3,.g4{grid-template-columns:1fr}.wrap{grid-template-columns:1fr}.side{position:static;height:auto}}
+  .chip{display:inline-flex;align-items:center;gap:5px;font-weight:600;font-size:11px;padding:3px 9px;border-radius:20px;border:1px solid}
+  .ok{background:var(--sageBg);color:var(--sage);border-color:var(--sageBd)}
+  .watch{background:var(--goldBg);color:var(--gold);border-color:var(--goldBd)}
+  .crit{background:var(--terraBg);color:var(--terra);border-color:var(--terraBd)}
+  .neu{background:var(--stone);color:var(--slate);border-color:var(--granite)}
+  .ok::before{content:"✓ "}.watch::before{content:"⚠ "}.crit::before{content:"✕ "}
+  .btn{display:inline-flex;align-items:center;gap:6px;background:var(--green);color:#fff;font-weight:600;font-size:12.5px;padding:8px 13px;border-radius:6px;border:none;cursor:pointer}
+  .btn.alt{background:var(--terra)}.btn.ghost{background:#fff;color:var(--charcoal);border:1px solid var(--granite)}
+  .muted{color:var(--slate)}.tiny{font-size:11px}
+  .row{display:flex;align-items:center;gap:10px}
+  .between{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .stat{font-family:var(--f-display);font-size:30px;line-height:1}
+  .pill{font-size:10.5px;background:var(--sageBg);color:var(--sage);padding:3px 9px;border-radius:12px;font-weight:600}
+  /* flow / map */
+  .flow{display:flex;flex-direction:column;gap:0}
+  .stage{border:1px solid var(--granite);border-radius:9px;background:#fff;box-shadow:var(--shadow);padding:14px 16px}
+  .stage .lab{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--slate);font-weight:700}
+  .stage .ttl{font-weight:700;font-size:15px;margin-top:2px}
+  .arrow{align-self:center;color:var(--sage);font-size:20px;margin:6px 0}
+  .mods{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+  .mod{border:1px solid var(--granite);border-radius:7px;padding:9px 10px;font-size:12px;background:var(--limestone)}
+  .mod b{display:block;font-size:12.5px}
+  .mod .lk{font-size:10.5px;color:var(--info);margin-top:3px}
+  .gate{background:var(--terraBg);border:1px solid var(--terraBd);border-left:4px solid var(--terra);border-radius:8px;padding:12px 14px}
+  .gate.green{background:var(--sageBg);border-color:var(--sageBd);border-left-color:var(--sage)}
+  .rail{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+  .rail .r{border:1px dashed var(--info);border-radius:7px;padding:8px;font-size:11px;color:var(--info);background:#F4F7FB;text-align:center}
+  /* loop */
+  .loop{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+  .loop span{font-size:11px;font-weight:600;padding:5px 10px;border-radius:13px;background:var(--stone);color:var(--slate)}
+  .loop span.done{background:var(--sage);color:#fff}.loop span.done::before{content:"✓ "}
+  .loop span.act{background:var(--terra);color:#fff}.loop span.act::before{content:"▸ "}
+  /* phone */
+  .phone{width:300px;border:10px solid #14362A;border-radius:30px;background:#fff;box-shadow:var(--shadow-lg);overflow:hidden}
+  .phone .top{background:var(--green);color:#fff;padding:12px 14px;font-weight:700;font-size:13px}
+  .phone .body{padding:12px;display:flex;flex-direction:column;gap:9px;min-height:420px;background:var(--limestone)}
+  .phone .tab{display:flex;border-top:1px solid var(--granite);background:#fff}
+  .phone .tab div{flex:1;text-align:center;padding:9px 0;font-size:10px;color:var(--slate)}
+  .phone .tab div.on{color:var(--green);font-weight:700}
+  .jc{background:#fff;border:1px solid var(--granite);border-radius:8px;padding:10px}
+  .jc .h{font-weight:700;font-size:12.5px}.jc .m{font-size:11px;color:var(--slate);margin-top:2px}
+  .tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+  .tbl th{text-align:left;font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--slate);padding:8px 10px;background:var(--stone);border-bottom:1px solid var(--granite)}
+  .tbl td{padding:9px 10px;border-bottom:1px solid var(--granite)}
+  .meter{height:9px;background:var(--stone);border-radius:5px;overflow:hidden}
+  .meter>i{display:block;height:100%;background:var(--sage)}
+  .step{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
+  .step .n{flex:none;width:24px;height:24px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--slate);margin-top:8px}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="side">
+    <div class="brand"><h1>FMIQ</h1><div class="s">by GovIQ · concept wireframe</div></div>
+    <nav class="nav" id="nav">
+      <div class="navlbl">The whole picture</div>
+      <a data-s="map" class="on">1 · System map &amp; links</a>
+      <a data-s="roles">2 · Role front doors</a>
+      <a data-s="integ">10 · Integration map</a>
+      <div class="navlbl">Hero &amp; safety</div>
+      <a data-s="cmd">3 · Collection-care centre</a>
+      <a data-s="wo">4 · Work order + Readiness Gate</a>
+      <a data-s="con">5 · Contractor onboarding (QR)</a>
+      <a data-s="mob">6 · Mobile field app</a>
+      <div class="navlbl">Operate &amp; govern</div>
+      <a data-s="cmp">7 · Compliance &amp; certs</a>
+      <a data-s="hand">8 · Handover gate</a>
+      <a data-s="appr">9 · Approvals &amp; commitment</a>
+      <div class="foot">Wireframe — concept only. Heritage palette · WCAG status = icon + text + colour.</div>
+    </nav>
+  </aside>
+
+  <main class="main">
+
+  <!-- 1 SYSTEM MAP -->
+  <section class="sec on" id="s-map">
+    <div class="hd"><div class="t">1 · System map — how everything links</div>
+      <div class="d">FMIQ is the operations end of the GovIQ spine. The golden thread runs unbroken: a building is procured, delivered, certified at handover, then run for life — every module writing back to the asset record and the immutable audit log.</div></div>
+
+    <div class="flow">
+      <div class="stage"><div class="lab">GovIQ · upstream</div><div class="ttl">Procure → Deliver (CWMF / eTenders / projects)</div>
+        <div class="tiny muted" style="margin-top:4px">Capital project governed in GovIQ → handed to FMIQ at completion.</div></div>
+      <div class="arrow">↓</div>
+      <div class="stage" style="border-left:4px solid var(--gold)"><div class="lab">The new gate</div><div class="ttl">Handover Gate — certify → populate operations</div>
+        <div class="tiny muted" style="margin-top:4px">BCAR CCC + FSC + DAC + Safety File + COBie/IFC → auto-creates assets, PPM schedules, the statutory compliance clock, warranties &amp; collection-care setpoints. <b>Certified Friday → managed Monday.</b></div></div>
+      <div class="arrow">↓</div>
+      <div class="stage" style="border-left:4px solid var(--sage)"><div class="lab">FMIQ · operate (live)</div><div class="ttl">The operating spine</div>
+        <div class="mods">
+          <div class="mod"><b>Asset register (AIM)</b><div class="lk">↳ the spine every module writes to</div></div>
+          <div class="mod"><b>PPM scheduler</b><div class="lk">↳ auto work orders · compliance clock</div></div>
+          <div class="mod"><b>Compliance &amp; certs</b><div class="lk">↳ fire · electrical · lifts · Legionella</div></div>
+          <div class="mod"><b>Spare parts / stores</b><div class="lk">↳ reserve against WO · requisition</div></div>
+          <div class="mod"><b>Collection care (hero)</b><div class="lk">↳ excursion → object → WO → evidence</div></div>
+          <div class="mod"><b>Soft services &amp; IPM</b><div class="lk">↳ QR-verified · pest → conservation</div></div>
+          <div class="mod"><b>Self-service requests</b><div class="lk">↳ curators/wardens → triage → SLA</div></div>
+          <div class="mod"><b>Lifecycle costing</b><div class="lk">↳ backlog → CWMF capital bid (loop back)</div></div>
+        </div>
+        <div class="gate" style="margin-top:12px">
+          <b>⛓ READINESS GATE — no paperwork, no work.</b> A work order cannot start until every check is green:
+          <div class="row" style="flex-wrap:wrap;margin-top:8px;gap:6px">
+            <span class="chip neu">RAMS approved</span><span class="chip neu">Permit issued</span><span class="chip neu">Competency valid</span><span class="chip neu">Insurance in date</span><span class="chip neu">Parts reserved</span><span class="chip neu">Pre-task done</span><span class="chip neu">Keys signed out</span>
+          </div>
+          <div class="tiny" style="margin-top:7px;color:var(--terra)">↳ also the engine behind <b>contractor onboarding</b> and <b>value-band approvals</b>.</div>
+        </div>
+      </div>
+      <div class="arrow">↓</div>
+      <div class="stage"><div class="lab">Everything writes to</div><div class="ttl">Asset record + immutable audit log → dashboards, reports, evidence packs</div></div>
+    </div>
+
+    <div class="note" style="margin-top:18px"><b>Integration rails</b> (down the side of every module) — FMIQ links out, never re-keys:</div>
+    <div class="rail">
+      <div class="r">Entra ID SSO · GovIQ spine</div>
+      <div class="r">BMS / sensors (Conserv·Hanwell·BACnet)</div>
+      <div class="r">Collections CMS (Axiell/TMS)</div>
+      <div class="r">Fire panel · access · lifts</div>
+      <div class="r">Revenue eTax · MyGovID · SEAI · Met Éireann</div>
+    </div>
+    <div class="note" style="margin-top:18px">Use the left nav to open each screen. <b>This is a wireframe</b> — layout & links, not final visuals.</div>
+  </section>
+
+  <!-- 2 ROLES -->
+  <section class="sec" id="s-roles">
+    <div class="hd"><div class="t">2 · Role front doors — one screen, one question</div>
+      <div class="d">Every role lands on a single screen answering the one question they have. No menu hunting. Everything pre-filled.</div></div>
+    <div class="grid g3">
+      <div class="card"><h3>Director</h3><div class="sub">“What needs money or attention?”</div>
+        <div style="margin-top:10px" class="between"><span class="muted tiny">Estate health</span><span class="chip watch">1 site needs attention</span></div>
+        <div class="between" style="margin-top:8px"><span class="muted tiny">Decisions waiting</span><span class="stat">3</span></div></div>
+      <div class="card"><h3>Facilities Manager</h3><div class="sub">“What’s wrong, blocked, due?”</div>
+        <div style="margin-top:10px" class="row"><span class="chip crit">2 critical</span><span class="chip watch">4 blocked</span></div>
+        <div class="tiny muted" style="margin-top:8px">6 PPM due this week</div></div>
+      <div class="card"><h3>Conservation Officer</h3><div class="sub">“Are my zones safe?”</div>
+        <div style="margin-top:10px" class="row"><span class="chip crit">Print Room — RH rising</span></div>
+        <div class="tiny muted" style="margin-top:8px">11 zones · 1 active excursion</div></div>
+      <div class="card"><h3>Maintenance Technician</h3><div class="sub">“My jobs today”</div>
+        <div class="jc" style="margin-top:10px"><div class="h">Boiler Room B — annual service</div><div class="m">Collins Barracks · ~45 min</div><span class="chip crit" style="margin-top:6px">Blocked — RAMS</span></div></div>
+      <div class="card"><h3>Compliance Officer</h3><div class="sub">“Due / overdue / evidenced?”</div>
+        <div style="margin-top:10px" class="row"><span class="chip crit">1 overdue</span><span class="chip watch">3 due ≤14d</span></div></div>
+      <div class="card"><h3>Finance / Approver</h3><div class="sub">“What needs sign-off? Committed vs budget?”</div>
+        <div style="margin-top:10px" class="between"><span class="muted tiny">Inbox</span><span class="stat">5</span></div>
+        <div class="meter" style="margin-top:8px"><i style="width:78%"></i></div><div class="tiny muted">78% committed</div></div>
+      <div class="card" style="border-color:var(--terraBd)"><h3>Contractor (portal)</h3><div class="sub">“My permits, RAMS, today’s access”</div>
+        <div style="margin-top:10px" class="row"><span class="chip ok">Safe Pass valid</span><span class="chip watch">RAMS in review</span></div>
+        <div class="tiny muted" style="margin-top:8px">→ see screen 5</div></div>
+    </div>
+  </section>
+
+  <!-- 3 COMMAND CENTRE -->
+  <section class="sec" id="s-cmd">
+    <div class="hd"><div class="t">3 · Collection-care command centre (the hero)</div>
+      <div class="d">Sensor → evaluate → name the at-risk objects → auto work order → dispatch → loan-ready evidence. The closed loop, in plain language.</div></div>
+    <div class="grid g4" style="margin-bottom:14px">
+      <div class="card"><div class="sub">Zones compliant</div><div class="stat">91%</div></div>
+      <div class="card"><div class="sub">Active excursions</div><div class="stat" style="color:var(--terra)">1</div></div>
+      <div class="card"><div class="sub">Open work orders</div><div class="stat">12</div></div>
+      <div class="card"><div class="sub">Loan-readiness</div><div class="stat" style="color:var(--gold)">Amber</div></div>
+    </div>
+    <div class="card" style="border-left:4px solid var(--terra);background:linear-gradient(180deg,#fff,#FDF6F2)">
+      <div class="between"><div><b>Active excursion — Textile Gallery</b><div class="tiny muted">CRITICAL · rate-of-change breach · humidity rising fast</div></div>
+        <div style="text-align:right"><div class="stat" style="color:var(--terra)">63.2%</div><div class="tiny muted">RH · target 45–55</div></div></div>
+      <div class="loop"><span class="done">Sense</span><span class="done">Evaluate</span><span class="done">Name risk</span><span class="done">Route</span><span class="act">Act</span><span>Evidence</span></div>
+    </div>
+    <div class="grid g2" style="margin-top:14px">
+      <div class="card"><div class="between"><h3>RH trend — 24h</h3><span class="chip crit">Excursion</span></div>
+        <svg viewBox="0 0 320 120" style="width:100%;height:120px;margin-top:8px" role="img" aria-label="RH trend rising above band">
+          <rect x="28" y="40" width="270" height="34" fill="rgba(202,219,192,.4)"/>
+          <polyline points="28,70 80,66 130,60 180,52 230,40 290,24" fill="none" stroke="#2E4C6E" stroke-width="2.5"/>
+        </svg><div class="tiny muted">Shaded = target band. Line crosses out — rate-of-change is what damages objects.</div></div>
+      <div class="card"><h3>Objects at risk <span class="tiny muted">via Axiell</span></h3>
+        <div class="between" style="margin-top:8px;border-bottom:1px solid var(--granite);padding-bottom:7px"><div><b class="tiny">18th-c. Silk Court Dress</b><div class="tiny muted">textile · high sensitivity</div></div><span class="chip crit">high</span></div>
+        <div class="between" style="margin-top:7px"><div><b class="tiny">Linen Sampler 1789</b><div class="tiny muted">textile · med</div></div><span class="chip watch">med</span></div>
+        <div class="note" style="margin-top:10px"><b>WO-20641</b> raised automatically with conservation notes.</div>
+        <button class="btn">Acknowledge &amp; dispatch</button></div>
+    </div>
+  </section>
+
+  <!-- 4 WORK ORDER + GATE -->
+  <section class="sec" id="s-wo">
+    <div class="hd"><div class="t">4 · Work order + Readiness Gate</div>
+      <div class="d">The gate is the first thing on the job card. One banner: green “Ready to start” or red “Blocked — exact missing item”. The system blocks; it doesn’t warn.</div></div>
+    <div class="grid g2">
+      <div class="card">
+        <div class="between"><div><b>WO-20641 · Boiler Room B — annual service</b><div class="tiny muted">Collins Barracks · statutory PPM · due today</div></div><span class="chip crit">Blocked</span></div>
+        <div class="gate" style="margin-top:12px"><b>⛔ Cannot start — 2 items required</b>
+          <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px">
+            <div class="row"><span class="chip ok">RAMS approved</span></div>
+            <div class="row"><span class="chip crit">Permit to work — not issued</span> <a class="tiny" style="color:var(--info)">Issue →</a></div>
+            <div class="row"><span class="chip crit">Contractor insurance — expired</span> <a class="tiny" style="color:var(--info)">Chase →</a></div>
+            <div class="row"><span class="chip ok">Parts reserved</span> <span class="chip ok">Pre-task done</span></div>
+          </div></div>
+        <div class="tiny muted" style="margin-top:8px">Every block is logged for HSA audit. An authorised manager may record an audited override.</div>
+      </div>
+      <div class="card">
+        <div class="between"><div><b>WO-20655 · Lighting check — Gallery 4</b><div class="tiny muted">reactive · routine</div></div><span class="chip ok">Ready</span></div>
+        <div class="gate green" style="margin-top:12px"><b>✓ Ready to start</b>
+          <div class="tiny" style="margin-top:6px">Permit issued · RAMS approved · competency valid · parts here · pre-task done.</div></div>
+        <button class="btn" style="margin-top:12px">Start job</button>
+        <div class="note" style="margin-top:12px"><b>Same gate engine</b> powers contractor onboarding (screen 5) and value-band approvals (screen 9).</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 CONTRACTOR ONBOARDING -->
+  <section class="sec" id="s-con">
+    <div class="hd"><div class="t">5 · Contractor onboarding &amp; site access (QR)</div>
+      <div class="d">Contractors build a portable profile online before arrival, then self-onboard at the gate by scanning a QR — access is granted only if every check is green, blocked with the exact missing item otherwise. Frictionless for them, fully governed for you.</div></div>
+    <div class="grid g2">
+      <div class="card"><h3>Before arrival — portable profile</h3>
+        <div class="step"><div class="n">1</div><div>Contractor completes profile online: company + each operative.</div></div>
+        <div class="step"><div class="n">2</div><div>Uploads once: Safe Pass, trade certs, RECI/RGII, public &amp; employer liability insurance.</div></div>
+        <div class="step"><div class="n">3</div><div>Completes site induction online → gets a personal QR pass.</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+          <span class="chip ok">Safe Pass</span><span class="chip ok">Insurance</span><span class="chip ok">RECI</span><span class="chip ok">Induction</span><span class="chip ok">Tax clearance</span></div>
+        <div class="tiny muted" style="margin-top:8px">↳ verified against the SSoW competency vault · Revenue eTax Clearance · MyGovID/EU Wallet.</div>
+      </div>
+      <div class="card"><h3>At the gate — scan to enter</h3>
+        <div class="row" style="gap:14px;margin-top:6px">
+          <div style="flex:none;width:96px;height:96px;border:2px solid var(--green);border-radius:10px;display:grid;place-items:center;font-size:40px">▦</div>
+          <div><b>Scan QR</b><div class="tiny muted">Identity + competency + insurance + tax clearance re-checked live.</div></div>
+        </div>
+        <div class="gate green" style="margin-top:12px"><b>✓ Access granted — J. Murphy (HVAC)</b><div class="tiny" style="margin-top:4px">All checks current · linked to WO-20641 · keys released.</div></div>
+        <div class="gate" style="margin-top:8px"><b>⛔ Access blocked — T. Byrne</b><div class="tiny" style="margin-top:4px">Safe Pass expired 2 days ago. Cannot sign in.</div></div>
+        <div class="tiny muted" style="margin-top:8px">Every entry/decision audited. No valid paperwork → no site access.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 MOBILE -->
+  <section class="sec" id="s-mob">
+    <div class="hd"><div class="t">6 · Mobile field app (offline)</div>
+      <div class="d">Shipped early (Sprint 3–4). A technician in a stone vault with no signal still gets the job, the gate status, scans the asset, and closes out with a photo — synced on reconnect.</div></div>
+    <div class="row" style="align-items:flex-start;gap:24px;flex-wrap:wrap">
+      <div class="phone">
+        <div class="top">My jobs · today</div>
+        <div class="body">
+          <div class="jc"><div class="between"><div class="h">Boiler Room B</div><span class="chip crit">Blocked</span></div><div class="m">Annual service · ~45m</div></div>
+          <div class="jc"><div class="between"><div class="h">Gallery 4 lighting</div><span class="chip ok">Ready</span></div><div class="m">Reactive · ~15m</div></div>
+          <div class="jc"><div class="between"><div class="h">Print Room — RH excursion</div><span class="chip crit">Critical</span></div><div class="m">Conservation · now</div></div>
+          <div class="note" style="margin:4px 0 0">Offline — 2 changes will sync when connected.</div>
+        </div>
+        <div class="tab"><div class="on">Jobs</div><div>Scan</div><div>Alerts</div><div>Me</div></div>
+      </div>
+      <div class="phone">
+        <div class="top">Scan asset</div>
+        <div class="body">
+          <div style="margin:auto;width:120px;height:120px;border:2px dashed var(--green);border-radius:12px;display:grid;place-items:center;font-size:48px">▦</div>
+          <div class="jc"><div class="h">AHU-03 · Textile Gallery</div><div class="m">Last service 14 Mar · 1 open WO</div>
+            <div class="row" style="margin-top:6px"><span class="chip ok">In band</span><span class="chip neu">O&amp;M</span></div></div>
+          <button class="btn" style="justify-content:center">Report a fault</button>
+          <div class="tiny muted">Glove-friendly · 44px targets · one-handed.</div>
+        </div>
+        <div class="tab"><div>Jobs</div><div class="on">Scan</div><div>Alerts</div><div>Me</div></div>
+      </div>
+      <div class="card" style="flex:1;min-width:240px"><h3>Why mobile-first matters</h3>
+        <p class="tiny muted" style="margin-top:6px">Field staff don’t adopt a system they can’t use at the point of work. If the technician can’t use it by week 4, the data goes stale and the system becomes a reporting front-end nobody operates. This is the No.1 adoption risk — so the shell ships in Sprint 3–4, not Sprint 11.</p>
+        <div class="legend"><span><span class="sw" style="background:var(--sage)"></span>Ready</span><span><span class="sw" style="background:var(--gold)"></span>Watch</span><span><span class="sw" style="background:var(--terra)"></span>Blocked/Critical</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 COMPLIANCE -->
+  <section class="sec" id="s-cmp">
+    <div class="hd"><div class="t">7 · Compliance &amp; statutory checks</div>
+      <div class="d">One screen: what’s due, overdue, evidenced. Escalating alerts (90/60/30/7 days). A failed inspection auto-raises a remedial work order. Fire panel &amp; emergency lighting auto-test results flow straight in.</div></div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table class="tbl">
+        <thead><tr><th>Obligation</th><th>Building</th><th>Next due</th><th>Evidence</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Lift thorough exam (S.I. 299/2007)</td><td>Natural History</td><td>3 months overdue</td><td>—</td><td><span class="chip crit">Overdue</span></td></tr>
+          <tr><td>Fire alarm I.S. 3218</td><td>Collins Barracks</td><td>in 12 days</td><td>panel auto-feed</td><td><span class="chip watch">Due soon</span></td></tr>
+          <tr><td>Emergency lighting I.S. 3217</td><td>Kildare St</td><td>in 26 days</td><td>auto-test ✓</td><td><span class="chip ok">Evidenced</span></td></tr>
+          <tr><td>Legionella monitoring (S.I. 572/2013)</td><td>All sites</td><td>in 40 days</td><td>cert on file</td><td><span class="chip ok">Current</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note" style="margin-top:14px">Red rows show exactly one next action. RAG is always <b>icon + text</b>, never colour alone (WCAG 2.2 AA / S.I. 358/2020).</div>
+  </section>
+
+  <!-- 8 HANDOVER -->
+  <section class="sec" id="s-hand">
+    <div class="hd"><div class="t">8 · Handover gate — capital → operations</div>
+      <div class="d">On project completion, the Irish certification pack + COBie/IFC populate operations. Go-live is blocked until the mandatory chain validates. A building certified Friday is fully managed Monday.</div></div>
+    <div class="grid g2">
+      <div class="card"><div class="between"><h3>Handover — New Conservation Store</h3><span class="chip watch">7 of 11</span></div>
+        <div class="meter" style="margin:10px 0"><i style="width:64%"></i></div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div class="between"><span>CCC + BCMS reference</span><span class="chip ok">validated</span></div>
+          <div class="between"><span>Fire Safety Cert (FSC)</span><span class="chip ok">on file</span></div>
+          <div class="between"><span>Disability Access Cert (DAC)</span><span class="chip crit">missing</span></div>
+          <div class="between"><span>Safety File</span><span class="chip ok">linked to assets</span></div>
+          <div class="between"><span>Ancillary M&amp;E cert</span><span class="chip crit">missing</span></div>
+          <div class="between"><span>COBie / IFC import</span><span class="chip watch">validating</span></div>
+        </div>
+        <button class="btn" style="margin-top:12px">Upload missing cert</button>
+      </div>
+      <div class="card"><h3>On go-live — auto-populated</h3>
+        <div class="grid g2" style="margin-top:8px">
+          <div class="card" style="box-shadow:none"><div class="stat">847</div><div class="tiny muted">assets loaded</div></div>
+          <div class="card" style="box-shadow:none"><div class="stat">312</div><div class="tiny muted">PPM schedules created</div></div>
+          <div class="card" style="box-shadow:none"><div class="stat">128</div><div class="tiny muted">warranties tracked</div></div>
+          <div class="card" style="box-shadow:none"><div class="stat">✓</div><div class="tiny muted">compliance clock started</div></div>
+        </div>
+        <div class="note" style="margin-top:10px">Collection-care setpoints inherited from the commissioned BMS. Zero re-keying.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 APPROVALS -->
+  <section class="sec" id="s-appr">
+    <div class="hd"><div class="t">9 · Approvals &amp; commitment</div>
+      <div class="d">Value-band approval chains (same gate engine), segregation of duties, audited. Budget is committed at approval. PO issuance + invoicing are handed to GovIQ procurement / the body’s ERP — FMIQ stops at an approved, committed requisition.</div></div>
+    <div class="grid g2">
+      <div class="card"><h3>Approval inbox</h3>
+        <div class="between" style="margin-top:8px;border-bottom:1px solid var(--granite);padding-bottom:8px">
+          <div><b class="tiny">Replace AHU belt set — Textile Gallery</b><div class="tiny muted">req. J. Doe · €1,820 · WO-20641</div></div>
+          <div class="row"><button class="btn ghost tiny">Query</button><button class="btn tiny">Approve</button></div></div>
+        <div class="between" style="margin-top:8px">
+          <div><b class="tiny">Lift remedial works</b><div class="tiny muted">req. FM · €18,500 · capital</div></div>
+          <div class="row"><button class="btn ghost tiny">Query</button><button class="btn tiny">Approve</button></div></div>
+        <div class="tiny muted" style="margin-top:8px">Your limit €25,000 · this request €18,500 ✓</div></div>
+      <div class="card"><h3>Committed vs budget — Conservation cost centre</h3>
+        <div class="meter" style="margin:12px 0 4px"><i style="width:78%;background:var(--gold)"></i></div>
+        <div class="between tiny muted"><span>Committed €156k</span><span>Budget €200k</span></div>
+        <div class="note" style="margin-top:14px"><b>Deferred boundary:</b> on approval FMIQ emits the requisition to GovIQ procurement / ERP (Agresso/SAP). PO number &amp; payment status flow back read-only. FMIQ never holds invoices.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 INTEGRATION MAP -->
+  <section class="sec" id="s-integ">
+    <div class="hd"><div class="t">10 · Integration map</div>
+      <div class="d">FMIQ links out via an adapter layer and never re-keys. Full register in <b>docs/FMIQ-integration-map.md</b>. P1 = needed for the NMI pilot.</div></div>
+    <div class="grid g2">
+      <div class="card"><h3>Irish government &amp; compliance</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+          <span class="chip crit">Revenue eTax Clearance · P1</span><span class="chip crit">Fire panel I.S.3218 · P1</span><span class="chip crit">Emergency lighting I.S.3217 · P1</span>
+          <span class="chip neu">Information Mediator / X-Road</span><span class="chip neu">eTenders API</span><span class="chip neu">BCMS validation</span><span class="chip neu">SEAI M&amp;R export</span><span class="chip neu">MyGovID / EU Wallet</span><span class="chip neu">NIAH viewer</span></div></div>
+      <div class="card"><h3>Building · BMS · safety</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+          <span class="chip crit">Access control · P1</span><span class="chip neu">BMS BACnet/Modbus/OPC-UA</span><span class="chip neu">Lift telemetry</span><span class="chip neu">CCTV</span></div></div>
+      <div class="card"><h3>Collections &amp; heritage</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+          <span class="chip crit">Sensors: Conserv · P1</span><span class="chip neu">Hanwell · T&amp;D · HOBO · MQTT</span><span class="chip crit">CMS: Axiell · P1</span><span class="chip neu">TMS / Mimsy</span><span class="chip neu">Met Éireann</span></div></div>
+      <div class="card"><h3>Enterprise · productivity · interop</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+          <span class="chip crit">Entra ID / M365 · P1</span><span class="chip neu">GovIQ spine</span><span class="chip neu">Finance/ERP (deferred)</span><span class="chip neu">BIM / COBie / IFC</span><span class="chip neu">OData / Power BI</span><span class="chip neu">SCIM</span></div></div>
+    </div>
+    <div class="legend"><span><span class="sw crit" style="border:0"></span>P1 — pilot critical</span><span><span class="sw neu" style="border:0;background:var(--stone)"></span>P2/P3 or already planned</span></div>
+  </section>
+
+  </main>
+</div>
+<script>
+  var nav=document.getElementById('nav');
+  nav.addEventListener('click',function(e){
+    var a=e.target.closest('a[data-s]'); if(!a)return;
+    nav.querySelectorAll('a').forEach(function(x){x.classList.remove('on')}); a.classList.add('on');
+    document.querySelectorAll('.sec').forEach(function(s){s.classList.remove('on')});
+    document.getElementById('s-'+a.dataset.s).classList.add('on');
+    window.scrollTo(0,0);
+  });
+</script>
+</body>
+</html>

@@ -1,3 +1,5 @@
+"use node";
+
 /**
  * VerifIQ — Cross-Discipline Coordination Pass
  *
@@ -20,8 +22,8 @@
 import { internalAction } from "../_generated/server";
 import { v } from "convex/values";
 import { internal } from "../_generated/api";
-import { callClaudeWithCache } from "../lib/anthropic-client";
-import { verifySourceQuotes } from "../lib/source-quote";
+import { callClaudeWithCache } from "../lib/anthropicClient";
+import { verifySourceQuotes } from "../lib/sourceQuote";
 
 export const runCrossDisciplinePass = internalAction({
   args: { projectId: v.id("projects") },

@@ -1,3 +1,5 @@
+"use node";
+
 /**
  * VerifIQ — PDF Extraction Helpers
  *
@@ -7,9 +9,6 @@
  * Page-range targeting: avoid reading entire files when only a few pages matter.
  * Used by the per-discipline scan orchestrator.
  */
-
-import { internalAction } from "../_generated/server";
-import { v } from "convex/values";
 
 export async function extractPdfText(
   ctx: any,

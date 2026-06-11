@@ -9,7 +9,7 @@
 
 ## The principle
 
-You have just personally executed a 327-finding multi-discipline review on a real Stage 2C HSE tender pack. You know what to look for. For the first 3–10 packs VerifIQ ships, **you can be the sole reviewer** — provided you are honest about your scope and disciplined about your throughput.
+You have just personally executed a 327-finding multi-discipline review on a real Office project tender pack. You know what to look for. For the first 3–10 packs VerifIQ ships, **you can be the sole reviewer** — provided you are honest about your scope and disciplined about your throughput.
 
 This is the right shoestring move. It saves the entire panel honorarium line in Doc 15 (€38k–€55k year 1) and removes coordination overhead. It also makes the trust-signal personal and verifiable: customers know who signs.
 

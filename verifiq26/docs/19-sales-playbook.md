@@ -44,7 +44,7 @@
 
 ### Minute 2–6 · Show the worked finding (NOT the platform)
 
-> "Let me show you what came out of a real Stage 2C pack we read recently. 327 findings across 5 disciplines, 161 documents. Three critical. Here's one of them."
+> "Let me show you what came out of a real Office project pack we read recently. 327 findings across 5 disciplines, 161 documents. Three critical. Here's one of them."
 
 [**Open** `case-study-01.html` → scroll to C-03 (Date for Substantial Completion). Read the source quote aloud. Read the recommended action.]
 
@@ -89,7 +89,7 @@ relevant, not a generic demo:
 1. What sector is the pack? (Health / education / commercial /
    residential / heritage / data centre / civic / infra)
 
-2. What stage? (Pre-tender Stage 2C / during tender / post-award /
+2. What stage? (Pre-tender / during tender / post-award /
    construction)
 
 3. Approx pack size? (Under 50 docs / 50-150 / 150-600 / 600-1500 /

@@ -38,7 +38,7 @@ Hi {{first_name}},
 
 It reads a pack against the live Irish corpus (TGD A–M, BCAR, CWMF, PW-CF, sector codes), surfaces findings with verbatim source quotes, and produces a build-readiness decision before tender release. Not a replacement for the chartered designer — an aid that gets out of the way once it's served its purpose.
 
-The validation read on a recent Stage 2C pack surfaced 327 findings across five disciplines including three critical pre-tender issues. I'd like to put it in front of someone who'll tell me what's wrong with it.
+The validation read on a recent Office project pack surfaced 327 findings across five disciplines including three critical pre-tender issues. I'd like to put it in front of someone who'll tell me what's wrong with it.
 
 I'm looking for one chartered chair to anchor a small reviewer panel — review the AI's output before it's released to customers, point out where it's overreaching, help calibrate the discipline scope. About 4–6 hours a week from late July, paid per pack plus a small equity position.
 
@@ -68,7 +68,7 @@ Reaching out cold — apologies if this isn't your kind of thing.
 
 I've been building VerifIQ over the last several months — it's a pre-build compliance review tool for Irish tender packs. Reads against TGD A–M, BCAR, CWMF, PW-CF and the relevant sector codes, surfaces source-quoted findings, returns a build-readiness decision (Proceed / Proceed with conditions / Pause before build / Insufficient information).
 
-Validation read on a real Stage 2C pack: 327 findings across five disciplines, three critical pre-tender issues, end-to-end in 38 hours.
+Validation read on a real Office project pack: 327 findings across five disciplines, three critical pre-tender issues, end-to-end in 38 hours.
 
 I'm looking for one chartered chair to anchor the reviewer panel — read AI output before customer release, calibrate discipline scope, point out where it's overreaching. About 4–6 hours a week from late July, paid per pack plus a small equity position.
 
@@ -98,7 +98,7 @@ Quick follow up on my note last week. No pressure — just flagging that I'm sti
 
 I'm setting up the first pilot reviews from late July onward. If it's not for you that's completely fine; if you know someone who'd be the right fit, I'd be grateful for an intro.
 
-If you'd rather just see what the tool produces before deciding anything, I can send across the worked example from the recent Stage 2C pack — one anonymised PDF, takes 5 minutes to read.
+If you'd rather just see what the tool produces before deciding anything, I can send across the worked example from the recent Office project pack — one anonymised PDF, takes 5 minutes to read.
 
 — Liam
 ```
@@ -124,7 +124,7 @@ I'm writing to ask whether you'd consider a short conversation about chairing th
 
 Brief context. VerifIQ is a software-based reading aid for tender packs and design documents. It reads against the live Irish corpus — TGD A–M, BCAR SI 9/2014, CWMF, PW-CF, and the relevant sector codes — and surfaces findings with verbatim source quotes from the underlying documents. The output is a build-readiness decision: Proceed, Proceed with conditions, Pause before build, or Insufficient information. The chartered designer verifies locally, the chartered designer signs. VerifIQ does not certify.
 
-I'm a director at GovIQ Ltd in Dublin, working in public-sector capital delivery and procurement governance. A recent validation read on a Stage 2C tender pack (anonymised) surfaced 327 source-quoted findings across five disciplines, including three critical pre-tender issues that would have created an estimated €24,000–€270,000 of variation exposure if left unresolved at award. The full anonymised case study is at verifiq.ie/case-study-01.html.
+I'm a director at GovIQ Ltd in Dublin, working in public-sector capital delivery and procurement governance. A recent validation read on a Office project tender pack (anonymised) surfaced 327 source-quoted findings across five disciplines, including three critical pre-tender issues that would have created an estimated €24,000–€270,000 of variation exposure if left unresolved at award. The full anonymised case study is at verifiq.ie/case-study-01.html.
 
 The reviewer panel chair role would be:
   · About 4–6 hours per week, beginning late July 2026
@@ -161,7 +161,7 @@ Hi {{first_name}},
 
 Good to meet at {{event}} yesterday. As promised, here's the link to VerifIQ — verifiq.ie.
 
-The worked example on the homepage (the Date for Substantial Completion finding) is the real one from the Stage 2C pack we ran. Verbatim source quote, the critical pre-tender risk, the recommended action.
+The worked example on the homepage (the Date for Substantial Completion finding) is the real one from the Office project pack we ran. Verbatim source quote, the critical pre-tender risk, the recommended action.
 
 I mentioned I'm looking for a chartered chair for the reviewer panel — if you'd be open to a conversation, would 30 minutes next week work? My calendar: {{calendar_link}}.
 

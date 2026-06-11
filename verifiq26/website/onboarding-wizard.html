@@ -156,7 +156,7 @@
     { key:'infra',       label:'Major Infrastructure',sub:'TII · NTA · Eurocode +NA',     glyph:'VIII'},
   ];
   const SUB_TYPES = {
-    healthcare:  ['Day service','Acute hospital','Primary care centre','Mental health','Disability residential','Section 38/39 estate'],
+    healthcare:  ['Acute hospital','Primary care centre','Mental health','Outpatient clinic'],
     education:   ['Primary school','Post-primary school','Higher ed / 3rd level','SEN / ASD unit'],
     commercial:  ['Cat A fit-out','Cat B fit-out','HQ shell & core','Mixed-use podium'],
     residential: ['Cost-rental','Social','PRS / Build-to-rent','Single dwelling'],
@@ -180,10 +180,10 @@
     { key:'contractor', label:'Main Contractor',         body:'CIRI · BCAR Builder'},
   ];
   const STAGES = [
-    { key:'s2c', label:'Stage 2C — Pre-tender Pack', sub:'Final design before issue to contractors' },
-    { key:'s3',  label:'Stage 3 — Tender / Award',   sub:'During or post-tender · pre-LoA' },
-    { key:'s4',  label:'Stage 4 — Construction',     sub:'Live job · variation exposure / change control' },
-    { key:'audit',label:'Post-Completion Audit',     sub:'Lessons-learned / BCAR closeout' },
+    { key:'pretender', label:'Pre-tender Pack', sub:'Final design before issue to contractors' },
+    { key:'tender',    label:'Tender / Award',   sub:'During or post-tender · pre-LoA' },
+    { key:'construction', label:'Construction',  sub:'Live job · variation exposure / change control' },
+    { key:'audit',   label:'Post-Completion Audit', sub:'Lessons-learned / BCAR closeout' },
   ];
   const TIERS = [
     { key:'small',     label:'Small',     range:'< 50 files',   discipline:'1 discipline'   },
@@ -399,11 +399,11 @@
     if (state.sector==='commercial') corpus.push('NZEB · LEED · BREEAM');
 
     const panel = ['RIAI Architect'];
-    if (['cs','arch'].includes(state.role) || state.stage==='s2c') panel.push('CEng C&S');
+    if (['cs','arch'].includes(state.role) || state.stage==='pretender') panel.push('CEng C&S');
     if (state.role==='mech' || state.sector==='healthcare' || state.sector==='datacentre') panel.push('CEng MEP');
-    if (state.role==='fire' || state.stage==='s2c') panel.push('Fire Safety Consultant');
+    if (state.role==='fire' || state.stage==='pretender') panel.push('Fire Safety Consultant');
     if (state.role==='qs' || state.focus.includes('cost')) panel.push('FSCSI QS');
-    if (state.role==='ac' || state.stage==='s2c') panel.push('Assigned Certifier');
+    if (state.role==='ac' || state.stage==='pretender') panel.push('Assigned Certifier');
     if (state.sector==='heritage') panel.push('Conservation Architect (RIAI Grade)');
 
     const grid = document.getElementById('summaryGrid');

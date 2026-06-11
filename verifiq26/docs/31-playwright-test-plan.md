@@ -193,7 +193,7 @@ verifiq26/
 
 | ID | Test | Assert |
 |----|------|--------|
-| VP-01 | Upload HSE validation pack fixture | project created |
+| VP-01 | Upload Office project validation pack fixture | project created |
 | VP-02 | Full pipeline to released | state = released within timeout |
 | VP-03 | Finding count | ≥ 300 findings |
 | VP-04 | Critical count | ≥ 3 critical |

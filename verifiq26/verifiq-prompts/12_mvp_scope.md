@@ -120,7 +120,7 @@ These are real and important — they are NOT in MVP:
 
 Before MVP can be declared done, the system must be able to:
 
-1. Accept a real Stage 2C Irish public-sector tender pack from a real customer.
+1. Accept a real Irish public-sector Office project tender pack from a real customer.
 2. Generate a council report that names at least three findings the customer recognises as material.
 3. Produce a Build Readiness decision the customer accepts as defensible.
 4. Survive a 14-day no-customer-complaint window.
