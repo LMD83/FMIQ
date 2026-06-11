@@ -18,7 +18,7 @@
   /* ── The drawing index — sheet codes for the set ─────────────────────────── */
   var SHEETS = [
     { href: "index.html", code: "A-001", title: "Index of sheets" },
-    { href: "first-read.html", code: "F-001", title: "First Read · €20" },
+    { href: "first-read.html", code: "F-001", title: "First Read · €29" },
     { href: "three-products.html", code: "A-002", title: "Three products" },
     { href: "about.html", code: "A-003", title: "The reviewer" },
     { href: "hunt.html", code: "H-001", title: "Hunt · variation exposure" },
