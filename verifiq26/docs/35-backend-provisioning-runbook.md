@@ -21,7 +21,12 @@ browser login, so they're yours to run locally — they can't be done from CI.
 ```bash
 cd verifiq26
 npm install
+npm run bundle:prompts   # required before any deploy: src/convex/review.ts
+                         # imports the gitignored prompts.generated.ts
 ```
+
+> **One-command alternative:** `bash scripts/go-live.sh` runs this whole
+> runbook (stages 1–4, R2 optional) and finishes with a live council run.
 
 ## 1. Convex deployment
 ```bash
