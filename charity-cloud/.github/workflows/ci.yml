@@ -1,0 +1,35 @@
+# Charity Cloud — CI
+#
+# Typecheck (backend + app), unit/integration tests (convex-test, offline against
+# the committed convex/_generated), and a production build. The live golden-path
+# smoke test needs a running backend and is run locally / in the deploy pipeline,
+# not here.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: typecheck · test · build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Typecheck (backend)
+        run: npx tsc --noEmit
+      - name: Typecheck (app)
+        run: npx tsc -p tsconfig.app.json --noEmit
+      - name: Test
+        run: npm test
+      - name: Build
+        run: npx vite build
