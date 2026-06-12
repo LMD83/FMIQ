@@ -19,5 +19,5 @@
     "types": ["node"]
   },
   "include": ["src/**/*.ts", "tests/**/*.ts"],
-  "exclude": ["node_modules", "src/convex/_generated"]
+  "exclude": ["node_modules", "src/convex/_generated", "src/app"]
 }

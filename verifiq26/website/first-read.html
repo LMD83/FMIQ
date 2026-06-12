@@ -12,8 +12,11 @@
 <link rel="stylesheet" href="verifiq-cad.css" />
 <script>
   /* ── Paste your Stripe Payment Link here to switch from concierge intake to
-     instant checkout. Leave empty and the CTAs open a work-email intake mail. */
+     instant checkout. Leave empty and the CTAs open the work-email intake form. */
   window.VERIFIQ_FIRST_READ_URL = "";
+  /* Optional: a form backend (e.g. a Formspree endpoint) the intake brief POSTs
+     to. Leave empty and the brief composes a pre-filled mail to liam@goviq.ie. */
+  window.VERIFIQ_INTAKE_ENDPOINT = "";
 </script>
 <script src="verifiq-atelier.js" defer></script>
 <style>
@@ -79,6 +82,37 @@
 
   .closer { text-align: center; }
   .closer .ctas { justify-content: center; margin-top: 26px; }
+
+  /* ── Concierge intake dialog — the form that takes a real €29 pack ── */
+  dialog.intake-dialog { width: min(560px, 92vw); max-height: 90vh; padding: 0; border: 1px solid var(--ink); background: var(--bone); color: var(--ink); box-shadow: 0 30px 80px rgba(20,18,14,0.32); }
+  dialog.intake-dialog::backdrop { background: rgba(20,18,14,0.46); backdrop-filter: blur(2px); }
+  .intake-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 22px 26px 16px; border-bottom: 1px solid var(--ink); background: var(--paper); }
+  .intake-head .ih-code { font-family: var(--font-mono); font-size: 0.625rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--graphite); }
+  .intake-head h3 { font-family: var(--font-serif); font-weight: 500; font-size: 1.45rem; margin: 6px 0 4px; line-height: 1.1; }
+  .intake-head p { font-family: var(--font-sans); font-size: 0.85rem; color: var(--ink-soft); margin: 0; }
+  .intake-close { border: 1px solid var(--ink); background: var(--bone); color: var(--ink); font-family: var(--font-mono); font-size: 0.7rem; padding: 6px 9px; cursor: pointer; line-height: 1; }
+  .intake-close:hover { background: var(--ink); color: var(--bone); }
+  .intake-body { padding: 22px 26px 8px; overflow-y: auto; }
+  .intake-field { margin-bottom: 16px; }
+  .intake-field label { display: block; font-family: var(--font-mono); font-size: 0.625rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--graphite); margin-bottom: 6px; }
+  .intake-field label .req { color: var(--sanguine, #8a3324); }
+  .intake-field input, .intake-field textarea, .intake-field select { width: 100%; box-sizing: border-box; font-family: var(--font-sans); font-size: 0.95rem; color: var(--ink); background: var(--bone); border: 1px solid var(--ink); padding: 11px 12px; border-radius: 0; }
+  .intake-field input:focus, .intake-field textarea:focus { outline: 2px solid var(--brass); outline-offset: -1px; }
+  .intake-field textarea { min-height: 76px; resize: vertical; }
+  .intake-field .hint { font-family: var(--font-sans); font-size: 0.78rem; color: var(--ink-soft); margin: 6px 0 0; }
+  .intake-field .err { font-family: var(--font-mono); font-size: 0.7rem; color: var(--sanguine, #8a3324); margin: 6px 0 0; display: none; }
+  .intake-field.invalid input { outline: 2px solid var(--sanguine, #8a3324); outline-offset: -1px; }
+  .intake-field.invalid .err { display: block; }
+  .intake-foot { padding: 8px 26px 22px; }
+  .intake-submit { width: 100%; display: inline-flex; align-items: stretch; border: 1px solid var(--ink); background: var(--ink); cursor: pointer; padding: 0; }
+  .intake-submit .is-price { display: flex; align-items: center; padding: 14px 16px; background: var(--brass); color: var(--ink); font-family: var(--font-serif); font-weight: 600; font-size: 1.2rem; }
+  .intake-submit .is-label { display: flex; align-items: center; justify-content: center; flex: 1; padding: 14px 18px; color: var(--bone); font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.16em; text-transform: uppercase; }
+  .intake-submit:hover .is-label { color: var(--vellum); }
+  .intake-foot .fineprint { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite); text-align: center; margin: 12px 0 0; }
+  .intake-done { padding: 30px 26px 30px; text-align: center; }
+  .intake-done .stamp { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--brass); }
+  .intake-done h3 { font-family: var(--font-serif); font-weight: 500; font-size: 1.6rem; margin: 10px 0 10px; }
+  .intake-done p { font-family: var(--font-sans); font-size: 0.95rem; color: var(--ink-soft); margin: 0 auto; max-width: 40ch; line-height: 1.55; }
 </style>
 </head>
 <body class="paper-texture" data-sheet="F-001" data-sheet-title="First Read · €29 · 25 drawings">
@@ -216,6 +250,61 @@
   <p class="lb-text">VerifIQ is a software-based reading aid. It surfaces, in the documents' own words, what a registered professional may wish to read closely. It does not certify, sign, opine, or substitute for professional judgement. The registered designer reads our output, exercises their own judgement, verifies locally, and signs. The professional indemnity remains theirs. We carry product-quality risk only.</p>
 </div></section>
 
+<!-- ── Concierge intake — opens when no Stripe link is configured, or as the
+     work-email brief alongside checkout. Captured fields go to liam@goviq.ie
+     (or VERIFIQ_INTAKE_ENDPOINT when a form backend is wired). ── -->
+<dialog class="intake-dialog" id="intake-dialog" aria-labelledby="intake-title">
+  <form method="dialog" id="intake-form" novalidate>
+    <div class="intake-head">
+      <div>
+        <span class="ih-code">F-001 · Brief</span>
+        <h3 id="intake-title">Start your First Read</h3>
+        <p>Your first 25 drawings, €29. We open the pack and send back a ranked, source-quoted register in 24–48h.</p>
+      </div>
+      <button type="button" class="intake-close" id="intake-close" aria-label="Close">✕</button>
+    </div>
+    <div class="intake-body">
+      <div class="intake-field" data-field="name">
+        <label for="if-name">Your name <span class="req">*</span></label>
+        <input id="if-name" name="name" type="text" autocomplete="name" required />
+        <p class="err">Please add your name.</p>
+      </div>
+      <div class="intake-field" data-field="practice">
+        <label for="if-practice">Practice / organisation <span class="req">*</span></label>
+        <input id="if-practice" name="practice" type="text" autocomplete="organization" required />
+        <p class="err">Please add your practice or organisation.</p>
+      </div>
+      <div class="intake-field" data-field="email">
+        <label for="if-email">Work email <span class="req">*</span></label>
+        <input id="if-email" name="email" type="email" autocomplete="email" inputmode="email" required />
+        <p class="hint">Work email only — one First Read per practice. Personal addresses (gmail, outlook…) aren't eligible.</p>
+        <p class="err">Please use your work email — personal domains aren't eligible.</p>
+      </div>
+      <div class="intake-field" data-field="project">
+        <label for="if-project">Project &amp; stage</label>
+        <input id="if-project" name="project" type="text" placeholder="e.g. Stage 2C tender pack — community building, Co. Meath" />
+      </div>
+      <div class="intake-field" data-field="pack">
+        <label for="if-pack">What should we read? <span class="req">*</span></label>
+        <textarea id="if-pack" name="pack" required placeholder="Discipline and roughly what's in the pack — e.g. 25 architectural drawings; or drawings + technical spec + form of contract for the full cross-reference."></textarea>
+        <p class="err">Tell us briefly what's in the pack.</p>
+      </div>
+    </div>
+    <div class="intake-foot">
+      <button type="submit" class="intake-submit">
+        <span class="is-price">€29</span>
+        <span class="is-label" id="intake-submit-label">Send my brief →</span>
+      </button>
+      <p class="fineprint">Output is indicative · you verify locally · the indemnity stays yours</p>
+    </div>
+  </form>
+  <div class="intake-done" id="intake-done" hidden>
+    <span class="stamp">✓ Received · Dublin</span>
+    <h3>Brief received.</h3>
+    <p>We'll reply to your work email within one business day with how to send the pack and the €29 link. Thank you.</p>
+  </div>
+</dialog>
+
 <footer class="site-footer"><div class="foot-row">
   <span>© MMXXVI · VerifIQ · GovIQ Ltd · Dublin</span>
   <span><a href="legal.html">Legal notice ↗</a></span>
@@ -223,16 +312,120 @@
 </div></footer>
 
 <script>
-  /* Point every First Read CTA at the Stripe Payment Link when configured;
-     otherwise open a work-email intake (concierge) with the fields we need. */
+  /* First Read CTAs.
+     · VERIFIQ_FIRST_READ_URL set  → CTAs go straight to the Stripe link.
+     · not set (concierge launch)  → CTAs open the intake dialog, which captures
+       a work-email-gated brief and posts it to VERIFIQ_INTAKE_ENDPOINT
+       (a form backend, e.g. Formspree) or falls back to a pre-filled mailto. */
   (function () {
-    var url = window.VERIFIQ_FIRST_READ_URL;
-    var intake = "mailto:liam@goviq.ie?subject=" +
-      encodeURIComponent("VerifIQ First Read — €29") + "&body=" +
-      encodeURIComponent("Practice / organisation:\nWork email:\nProject / stage:\nWhat to read (drawings + specs + contract form):\n");
-    document.querySelectorAll(".first-read-cta").forEach(function (a) {
-      a.setAttribute("href", url && url.length ? url : intake);
+    var stripe = window.VERIFIQ_FIRST_READ_URL;
+    var endpoint = window.VERIFIQ_INTAKE_ENDPOINT; // optional POST target
+    var dlg = document.getElementById("intake-dialog");
+    var form = document.getElementById("intake-form");
+    var done = document.getElementById("intake-done");
+    var ctas = document.querySelectorAll(".first-read-cta");
+
+    // Free / personal email providers we don't accept (work email gate).
+    var FREE = ["gmail.com","googlemail.com","outlook.com","hotmail.com","live.com",
+      "msn.com","yahoo.com","yahoo.co.uk","ymail.com","icloud.com","me.com","mac.com",
+      "proton.me","protonmail.com","pm.me","aol.com","gmx.com","mail.com","zoho.com",
+      "yandex.com","tutanota.com","fastmail.com","hey.com","eircom.net"];
+
+    function isWorkEmail(v) {
+      var m = /^[^\s@]+@([^\s@]+\.[^\s@]+)$/.exec((v || "").trim().toLowerCase());
+      if (!m) return false;
+      return FREE.indexOf(m[1]) === -1;
+    }
+
+    if (!dlg || !form) return;
+
+    // Route the CTAs.
+    ctas.forEach(function (a) {
+      if (stripe && stripe.length) {
+        a.setAttribute("href", stripe); // straight to checkout
+      } else {
+        a.setAttribute("href", "#intake-dialog");
+        a.addEventListener("click", function (e) {
+          e.preventDefault();
+          openIntake();
+        });
+      }
     });
+
+    function openIntake() {
+      done.hidden = true;
+      form.hidden = false;
+      if (typeof dlg.showModal === "function") dlg.showModal();
+      else dlg.setAttribute("open", "");
+      var first = form.querySelector("#if-name");
+      if (first) first.focus();
+    }
+    function closeIntake() {
+      if (typeof dlg.close === "function") dlg.close();
+      else dlg.removeAttribute("open");
+    }
+
+    var closeBtn = document.getElementById("intake-close");
+    if (closeBtn) closeBtn.addEventListener("click", closeIntake);
+    dlg.addEventListener("click", function (e) { if (e.target === dlg) closeIntake(); });
+
+    function markInvalid(name, on) {
+      var f = form.querySelector('.intake-field[data-field="' + name + '"]');
+      if (f) f.classList.toggle("invalid", !!on);
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var data = {
+        name: form.name.value.trim(),
+        practice: form.practice.value.trim(),
+        email: form.email.value.trim(),
+        project: form.project.value.trim(),
+        pack: form.pack.value.trim()
+      };
+      var ok = true;
+      ["name","practice","pack"].forEach(function (k) {
+        var bad = !data[k]; markInvalid(k, bad); if (bad) ok = false;
+      });
+      var emailBad = !isWorkEmail(data.email);
+      markInvalid("email", emailBad); if (emailBad) ok = false;
+      if (!ok) {
+        var firstBad = form.querySelector(".intake-field.invalid input, .intake-field.invalid textarea");
+        if (firstBad) firstBad.focus();
+        return;
+      }
+
+      // Submit. Prefer a configured POST endpoint; fall back to mailto.
+      if (endpoint && endpoint.length) {
+        var btn = form.querySelector(".intake-submit");
+        if (btn) btn.setAttribute("disabled", "");
+        fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          body: JSON.stringify(data)
+        }).then(function () { showDone(); })
+          .catch(function () { mailtoFallback(data); showDone(); })
+          .finally(function () { if (btn) btn.removeAttribute("disabled"); });
+      } else {
+        mailtoFallback(data);
+        showDone();
+      }
+    });
+
+    function mailtoFallback(d) {
+      var body = "Name: " + d.name + "\nPractice / organisation: " + d.practice +
+        "\nWork email: " + d.email + "\nProject & stage: " + (d.project || "—") +
+        "\nWhat to read: " + d.pack + "\n";
+      var href = "mailto:liam@goviq.ie?subject=" +
+        encodeURIComponent("VerifIQ First Read — €29 — " + d.practice) +
+        "&body=" + encodeURIComponent(body);
+      window.location.href = href;
+    }
+
+    function showDone() {
+      form.hidden = true;
+      done.hidden = false;
+    }
   })();
 </script>
 </body>

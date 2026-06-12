@@ -16,6 +16,9 @@
     "check:hygiene": "node scripts/check-hygiene.mjs",
     "convex:dev": "convex dev",
     "convex:deploy": "convex deploy",
+    "app:dev": "next dev",
+    "app:build": "next build",
+    "app:start": "next start",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\""
   },
@@ -26,11 +29,16 @@
     "@napi-rs/canvas": "0.1.84",
     "convex": "1.17.4",
     "openai": "4.77.3",
-    "pdfjs-dist": "6.0.227"
+    "pdfjs-dist": "6.0.227",
+    "next": "14.2.21",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
   },
   "devDependencies": {
     "@edge-runtime/vm": "4.0.4",
     "@types/node": "20.17.10",
+    "@types/react": "18.3.18",
+    "@types/react-dom": "18.3.5",
     "@typescript-eslint/eslint-plugin": "8.18.2",
     "@typescript-eslint/parser": "8.18.2",
     "convex-test": "0.0.37",
