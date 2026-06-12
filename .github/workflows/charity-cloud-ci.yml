@@ -1,0 +1,46 @@
+# Charity Cloud — CI (root-level so GitHub Actions actually runs it).
+#
+# Actions only loads workflows from the repo-root `.github/workflows/`, so this
+# lives here rather than in `charity-cloud/.github/` (that copy is kept for the
+# "split into its own repo" path). Path-filtered to charity-cloud changes;
+# everything runs in the charity-cloud working directory.
+#
+# Typecheck (backend + app) + unit/integration tests (convex-test, offline
+# against the committed convex/_generated) + production build. The live
+# golden-path smoke test needs a running backend and runs in the deploy
+# pipeline, not here.
+name: Charity Cloud CI
+
+on:
+  push:
+    branches: [main]
+    paths: ["charity-cloud/**", ".github/workflows/charity-cloud-ci.yml"]
+  pull_request:
+    paths: ["charity-cloud/**", ".github/workflows/charity-cloud-ci.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: typecheck · test · build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: charity-cloud
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: charity-cloud/package-lock.json
+      - run: npm ci
+      - name: Typecheck (backend)
+        run: npx tsc --noEmit
+      - name: Typecheck (app)
+        run: npx tsc -p tsconfig.app.json --noEmit
+      - name: Test
+        run: npm test
+      - name: Build
+        run: npx vite build
