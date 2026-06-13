@@ -34,7 +34,10 @@ The source of truth is `verifiq-prompts/` (and `docs/`). Key files:
 - File storage: **Cloudflare R2** (S3-compatible, EU, zero-egress); `documents`
   carries both optional `storage_id` and `r2_key` — route by size.
 - Frontend: **Next.js 14 App Router** on Vercel (Phase 2+)
-- Auth: **Clerk** (stub in Phase 1). Billing: Stripe (Phase 2). Email: Resend (Phase 2).
+- Auth: **Convex Auth** (`@convex-dev/auth`, email magic-link / OTP via Resend;
+  stubbed in Phase 1, wired alongside the magic-code upload handoff — see
+  `docs/42-magic-code-direct-upload-sprint-plan.md`). **Not Clerk** (superseded
+  2026-06-13 by founder direction). Billing: Stripe (Phase 2). Email: Resend.
 - LLMs: Anthropic primary (Sonnet review/chair, Haiku classify, Sonnet-vision
   title-block), OpenAI GPT-4-class for peer challenge / fallback. Failover is
   **per-call, not per-scan**; on dual failure hold the pack in the reviewer queue.
@@ -117,9 +120,10 @@ from a clean checkout.
   on upload is the next step. Still open: tus.io resumable upload (mandatory #1),
   exports (PDF/DOCX/XLSX/CSV/JSON, §05.5), and the classification-confirmation UX.
 
-Note: `requestReview` enforces project ownership only when a Clerk identity is
-present (auth is still stubbed); the workflow/cache mutations are internal-only,
-so that is the single public entry. Wire real Clerk auth before production.
+Note: `requestReview` enforces project ownership only when an authenticated
+identity is present (auth is still stubbed); the workflow/cache mutations are
+internal-only, so that is the single public entry. Wire real **Convex Auth**
+before production (see `docs/42`).
 
 Live-credential checks across phases remain "verify locally" (real
 Anthropic/OpenAI calls, R2 signed URL, `npx convex dev` deploy).

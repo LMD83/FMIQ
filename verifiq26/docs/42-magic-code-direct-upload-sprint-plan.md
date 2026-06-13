@@ -313,23 +313,24 @@ real pack → direct to R2 → auto-classify → live findings.
 
 ---
 
-## 9 · Decisions needed (blocking Sprint 0)
+## 9 · Decisions (locked 2026-06-13)
 
-- **D1 — Auth model. DECIDED: Convex Auth** (`@convex-dev/auth`) with the email
-  magic-link / OTP provider. No Clerk. The Clerk env vars in `.env.local.example`
-  get removed and replaced with Convex Auth config. Open sub-decision: use Convex
-  Auth's built-in OTP email provider with Resend, or our own `upload_tokens` code
-  layered on a Convex Auth session — *recommendation: Convex Auth issues the
-  sign-in; `upload_tokens` scopes it to one project/pack.*
-- **D2 — Is there an existing "advanced magic code" to port?** If another
-  GovIQ/VerifIQ repo already has this, Track B becomes port-not-build. Confirm.
-- **D3 — Domain.** Upload links point at `app.verifiq.ie` (needs DNS + deploy) vs
-  a Convex-hosted route for the pilot. *Recommendation: `app.verifiq.ie`.*
-- **D4 — Code format.** 6-char on-screen code **and** a one-click link, or
-  link-only. *Recommendation: both (link + code as fallback for spam).*
-- **D5 — Keep `mailto` as degraded fallback** behind the flag, or remove
-  entirely? *Recommendation: keep as failure-only fallback for Sprint 1, remove
-  in Sprint 2 cleanup.*
+- **D1 — Auth model. LOCKED: Convex Auth** (`@convex-dev/auth`) with the email
+  magic-link / OTP provider. No Clerk — the Clerk env vars in
+  `.env.local.example` are removed and the CLAUDE.md "locked decision" line is
+  updated to Convex Auth. Convex Auth issues the sign-in; `upload_tokens` scope
+  it to one project/pack.
+- **D2 — Existing "advanced magic code" to port?** Open — if another
+  GovIQ/VerifIQ repo already has this, Track B becomes port-not-build. Confirm
+  before Sprint 1 §1.1.
+- **D3 — Domain. LOCKED: `app.verifiq.ie`.** Upload links point at the dedicated
+  app domain (needs DNS + Vercel deploy in Sprint 0). Not a bare Convex route.
+- **D4 — Code format. LOCKED: link + code.** Email contains a one-click magic
+  link **and** a 6-char fallback code (typeable if the link is mangled / lands
+  in spam).
+- **D5 — `mailto` fallback. LOCKED: failure-only.** Keep `mailto` behind the
+  flag as a degraded fallback **only** when the intake endpoint is unreachable,
+  through Sprint 1; remove entirely in the Sprint 2 cleanup (2.9).
 
 ---
 
