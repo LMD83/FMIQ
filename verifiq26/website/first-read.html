@@ -14,8 +14,10 @@
   /* ── Paste your Stripe Payment Link here to switch from concierge intake to
      instant checkout. Leave empty and the CTAs open the work-email intake form. */
   window.VERIFIQ_FIRST_READ_URL = "";
-  /* Optional: a form backend (e.g. a Formspree endpoint) the intake brief POSTs
-     to. Leave empty and the brief composes a pre-filled mail to liam@goviq.ie. */
+  /* The VerifIQ magic-code intake endpoint — the Convex httpAction that creates
+     the project and emails a secure upload link (docs/42). Set this to your
+     deployment's HTTP URL, e.g. https://<deployment>.convex.site/intake .
+     Leave empty and the brief composes a pre-filled mail to liam@goviq.ie. */
   window.VERIFIQ_INTAKE_ENDPOINT = "";
 </script>
 <script src="verifiq-atelier.js" defer></script>
@@ -113,6 +115,11 @@
   .intake-done .stamp { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--brass); }
   .intake-done h3 { font-family: var(--font-serif); font-weight: 500; font-size: 1.6rem; margin: 10px 0 10px; }
   .intake-done p { font-family: var(--font-sans); font-size: 0.95rem; color: var(--ink-soft); margin: 0 auto; max-width: 40ch; line-height: 1.55; }
+  .intake-done .intake-resend-wrap { margin-top: 18px; }
+  .intake-done .intake-resend { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); background: var(--bone); border: 1px solid var(--ink); padding: 9px 14px; cursor: pointer; }
+  .intake-done .intake-resend:disabled { color: var(--graphite); border-color: var(--graphite); cursor: default; }
+  .intake-done .intake-resend:not(:disabled):hover { background: var(--ink); color: var(--bone); }
+  .intake-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 </style>
 </head>
 <body class="paper-texture" data-sheet="F-001" data-sheet-title="First Read · €29 · 25 drawings">
@@ -289,6 +296,11 @@
         <textarea id="if-pack" name="pack" required placeholder="Discipline and roughly what's in the pack — e.g. 25 architectural drawings; or drawings + technical spec + form of contract for the full cross-reference."></textarea>
         <p class="err">Tell us briefly what's in the pack.</p>
       </div>
+      <!-- Honeypot: hidden from humans; bots fill it and are silently dropped (docs/42 §5.1 W4). -->
+      <div class="intake-hp" aria-hidden="true">
+        <label for="if-company-website">Company website</label>
+        <input id="if-company-website" name="company_website" type="text" tabindex="-1" autocomplete="off" />
+      </div>
     </div>
     <div class="intake-foot">
       <button type="submit" class="intake-submit">
@@ -299,9 +311,12 @@
     </div>
   </form>
   <div class="intake-done" id="intake-done" hidden>
-    <span class="stamp">✓ Received · Dublin</span>
-    <h3>Brief received.</h3>
-    <p>We'll reply to your work email within one business day with how to send the pack and the €29 link. Thank you.</p>
+    <span class="stamp">✓ Sent · Dublin</span>
+    <h3>Check your inbox.</h3>
+    <p>We've emailed <strong id="intake-done-email">your work email</strong> a secure link to upload your pack directly — the read starts the moment your files land. The link is single-use and expires in 72 hours.</p>
+    <p class="intake-resend-wrap">
+      <button type="button" class="intake-resend" id="intake-resend" disabled>Didn't get it? Resend in <span id="intake-resend-count">60</span>s</button>
+    </p>
   </div>
 </dialog>
 
@@ -315,8 +330,9 @@
   /* First Read CTAs.
      · VERIFIQ_FIRST_READ_URL set  → CTAs go straight to the Stripe link.
      · not set (concierge launch)  → CTAs open the intake dialog, which captures
-       a work-email-gated brief and posts it to VERIFIQ_INTAKE_ENDPOINT
-       (a form backend, e.g. Formspree) or falls back to a pre-filled mailto. */
+       a work-email-gated brief and posts it to VERIFIQ_INTAKE_ENDPOINT (the
+       Convex /intake magic-code endpoint, docs/42) or, only if that fails,
+       falls back to a pre-filled mailto. */
   (function () {
     var stripe = window.VERIFIQ_FIRST_READ_URL;
     var endpoint = window.VERIFIQ_INTAKE_ENDPOINT; // optional POST target
@@ -395,36 +411,98 @@
         return;
       }
 
-      // Submit. Prefer a configured POST endpoint; fall back to mailto.
+      // Build the magic-code intake payload (docs/42): the endpoint creates the
+      // project and emails a secure upload link — no pack is attached here.
+      var payload = {
+        name: data.name,
+        email: data.email,
+        project_name: data.project || (data.practice + " — First Read"),
+        practice: data.practice,
+        notes: data.pack,
+        purpose: "first_read",
+        company_website: form.company_website ? form.company_website.value.trim() : ""
+      };
+
+      // Prefer the configured /intake endpoint; mailto is a failure-only
+      // fallback (docs/42 D5).
       if (endpoint && endpoint.length) {
         var btn = form.querySelector(".intake-submit");
         if (btn) btn.setAttribute("disabled", "");
-        fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Accept": "application/json" },
-          body: JSON.stringify(data)
-        }).then(function () { showDone(); })
-          .catch(function () { mailtoFallback(data); showDone(); })
+        postIntake(payload)
+          .then(function () { showDone(payload); })
+          .catch(function () { mailtoFallback(payload); showDone(payload); })
           .finally(function () { if (btn) btn.removeAttribute("disabled"); });
       } else {
-        mailtoFallback(data);
-        showDone();
+        mailtoFallback(payload);
+        showDone(payload);
       }
     });
 
-    function mailtoFallback(d) {
-      var body = "Name: " + d.name + "\nPractice / organisation: " + d.practice +
-        "\nWork email: " + d.email + "\nProject & stage: " + (d.project || "—") +
-        "\nWhat to read: " + d.pack + "\n";
+    function postIntake(payload) {
+      return fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify(payload)
+      }).then(function (res) {
+        if (!res.ok) throw new Error("intake failed: " + res.status);
+        return res;
+      });
+    }
+
+    // Failure-only fallback (docs/42 D5). Tolerates either the raw form `data`
+    // shape or the endpoint `payload` shape.
+    function mailtoFallback(p) {
+      var body = "Name: " + (p.name || "") + "\nPractice / organisation: " + (p.practice || "") +
+        "\nWork email: " + (p.email || "") + "\nProject & stage: " + (p.project_name || p.project || "—") +
+        "\nWhat to read: " + (p.notes || p.pack || "") + "\n";
       var href = "mailto:liam@goviq.ie?subject=" +
-        encodeURIComponent("VerifIQ First Read — €29 — " + d.practice) +
+        encodeURIComponent("VerifIQ First Read — €29 — " + (p.practice || "")) +
         "&body=" + encodeURIComponent(body);
       window.location.href = href;
     }
 
-    function showDone() {
+    var resendTimer = null;
+    function showDone(payload) {
       form.hidden = true;
       done.hidden = false;
+      var emailEl = document.getElementById("intake-done-email");
+      if (emailEl && payload && payload.email) emailEl.textContent = payload.email;
+      startResendCountdown(payload);
+    }
+
+    // 60s cooldown, then a one-click resend of the same intake (docs/42 §5.1 W2).
+    function startResendCountdown(payload) {
+      var btn = document.getElementById("intake-resend");
+      var count = document.getElementById("intake-resend-count");
+      if (!btn) return;
+      var n = 60;
+      btn.disabled = true;
+      btn.textContent = "Didn't get it? Resend in " + n + "s";
+      if (count) count.textContent = String(n);
+      if (resendTimer) clearInterval(resendTimer);
+      resendTimer = setInterval(function () {
+        n -= 1;
+        if (n <= 0) {
+          clearInterval(resendTimer);
+          resendTimer = null;
+          btn.disabled = false;
+          btn.textContent = "Resend secure link →";
+        } else {
+          btn.textContent = "Didn't get it? Resend in " + n + "s";
+        }
+      }, 1000);
+      btn.onclick = function () {
+        if (btn.disabled) return;
+        btn.disabled = true;
+        btn.textContent = "Sending…";
+        if (endpoint && endpoint.length) {
+          postIntake(payload)
+            .then(function () { startResendCountdown(payload); })
+            .catch(function () { mailtoFallback(payload); });
+        } else {
+          mailtoFallback(payload);
+        }
+      };
     }
   })();
 </script>

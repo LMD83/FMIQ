@@ -65,8 +65,23 @@ cd verifiq26/website && python3 -m http.server 8080
 
 ## After it's live
 
-- The "Request the brief" buttons open an email to `liam@goviq.ie`. Swap these
-  for a real form/booking link when one exists.
+- **Wire the magic-code intake (docs/42).** The "Start your First Read" /
+  "Request the brief" forms POST to the Convex `/intake` endpoint, which creates
+  the project and emails the customer a secure, single-use upload link. Point the
+  site at your deployment by setting the endpoint URL in **one** place per
+  surface:
+  - `first-read.html` — set `window.VERIFIQ_INTAKE_ENDPOINT` (and optionally the
+    Stripe `window.VERIFIQ_FIRST_READ_URL`) in the inline `<script>` at the top.
+  - everything else (`three-products.html`, etc., via `verifiq-atelier.js`) —
+    set `INTAKE_ENDPOINT` at the top of `verifiq-atelier.js`, or define
+    `window.VERIFIQ_INTAKE_ENDPOINT` before that script loads.
+
+  The URL looks like `https://<your-convex-deployment>.convex.site/intake`.
+  Until it's set, the forms fall back to a pre-filled mail to `liam@goviq.ie`
+  (so nothing breaks pre-launch). The endpoint needs `UPLOAD_TOKEN_PEPPER`,
+  `RESEND_API_KEY`, `EMAIL_FROM`, `APP_BASE_URL` and `INTAKE_ALLOWED_ORIGIN`
+  (the live site origin) set on the Convex deployment — see
+  `verifiq26/.env.local.example`.
 - `dashboard.html` / `dashboard-live.html` are **mockups** — they show the
   product UI but aren't wired to the real engine. Keep or unlink from nav as you
   prefer before a public launch.

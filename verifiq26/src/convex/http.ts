@@ -77,6 +77,8 @@ http.route({
       email: (b.email as string).trim(),
       project_name: (b.project_name as string).trim(),
       building_type: nonEmpty(b.building_type) ? (b.building_type as string).trim() : undefined,
+      practice: nonEmpty(b.practice) ? (b.practice as string).trim() : undefined,
+      notes: nonEmpty(b.notes) ? (b.notes as string).trim() : undefined,
       purpose: b.purpose === "pilot_upload" ? "pilot_upload" : "first_read",
     });
 
