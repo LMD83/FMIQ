@@ -31,3 +31,6 @@ npm-debug.log*
 
 # Generated prompt bundle (bundle:prompts)
 src/agents/prompts.generated.ts
+
+# TS incremental build info
+*.tsbuildinfo

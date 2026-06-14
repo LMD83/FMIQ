@@ -103,7 +103,17 @@ export default function ProjectPage() {
         </p>
       ) : (
         <div>
-          {findings.map((f) => (
+          {findings.map(
+            (f: {
+              _id: string;
+              risk: string;
+              issue_id: string;
+              discipline_origin: string;
+              requirement: string;
+              finding: string;
+              source_document: string;
+              source_reference: string;
+            }) => (
             <div className="finding" key={f._id}>
               <div className="finding-head">
                 <span className={`sev solid ${sevClass(String(f.risk))}`}>{String(f.risk)}</span>

@@ -75,7 +75,7 @@ export default function Dashboard() {
         <p className="empty">No projects yet — create one above to begin.</p>
       ) : (
         <div className="proj-list">
-          {projects.map((p) => (
+          {projects.map((p: { _id: string; name: string; building_type?: string; scan_state: string }) => (
             <a key={p._id} className="proj-row" href={`/projects/${p._id}`}>
               <span className="name">{p.name}</span>
               <span className="meta">
