@@ -13,6 +13,14 @@
 (function () {
   "use strict";
 
+  /* ── Deploy config ──────────────────────────────────────────────────────────
+     Set this (or define window.VERIFIQ_INTAKE_ENDPOINT before this script) to
+     your Convex /intake URL, e.g. "https://<deployment>.convex.site/intake", to
+     switch "request the brief" from mailto to the magic-code upload-link flow
+     (docs/42). Leave empty and it stays the pre-filled mailto. */
+  var INTAKE_ENDPOINT =
+    window.VERIFIQ_INTAKE_ENDPOINT || window.VERIFIQ_BRIEF_ENDPOINT || "";
+
   var REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   /* ── The drawing index — sheet codes for the set ─────────────────────────── */
@@ -429,9 +437,10 @@
   }
 
   /* ── Request-the-brief dialog ────────────────────────────────────────────────
-     Intercepts every "request the brief" mailto. Posts to a configured
-     endpoint (window.VERIFIQ_BRIEF_ENDPOINT) when one exists; otherwise it
-     composes the same mail, with the form's text in the body. */
+     Intercepts every "request the brief" mailto. Posts to the magic-code intake
+     endpoint (window.VERIFIQ_INTAKE_ENDPOINT, or the legacy VERIFIQ_BRIEF_ENDPOINT)
+     which emails back a secure upload link (docs/42); only if that POST fails
+     does it fall back to composing the same mail. */
   function briefDialog() {
     var links = Array.prototype.slice.call(
       document.querySelectorAll("a[href^='mailto:liam@goviq.ie']")
@@ -450,8 +459,9 @@
       '<label>Practice / organisation<input name="org" autocomplete="organization"></label>' +
       '<label>Email<input name="email" type="email" required autocomplete="email"></label>' +
       '<label>What should we read?<textarea name="pack" placeholder="e.g. Stage 2C tender pack, ~90 documents, five disciplines, releasing in three weeks."></textarea></label>' +
+      '<label aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">Company website<input name="company_website" tabindex="-1" autocomplete="off"></label>' +
       '<button class="bd-send" type="submit">Stamp &amp; send →</button>' +
-      '<span class="bd-note">Goes to liam@goviq.ie · no list, no tracking</span>' +
+      '<span class="bd-note">A secure upload link comes back by email · no list, no tracking</span>' +
       "</form>";
     document.body.appendChild(dlg);
 
@@ -468,24 +478,59 @@
         pack: f.pack.value,
         page: location.pathname,
       };
-      var endpoint = window.VERIFIQ_BRIEF_ENDPOINT;
+      // Magic-code intake payload (docs/42): the endpoint creates the project
+      // and emails a secure upload link.
+      var payload = {
+        name: data.name,
+        email: data.email,
+        project_name: data.org ? data.org + " — brief" : "VerifIQ brief request",
+        practice: data.org,
+        notes: data.pack,
+        purpose: "first_read",
+        company_website: f.company_website ? f.company_website.value.trim() : "",
+      };
+      // Magic-code /intake endpoint (see INTAKE_ENDPOINT above); mailto is a
+      // failure-only fallback (docs/42 D5).
+      var endpoint = INTAKE_ENDPOINT;
       if (endpoint) {
         e.preventDefault();
+        var sendBtn = dlg.querySelector(".bd-send");
+        if (sendBtn) sendBtn.setAttribute("disabled", "");
         fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
+          body: JSON.stringify(payload),
         })
-          .then(function () {
-            dlg.close();
+          .then(function (res) {
+            if (!res.ok) throw new Error("intake failed: " + res.status);
+            showSent(data.email);
           })
           .catch(function () {
             location.href = composeMail(data);
+          })
+          .finally(function () {
+            if (sendBtn) sendBtn.removeAttribute("disabled");
           });
       } else {
         location.href = composeMail(data);
       }
     });
+
+    // Swap the dialog to a "check your inbox" confirmation. Uses textContent for
+    // the email so a hostile value can never inject markup.
+    function showSent(email) {
+      dlg.innerHTML =
+        '<div class="bd-head"><span class="t-eyebrow">— Check your inbox</span>' +
+        '<button class="bd-close" aria-label="Close">✕ Close</button></div>' +
+        '<div class="bd-sent"><p>We’ve emailed <strong class="bd-sent-email"></strong> ' +
+        "a secure link to upload your pack directly — the read starts the moment your " +
+        "files land. The link is single-use and expires in 72 hours.</p></div>";
+      var em = dlg.querySelector(".bd-sent-email");
+      if (em) em.textContent = email || "you";
+      dlg.querySelector(".bd-close").addEventListener("click", function () {
+        dlg.close();
+      });
+    }
 
     function composeMail(d) {
       var subject = decodeURIComponent((mailHref.split("subject=")[1] || "VerifIQ — request the brief"));

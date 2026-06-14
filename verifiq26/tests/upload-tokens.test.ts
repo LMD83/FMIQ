@@ -94,6 +94,8 @@ describe("upload-token Convex flow", () => {
       email: "Liam@GovIQ.ie",
       project_name: "Adult Day Centre — Stage 2C",
       building_type: "Adult Day Service",
+      practice: "GovIQ Architects",
+      notes: "25 architectural drawings + form of contract",
     });
   }
 
@@ -110,6 +112,20 @@ describe("upload-token Convex flow", () => {
     // project is pending; audit recorded the issue
     const audit = await t.query(api.mutations.listAudit, { project_id: issued.projectId });
     expect(audit.some((a: { action: string }) => a.action === "upload_code_issued")).toBe(true);
+  });
+
+  it("preserves the rich intake (practice + pack notes) as intake_answers", async () => {
+    const t = convexTest(schema, modules);
+    const issued = await issue(t);
+    const answers = await t.run(async (ctx) => {
+      return ctx.db
+        .query("intake_answers")
+        .withIndex("by_project", (q) => q.eq("project_id", issued.projectId))
+        .collect();
+    });
+    const byKey = Object.fromEntries(answers.map((a) => [a.key, a.value]));
+    expect(byKey.practice).toBe("GovIQ Architects");
+    expect(byKey.pack_description).toContain("25 architectural drawings");
   });
 
   it("verifies by link token → mints a session; the spent token cannot be reused", async () => {

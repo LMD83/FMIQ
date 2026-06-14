@@ -58,6 +58,8 @@ export const createIntake = internalMutation({
     email: v.string(),
     project_name: v.string(),
     building_type: v.optional(v.string()),
+    practice: v.optional(v.string()),
+    notes: v.optional(v.string()),
     purpose: v.optional(PURPOSE),
     ttl_ms: v.optional(v.number()),
   },
@@ -85,10 +87,28 @@ export const createIntake = internalMutation({
       owner_user_id: userId,
       name: args.project_name,
       building_type: args.building_type,
+      client_name: args.practice,
       scan_state: "pending",
       created_at: now,
       updated_at: now,
     });
+
+    // Preserve the rich, free-form intake (practice + what-to-read) as
+    // intake_answers so the concierge context survives the move off email.
+    if (args.practice) {
+      await ctx.db.insert("intake_answers", {
+        project_id: projectId,
+        key: "practice",
+        value: args.practice,
+      });
+    }
+    if (args.notes) {
+      await ctx.db.insert("intake_answers", {
+        project_id: projectId,
+        key: "pack_description",
+        value: args.notes,
+      });
+    }
 
     // Generate both secrets; persist only their salted hashes.
     const linkToken = generateLinkToken();
@@ -248,6 +268,8 @@ export const submitIntake = internalAction({
     email: v.string(),
     project_name: v.string(),
     building_type: v.optional(v.string()),
+    practice: v.optional(v.string()),
+    notes: v.optional(v.string()),
     purpose: v.optional(PURPOSE),
   },
   handler: async (ctx, args): Promise<{ projectId: string; emailed: boolean }> => {
@@ -256,6 +278,8 @@ export const submitIntake = internalAction({
       email: args.email,
       project_name: args.project_name,
       building_type: args.building_type,
+      practice: args.practice,
+      notes: args.notes,
       purpose: args.purpose,
     });
 

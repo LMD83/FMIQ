@@ -516,3 +516,6 @@ dialog.brief-dialog::backdrop { background: rgba(26,26,31,0.45); }
 }
 .brief-dialog .bd-send:hover { background: var(--brass); border-color: var(--brass); }
 .brief-dialog .bd-note { font-family: var(--font-mono); font-size: 0.5625rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--draft); }
+.brief-dialog .bd-sent { padding: 20px 22px 26px; }
+.brief-dialog .bd-sent p { margin: 0; font-family: var(--font-sans); font-size: 0.95rem; line-height: 1.55; color: var(--ink, #1a1a1f); }
+.brief-dialog .bd-sent strong { font-weight: 600; }
