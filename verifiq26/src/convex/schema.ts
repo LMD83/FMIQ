@@ -276,6 +276,50 @@ export default defineSchema({
     .index("by_project_status", ["project_id", "status"]),
 
   // --------------------------------------------------------------------------
+  // upload_tokens — the "advanced magic code" that replaces email-concierge
+  // intake (docs/42). The website issues one per intake; the app verifies it to
+  // open a direct-upload session. Two secrets per row (link + short code, the
+  // locked D4 decision), stored HASHED only — never raw (docs/42 §4, §5.4 N1).
+  // --------------------------------------------------------------------------
+  upload_tokens: defineTable({
+    project_id: v.id("projects"),
+    email: v.string(), // intake email, lowercased
+    link_hash: v.string(), // sha256(pepper + ":" + one-click link token)
+    short_code_hash: v.string(), // sha256(pepper + ":" + normalised short code)
+    purpose: v.union(v.literal("first_read"), v.literal("pilot_upload")),
+    status: v.union(
+      v.literal("issued"),
+      v.literal("used"),
+      v.literal("expired"),
+      v.literal("revoked"),
+    ),
+    attempts: v.number(), // replay counter; revoke at MAX_VERIFY_ATTEMPTS
+    expires_at: v.number(),
+    used_at: v.optional(v.number()),
+    created_at: v.number(),
+  })
+    .index("by_link_hash", ["link_hash"])
+    .index("by_short_code_hash", ["short_code_hash"])
+    .index("by_project", ["project_id"])
+    .index("by_email", ["email"]),
+
+  // --------------------------------------------------------------------------
+  // upload_sessions — a verified, project-scoped bearer session minted when a
+  // magic code is verified (docs/42 §3-4). The browser holds the raw session
+  // token; only its hash is stored. Every signed-URL request checks this
+  // session→project binding before R2 is touched (docs/42 §5.3 B4).
+  // --------------------------------------------------------------------------
+  upload_sessions: defineTable({
+    project_id: v.id("projects"),
+    token_id: v.id("upload_tokens"),
+    session_hash: v.string(), // sha256(pepper + ":" + session token)
+    expires_at: v.number(),
+    created_at: v.number(),
+  })
+    .index("by_session_hash", ["session_hash"])
+    .index("by_project", ["project_id"]),
+
+  // --------------------------------------------------------------------------
   // modules — activated regulatory modules per project (§05.4).
   // --------------------------------------------------------------------------
   modules: defineTable({

@@ -11,7 +11,7 @@ export type TableNames = TableNamesInDataModel<DataModel>;
 export type Doc<T extends TableNames> = DocumentByName<DataModel, T>;
 export type Id<T extends TableNames> = GenericId<T>;
 `);
-writeFileSync(new URL("server.ts", dir), `import { actionGeneric, internalActionGeneric, internalMutationGeneric, internalQueryGeneric, mutationGeneric, queryGeneric, type ActionBuilder, type MutationBuilder, type QueryBuilder } from "convex/server";
+writeFileSync(new URL("server.ts", dir), `import { actionGeneric, httpActionGeneric, internalActionGeneric, internalMutationGeneric, internalQueryGeneric, mutationGeneric, queryGeneric, type ActionBuilder, type MutationBuilder, type QueryBuilder } from "convex/server";
 import type { DataModel } from "./dataModel";
 export const query = queryGeneric as QueryBuilder<DataModel, "public">;
 export const mutation = mutationGeneric as MutationBuilder<DataModel, "public">;
@@ -19,6 +19,7 @@ export const action = actionGeneric as ActionBuilder<DataModel, "public">;
 export const internalQuery = internalQueryGeneric as QueryBuilder<DataModel, "internal">;
 export const internalMutation = internalMutationGeneric as MutationBuilder<DataModel, "internal">;
 export const internalAction = internalActionGeneric as ActionBuilder<DataModel, "internal">;
+export const httpAction = httpActionGeneric;
 `);
 writeFileSync(new URL("api.ts", dir), `import { anyApi } from "convex/server";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
